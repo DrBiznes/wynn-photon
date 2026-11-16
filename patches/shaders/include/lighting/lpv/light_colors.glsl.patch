@@ -1,0 +1,11 @@
+--- a/shaders/include/lighting/lpv/light_colors.glsl
++++ b/shaders/include/lighting/lpv/light_colors.glsl
+@@ -50,7 +50,7 @@
+     vec3(0.15, 0.30, 1.00) * 10.0, // 44 - Blue        (block 76)
+     vec3(0.55, 0.15, 1.00) * 10.0, // 45 - Purple      (block 77)
+     vec3(1.00, 0.20, 0.90) * 10.0, // 46 - Magenta     (block 78)
+-    vec3(1.00, 0.55, 0.85) * 10.0  // 47 - Pink        (block 79)
++    vec3(1.00, 0.45, 0.12) * 12.0  // 47 - Wynn-Photon: redstone torch as Wynncraft candle sconce (block 79), warm fire orange, a little under the lantern's 14
+ );
+ 
+ const vec3[16] tint_color = vec3[16](

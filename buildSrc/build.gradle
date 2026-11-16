@@ -1,0 +1,19 @@
+plugins {
+	id 'java'
+}
+
+repositories {
+	mavenCentral()
+}
+
+sourceSets {
+	main {
+		// Same patch format/applier the mod uses at runtime.
+		java.srcDir '../patcher-core/src/main/java'
+	}
+}
+
+dependencies {
+	implementation gradleApi()
+	implementation 'io.github.java-diff-utils:java-diff-utils:4.15'
+}

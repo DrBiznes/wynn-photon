@@ -1,0 +1,24 @@
+--- a/shaders/ph_lights.json
++++ b/shaders/ph_lights.json
+@@ -30,6 +30,7 @@
+ #define COPPER_BULBS_ID `*10061`
+ #define NETHER_PORTAL_ID `*10062`
+ #define END_PORTAL_ID `*10063`
++#define CANDLE_SCONCE_ID `*10079`
+ 
+ 
+ {
+@@ -343,6 +344,13 @@
+             NETHER_PORTAL_ID
+           ]
+         },
++        "candle_sconce": {
++          "color": "*medium_orange_light",
++          "intensity": 257,
++          "blocks": [
++            CANDLE_SCONCE_ID
++          ]
++        },
+         "disabled": {
+           "color": "#000000",
+           "intensity": 0,

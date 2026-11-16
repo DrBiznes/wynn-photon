@@ -1,0 +1,34 @@
+# Gradle
+.gradle/
+build/
+out/
+classes/
+
+# Loom
+run/
+remappedSrc/
+
+# IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+bin/
+
+# Photon workflow: downloaded base pack and the editable working copy
+.photon/
+work/
+
+# Machine-specific settings (shaderpacksDir for installDevPack)
+local.properties
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs written by tests
+logs/

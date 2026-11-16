@@ -1,0 +1,21 @@
+--- a/shaders/include/surface/material.glsl
++++ b/shaders/include/surface/material.glsl
+@@ -825,7 +825,17 @@
+         }
+     }
+ 
+-    if (64u <= material_mask && material_mask < 80u) {
++    if (material_mask == 79u) {
++#ifdef HARDCODED_EMISSION
++        // Wynn-Photon: redstone torch drawn as Wynncraft's candle sconce.
++        // The flame (fully saturated red-orange to a pale yellow core) glows
++        // like a lantern's; the cream wax glows softly; the dark metal holder
++        // does not glow.
++        float flame = step(0.9, hsl.y) * linear_step(0.40, 0.48, hsl.z);
++        float wax   = linear_step(0.65, 0.80, hsl.z);
++        material.emission = albedo_sqrt * max(0.90 * flame, 0.30 * wax);
++#endif
++    } else if (64u <= material_mask && material_mask < 80u) {
+ // Stained glass, honey and slime
+ #ifdef HARDCODED_SPECULAR
+         material.f0 = vec3(0.04);

@@ -1,0 +1,27 @@
+--- a/shaders/item.properties
++++ b/shaders/item.properties
+@@ -55,7 +55,7 @@
+ item.10037 = glow_berries
+ 
+ # Redstone components
+-item.10038 = redstone_torch
++# (Wynn-Photon: redstone_torch moved to item.10079, Wynncraft candle sconce)
+ 
+ # Lava
+ item.10039 = lava_bucket
+@@ -178,11 +178,11 @@
+ # Purple
+ item.10077 = simplylight:illuminant_purple_block_on luminax:purple_luminax_block
+ 
+-# Magenta
+-item.10078 = simplylight:illuminant_magenta_block_on luminax:magenta_luminax_block
++# Magenta (Wynn-Photon: pink modded lights folded in here, their slot is reused below)
++item.10078 = simplylight:illuminant_magenta_block_on luminax:magenta_luminax_block simplylight:illuminant_pink_block_on luminax:pink_luminax_block
+ 
+-# Pink
+-item.10079 = simplylight:illuminant_pink_block_on luminax:pink_luminax_block
++# Wynn-Photon: redstone torch held in hand lights like the candle sconce
++item.10079 = redstone_torch
+ 
+ #-------------------------------------------------------------------------------
+ # 1.12 item.mapping

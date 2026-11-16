@@ -1,0 +1,28 @@
+--- a/shaders/block.properties
++++ b/shaders/block.properties
+@@ -184,7 +184,8 @@
+ block.10037 = cave_vines_plant:berries=true cave_vines:berries=true
+ 
+ # Redstone components
+-block.10038 = redstone_torch:lit=true redstone_wall_torch:lit=true powered_rail:powered=true activator_rail:powered=true detector_rail:powered=true repeater:powered=true comparator:powered=true observer:powered=true redstone_ore:lit=true deepslate_redstone_ore:lit=true 
++# (Wynn-Photon: redstone_torch and redstone_wall_torch moved to block.10079, Wynncraft candle sconces)
++block.10038 = powered_rail:powered=true activator_rail:powered=true detector_rail:powered=true repeater:powered=true comparator:powered=true observer:powered=true redstone_ore:lit=true deepslate_redstone_ore:lit=true 
+ 
+ # Lava
+ block.10039 = lava flowing_lava lava_cauldron
+@@ -307,11 +308,11 @@
+ # Purple
+ block.10077 = simplylight:illuminant_purple_block_on luminax:purple_luminax_block
+ 
+-# Magenta
+-block.10078 = simplylight:illuminant_magenta_block_on luminax:magenta_luminax_block
++# Magenta (Wynn-Photon: pink modded lights folded in here, their slot is reused below)
++block.10078 = simplylight:illuminant_magenta_block_on luminax:magenta_luminax_block simplylight:illuminant_pink_block_on luminax:pink_luminax_block
+ 
+-# Pink
+-block.10079 = simplylight:illuminant_pink_block_on luminax:pink_luminax_block
++# Wynn-Photon: lit redstone torches are Wynncraft's candle sconces, warm fire-orange light, a little under a lantern
++block.10079 = redstone_torch:lit=true redstone_wall_torch:lit=true
+ 
+ # Transparent
+ block.10080 = snow redstone_wire string tripwire glass glass_pane chain minecraft:tall_seagrass cave_vines_plant:berries=false cave_vines:berries=false sea_pickle:waterlogged=false rail lever grindstone bell daylight_sensor powered_rail:powered=false repeater:powered=false comparator:powered=false stone_button polished_blackstone_button stone_pressure_plate polished_blackstone_pressure_plate nether_brick_fence cobblestone_wall mossy_cobblestone_wall stone_brick_wall mossy_stone_brick_wall granite_wall diorite_wall andesite_wall cobbled_deepslate_wall polished_deepslate_wall deepslate_brick_wall deepslate_tile_wall brick_wall mud_brick_wall sandstone_wall red_sandstone_wall prismarine_wall nether_brick_wall red_nether_brick_wall blackstone_wall polished_blackstone_wall polished_blackstone_brick_wall end_stone_brick_wall pointed_dripstone:thickness=tip pointed_dripstone:thickness=frustum big_dripleaf_stem big_dripleaf activator_rail:powered=false potted_cherry_sapling potted_dandelion potted_poppy potted_blue_orchid potted_allium potted_azure_bluet potted_red_tulip potted_orange_tulip potted_white_tulip potted_pink_tulip potted_oxeye_daisy potted_cornflower potted_lily_of_the_valley potted_wither_rose potted_oak_sapling potted_spruce_sapling potted_birch_sapling potted_jungle_sapling potted_acacia_sapling potted_dark_oak_sapling potted_red_mushroom potted_brown_mushroom potted_fern potted_dead_bush potted_cactus potted_bamboo potted_azalea_bush potted_flowering_azalea_bush potted_warped_roots potted_mangrove_propagule flower_pot bamboo_sapling detector_rail:powered=false white_carpet orange_carpet magenta_carpet light_blue_carpet yellow_carpet lime_carpet pink_carpet gray_carpet light_gray_carpet cyan_carpet purple_carpet blue_carpet brown_carpet green_carpet red_carpet black_carpet moss_carpet pointed_dripstone:thickness=tip_merge white_bed orange_bed magenta_bed light_blue_bed yellow_bed lime_bed pink_bed gray_bed light_gray_bed cyan_bed purple_bed blue_bed brown_bed green_bed red_bed black_bed stonecutter dried_ghast

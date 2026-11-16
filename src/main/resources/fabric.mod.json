@@ -1,0 +1,25 @@
+{
+	"schemaVersion": 1,
+	"id": "wynn_photon",
+	"version": "${version}",
+	"name": "Wynn-Photon",
+	"description": "Patches the Photon shader pack with tweaks for Wynncraft, such as warm candle-sconce lighting for redstone torches. Put the original Photon zip in your shaderpacks folder and a patched copy is created at launch.",
+	"authors": [
+		"Wynn-Photon contributors"
+	],
+	"license": "LicenseRef-Unspecified",
+	"environment": "client",
+	"entrypoints": {
+		"preLaunch": [
+			"com.wynnphoton.WynnPhotonPreLaunch"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.16.0",
+		"minecraft": "~1.21.11",
+		"java": ">=21"
+	},
+	"suggests": {
+		"iris": "*"
+	}
+}
