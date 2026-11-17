@@ -1,5 +1,5 @@
 # WynnPhoton
-<img width="468" height="200" alt="banner" src="marketing/banner.png" />
+![banner](https://github.com/user-attachments/assets/83babad9-cda3-46e7-ab89-1de10e3ef7e7)
 
 WynnPhoton patches the [Photon](https://modrinth.com/shader/photon-shader) shader pack for Wynncraft and works alongside WynnIris. It ships only patches, never Photon itself (make sure to download it seperately!), and builds the patched pack when the game starts. Made for my modpack [World of Wynncraft](https://modrinth.com/modpack/world-of-wynncraft)
 
@@ -11,17 +11,16 @@ WynnPhoton patches the [Photon](https://modrinth.com/shader/photon-shader) shade
 - Fog, clouds and caves fit Wynncraft's sea level
 - Lighting fixes across the map, so caves and rooms aren't pitch black anymore
 - Wynncraft's custom blocks light up and shade like they look
-- Its own Wynn-Photon page in the shader settings
+- Its own WynnPhoton page in the shader settings
 - Updates itself, just drop in the new jar and your shader settings carry over
 - Works with Photonics, WynnVista, WynnIris, Voxy and Distant Horizons
 
 ## See It
+### With WynnPhoton
+![with](https://github.com/user-attachments/assets/56bcdf34-49c7-4bb6-9c86-14bd1ea978eb)
 
-<!-- screenshot -->
-
-<!-- screenshot -->
-
-<!-- screenshot -->
+### With normal Photon
+![without](https://github.com/user-attachments/assets/5626642a-122d-423a-929e-eb89a09a5cd7)
 
 ## Installation
 
