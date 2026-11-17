@@ -265,7 +265,7 @@ Result: "Full texture audit" in [research/wynn-rp-blocks.md](research/wynn-rp-bl
 - [x] A GitHub repo (`DrBiznes/wynn-photon`).
 - [ ] CI that runs `gradlew build` on every push and pull request.
 - [x] Publishing workflow: `.github/workflows/publish.yml` publishes to Modrinth and CurseForge on a GitHub release.
-- [ ] Track new Photon releases (see README, "Updating to a new Photon release").
+- [ ] Track new Photon releases (see "Updating to a new Photon release" in [DEVELOPMENT.md](DEVELOPMENT.md)).
 
 ## Brainstorm
 
