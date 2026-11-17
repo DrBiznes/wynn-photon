@@ -2,33 +2,18 @@
 
 All notable changes to Wynn-Photon are listed here. Each version names the Photon release its patches apply to.
 
-## 0.6.0 (unreleased), for Photon v1.4
+## 0.7.0 (unreleased), for Photon v1.4
 
-Wynncraft's sea level and the light from invisible light blocks: the first half of roadmap steps 6 and 7. Not
-checked in game yet.
+Brightness: dark places keep their detail. The cave check and overall brightness from roadmap step 6. Minimum
+light is checked on Wynncraft; the cave check is not yet.
 
 ### Shader changes
 
-- **Sea level is Y 33.** Wynncraft's sea is at Y 33, but Photon's `SEA_LEVEL` defaults to 63. The air fog volume
-  starts at `SEA_LEVEL - 24`, so Wynn's coast sat below it. The block-light fog switched to its underground look
-  between Y 63 and 43, which covered most of the surface. Clouds and cloud shadows also measure height from
-  `SEA_LEVEL`. The default is now 33.0, and 33.0 is added to the option list. The cave check (`biome_cave` in
-  `shaders.properties`) used its own hardcoded 63; see the next entry.
 - **Cave check by skylight alone.** Photon's `biome_cave` (cave fog, extra vignette, darker horizon and clouds)
   multiplied a height ramp below Y 63 by missing skylight at the eye. On Wynncraft the height ramp was always full
   near the sea, so roof and tree shade counted partly as cave, and caves above Y 63 (Sky Islands, Canyon of the
   Lost) never counted. It now uses eye skylight only: full cave at skylight 2 of 15 or less, none from 6 up, with
   Photon's smoothing kept.
-- **Vanilla light fallback under Photonics.** With Photonics on, Photon dropped vanilla block light completely and
-  lit blocks only with the lights Photonics traces. Wynncraft lights many caves and rooms with invisible
-  `minecraft:light` blocks, which Photonics can't see, so those places were black even at block light 10. The
-  Photonics path in `diffuse_lighting.glsl` now mixes the vanilla lightmap back in where Photonics' light is weak.
-  It uses the same formula as the colored-light volume (`lpv/blocklight.glsl`), and it follows the same Vanilla
-  Lightmap Contribution toggle and falloff option.
-- **The fallback fades out in open daylight.** Every Wynncraft path is lined with light blocks, which vanilla barely
-  shows during the day, and the fallback drew bright pools on them at noon. On blocks with skylight above about 6
-  of 15 it now fades out during the day (`1 - time_midnight`), fully above about 12 of 15. Caves keep it all day and
-  everything keeps it at night. The fade applies with and without Photonics.
 - **Photonics sky fill.** With Photonics on, Photon swaps its sky light for Photonics' traced indirect light. That
   light is very weak in shade, forests and under overhangs, so those were much darker than without Photonics, and
   `SKYLIGHT_I` barely changed them. The Photonics path in `diffuse_lighting.glsl` now adds Photon's own sky light
@@ -46,10 +31,45 @@ checked in game yet.
 
 ### Settings page
 
-- **Light Block Strength** (0-3×, default 1×) scales the vanilla light fallback, with and without Photonics.
 - **Minimum Light** (0-4×, default 1×) scales the minimum light. 0 turns it off.
 - **Photonics Sky Fill** (0-2×, default 1×) scales the sky fill. 1× makes shade as bright as without Photonics, 0
   turns it off.
+
+### Tooling
+
+- **Lighting test.** `gradlew lightTest` photographs the test world's light test spots under the option sets in
+  `testworld/light_test.txt`, with nobody at the keyboard, and writes `build/light-test/report.html` with mean
+  luminances. See [DEVELOPMENT.md](DEVELOPMENT.md).
+- **Test world.** Seven light test spots: open ground, tree canopy, overhang, windowed room, light-block room,
+  torch room and cave mouth.
+- `mod_version` is 0.7.0.
+
+## 0.6.0 (2026-11-16), for Photon v1.4
+
+Wynncraft's sea level and the light from invisible light blocks: the first half of roadmap steps 6 and 7. Sea
+level is checked on Wynncraft.
+
+### Shader changes
+
+- **Sea level is Y 33.** Wynncraft's sea is at Y 33, but Photon's `SEA_LEVEL` defaults to 63. The air fog volume
+  starts at `SEA_LEVEL - 24`, so Wynn's coast sat below it. The block-light fog switched to its underground look
+  between Y 63 and 43, which covered most of the surface. Clouds and cloud shadows also measure height from
+  `SEA_LEVEL`. The default is now 33.0, and 33.0 is added to the option list. The cave check (`biome_cave` in
+  `shaders.properties`) still used its own hardcoded 63; 0.7.0 replaces it.
+- **Vanilla light fallback under Photonics.** With Photonics on, Photon dropped vanilla block light completely and
+  lit blocks only with the lights Photonics traces. Wynncraft lights many caves and rooms with invisible
+  `minecraft:light` blocks, which Photonics can't see, so those places were black even at block light 10. The
+  Photonics path in `diffuse_lighting.glsl` now mixes the vanilla lightmap back in where Photonics' light is weak.
+  It uses the same formula as the colored-light volume (`lpv/blocklight.glsl`), and it follows the same Vanilla
+  Lightmap Contribution toggle and falloff option.
+- **The fallback fades out in open daylight.** Every Wynncraft path is lined with light blocks, which vanilla barely
+  shows during the day, and the fallback drew bright pools on them at noon. On blocks with skylight above about 6
+  of 15 it now fades out during the day (`1 - time_midnight`), fully above about 12 of 15. Caves keep it all day and
+  everything keeps it at night. The fade applies with and without Photonics.
+
+### Settings page
+
+- **Light Block Strength** (0-3×, default 1×) scales the vanilla light fallback, with and without Photonics.
 
 ### Tooling
 

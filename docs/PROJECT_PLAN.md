@@ -40,11 +40,13 @@ that, one small labelled patch at a time.
   [CHANGELOG.md](CHANGELOG.md). Not checked in game yet.
 - **0.5.0 (done):** a Wynn-Photon settings page in the shader menu (emerald and chest glow toggles and strengths,
   candle and magma strengths) and faintly glowing chests. See [CHANGELOG.md](CHANGELOG.md). Not checked in game yet.
-- **0.6.0 (in progress):** sea level 33, and a vanilla light fallback so Wynncraft's invisible light blocks light
-  caves under Photonics, faded out on open ground by day (steps 6 and 7, first half). Sea level is checked on
-  Wynncraft: the coast's fog and haze look much better. The fallback is installed for testing.
-- **Next:** finish checking 0.6.0, then the skylight-only cave check and brightness defaults (step 6, "Still to
-  do"). Auto exposure is the last resort for brightness.
+- **0.6.0 (done):** sea level 33, and a vanilla light fallback so Wynncraft's invisible light blocks light caves
+  under Photonics, faded out on open ground by day (steps 6 and 7, first half). Sea level is checked on Wynncraft.
+- **0.7.0 (in progress):** brightness. The cave check uses skylight alone, every surface gets a minimum light, light
+  blocks reach further, `SKYLIGHT_I` works without Photonics, and Photon's sky light fills in under Photonics. Adds
+  the lighting test (`gradlew lightTest`). Minimum light is checked on Wynncraft and looks right.
+- **Next:** check the cave check in game (step 6), then pick brightness defaults. Auto exposure is the last resort
+  for brightness.
 
 ### Done so far
 
