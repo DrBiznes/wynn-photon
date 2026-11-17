@@ -1,6 +1,21 @@
 --- a/shaders/include/lighting/diffuse_lighting.glsl
 +++ b/shaders/include/lighting/diffuse_lighting.glsl
-@@ -65,6 +65,20 @@
+@@ -13,7 +13,13 @@
+ #include "/include/lighting/lpv/blocklight.glsl"
+ #endif
+ 
+-#ifdef HANDHELD_LIGHTING
++// Wynn-Photon: handheld_lighting.glsl also holds the player light, so it is
++// included without handheld lighting too. Voxy's programs turn it off
++#if !defined WYNN_NO_PLAYER_LIGHT
++#define WYNN_PLAYER_LIGHT
++#endif
++
++#if defined HANDHELD_LIGHTING || defined WYNN_PLAYER_LIGHT
+ #include "/include/lighting/handheld_lighting.glsl"
+ #endif
+ 
+@@ -65,6 +71,20 @@
      return falloff;
  }
  
@@ -21,7 +36,7 @@
  float get_skylight_falloff(float skylight) {
  #if defined WORLD_OVERWORLD
      return sqr(skylight);
-@@ -143,7 +157,8 @@
+@@ -143,7 +163,8 @@
          scene_pos,
          flat_normal,
          mc_blocklight,
@@ -31,7 +46,18 @@
      );
  #else
      lighting += mc_blocklight;
-@@ -188,6 +203,12 @@
+@@ -153,6 +174,10 @@
+     lighting += get_handheld_lighting(scene_pos, ao);
+ #endif
+ 
++#ifdef WYNN_PLAYER_LIGHT
++    lighting += get_wynn_player_light(scene_pos, ao); // Wynn-Photon
++#endif
++
+     return lighting;
+ }
+ 
+@@ -188,6 +213,12 @@
  
      lighting += skylight * get_skylight_falloff(light_levels.y);
  
@@ -44,7 +70,7 @@
      return lighting;
  }
  
-@@ -311,6 +332,10 @@
+@@ -311,6 +342,10 @@
      // Skylight
  
  #if defined PHOTONICS_DIFFUSE
@@ -55,7 +81,7 @@
      if (is_lod) {
          lighting += get_sky_lighting(
              material,
-@@ -324,7 +349,8 @@
+@@ -324,7 +359,8 @@
  // When combined gi is enabled
  // Photonics includes gi in the result of sample_photonics_direct
  #ifndef PHOTONICS_RESTIR_COMBINED_GI
@@ -65,9 +91,16 @@
  #endif
      }
  
-@@ -352,7 +378,59 @@
+@@ -351,8 +387,66 @@
+         blocklight += sample_photonics_handheld(uv);
  #endif
  
++#ifdef WYNN_PLAYER_LIGHT
++        // Wynn-Photon: the player light isn't traced by Photonics, so it
++        // casts no shadows here, like Photon's own handheld light
++        lighting += get_wynn_player_light(scene_pos, ao);
++#endif
++
          // BLOCKLIGHT_I is applied in /photonics/modifiers/modify_lights.glsl
 -        lighting += blocklight * blocklight_scale;
 +        blocklight *= blocklight_scale;
@@ -126,7 +159,7 @@
      } else {
          lighting += get_block_lighting(
              scene_pos,
-@@ -381,6 +459,19 @@
+@@ -381,6 +475,19 @@
          * (1.0 - light_levels.y * light_levels.y)
          * (1.0 - 0.7 * darknessFactor);
      lighting += nightVision * night_vision_scale * directional_lighting * ao;

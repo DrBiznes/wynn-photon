@@ -1,0 +1,12 @@
+--- a/shaders/program/voxy_translucent.glsl
++++ b/shaders/program/voxy_translucent.glsl
+@@ -9,6 +9,9 @@
+ #undef HANDHELD_LIGHTING
+ #endif
+ 
++// Wynn-Photon: no player light on Voxy's far terrain
++#define WYNN_NO_PLAYER_LIGHT
++
+ #ifdef SHADOW_SSRT
+ #undef SHADOW_SSRT
+ #endif

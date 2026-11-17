@@ -2,6 +2,11 @@
 
 Every version so far patches Photon v1.4.
 
+## 0.9.0
+
+**Added**
+- Player Light: the player lights their surroundings as if always holding a torch, like the light radius in Diablo. "Player Light" on the Wynn-Photon page (0-8×, default 0, off) sets it: 1× is as bright as a torch, and higher values are brighter and reach further. A torch or lantern you really hold counts towards it, so it doesn't double up. It works with Colored Lights and with Photonics, and casts no shadows.
+
 ## 0.8.0
 
 Initial public release.

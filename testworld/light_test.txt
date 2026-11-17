@@ -29,6 +29,10 @@ set on_fill2    PHOTONICS_ENABLED=true WYNN_PHOTONICS_SKY_FILL_I=2.00
 set on_sky2     PHOTONICS_ENABLED=true SKYLIGHT_I=2.00
 set on_block2   PHOTONICS_ENABLED=true BLOCKLIGHT_I=2.00
 set on_cave2    PHOTONICS_ENABLED=true CAVE_LIGHTING_I=2.00
+set off_player1 PHOTONICS_ENABLED=false WYNN_PLAYER_LIGHT_I=1.00
+set off_player4 PHOTONICS_ENABLED=false WYNN_PLAYER_LIGHT_I=4.00
+set on_player1  PHOTONICS_ENABLED=true WYNN_PLAYER_LIGHT_I=1.00
+set on_player4  PHOTONICS_ENABLED=true WYNN_PLAYER_LIGHT_I=4.00
 # The same options as "on", shot again at the end: its difference from "on" is the noise of the measurement
 set on_again    PHOTONICS_ENABLED=true
 
@@ -42,3 +46,7 @@ compare off off_block2    Blocklight 2.0 relative to 1.0, Photonics off
 compare on on_block2      Blocklight 2.0 relative to 1.0, Photonics on
 compare off off_cave2     Cave Brightness 2.0 relative to 1.0, Photonics off
 compare on on_cave2       Cave Brightness 2.0 relative to 1.0, Photonics on
+compare off off_player1   Player Light 1 relative to 0, Photonics off
+compare off off_player4   Player Light 4 relative to 0, Photonics off
+compare on on_player1     Player Light 1 relative to 0, Photonics on
+compare on on_player4     Player Light 4 relative to 0, Photonics on

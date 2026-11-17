@@ -1,0 +1,41 @@
+--- a/shaders/include/lighting/handheld_lighting.glsl
++++ b/shaders/include/lighting/handheld_lighting.glsl
+@@ -56,4 +56,38 @@
+     return light_color * falloff;
+ }
+ 
++// Wynn-Photon: player light. The player always lights their surroundings like
++// a held torch, Diablo style. WYNN_PLAYER_LIGHT_I is the brightness in torches
++// (0 turns it off); above 1 the light also reaches further. A light the player
++// really holds counts towards it, so holding a torch doesn't double it, and
++// with Photonics the traced held light isn't lit twice
++vec3 get_wynn_player_light(vec3 scene_pos, float ao) {
++    float strength = WYNN_PLAYER_LIGHT_I;
++#ifdef HANDHELD_LIGHTING
++    float held_level = float(max(heldBlockLightValue, heldBlockLightValue2));
++    strength -= HANDHELD_LIGHTING_INTENSITY * held_level * rcp(14.0);
++#endif
++    if (strength <= 0.0) return vec3(0.0);
++
++#ifdef IS_IRIS
++    scene_pos += relativeEyePosition;
++#endif
++
++    // Torch light color (torch is light ID 10036)
++#ifdef COLORED_LIGHTS
++    vec3 light_color = texelFetch(light_data_sampler, ivec2(10036 - 10032, 0), 0).rgb;
++#else
++    vec3 light_color = (blocklight_color * blocklight_scale * rcp(15.0)) * 14.0;
++#endif
++
++    // Reach grows with the square root of the strength, so a strong light
++    // spreads out instead of only burning hotter at the player's feet
++    float reach = sqrt(max(WYNN_PLAYER_LIGHT_I, 1.0));
++    scene_pos *= rcp(reach);
++    float falloff = lift(rcp(dot(scene_pos, scene_pos) + 1.0), 3.0);
++    falloff *= mix(ao, 1.0, falloff * falloff);
++
++    return light_color * (strength * falloff);
++}
++
+ #endif // INCLUDE_LIGHTING_HANDHELD_LIGHTING
