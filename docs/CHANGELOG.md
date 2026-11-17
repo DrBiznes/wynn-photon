@@ -24,14 +24,35 @@ checked in game yet.
   shows during the day, and the fallback drew bright pools on them at noon. On blocks with skylight above about 6
   of 15 it now fades out during the day (`1 - time_midnight`), fully above about 12 of 15. Caves keep it all day and
   everything keeps it at night. The fade applies with and without Photonics.
+- **Lava cauldrons: only the lava glows.** Wynncraft draws every cauldron as a wooden tub, and the lava cauldron
+  reuses those wood textures. Photon's lava formula lit any orange-brown pixel above 0.4 saturation, so the whole tub
+  glowed, brighter than Wynn's dark lava itself. The gate is now 0.6 saturation. That removes all of the tub's glow and
+  none of the lava's, Wynncraft's or vanilla's (from the full texture audit, roadmap step 9).
+- **More Wynncraft wood.** Plain pistons and TNT are wooden crates, purpur is dark wooden planks, and water and
+  powder-snow cauldrons are the same wooden tub as the cauldron. `piston`, `tnt`, `purpur_block`, `purpur_pillar`,
+  `water_cauldron` and `powder_snow_cauldron` move to wood (`10029`). `piston_head`, `moving_piston`, `purpur_slab` and
+  `purpur_stairs` move to transparent wood (`10030`).
+- **Iron doors are wood.** Wynncraft draws them as cream painted doors with a window, and Photon's metal made them
+  look like chrome. `iron_door` moves from transparent metal (`10018`) to transparent wood (`10030`).
+- **Emerald blocks glow less.** Their surface glow is about a third of 0.5.0's, so the block matches the faint green
+  light it casts. The light itself is unchanged in both light systems.
+- **Enchanting tables get a faint purple light.** Wynncraft places them next to item identifiers. They get Photon's
+  original purple (`(0.60, 0.10, 1.00) × 2`, Photonics `#9919ff` at intensity 43), on a new Wynn-only ID, `10068`.
+  The table's blue inlay glows softly; its stone and gold runes don't. The table is out of Photonics' `"disabled"`
+  override and has its own entry, and it lights in hand too. The brown Simply Light and Luminax lights (`10068`) are
+  merged into orange (`10070`) to free the slot.
 
 ### Settings page
 
 - **Vanilla Light Strength** (0-3×, default 1×) scales the vanilla light fallback, with and without Photonics.
+- **Enchanting Table Glow Strength** (0-3×, default 1×) scales the enchanting table's light and inlay glow. 0 turns
+  them off.
 
 ### Tooling
 
-- **Test world.** The dark hall has a 17th cell with two invisible light blocks (levels 15 and 10).
+- **Test world.** The dark hall has a 17th cell with two invisible light blocks (levels 15 and 10), and an 18th
+  with a lava cauldron. Cell 9's enchanting table is relabelled for its new light. The daylight row adds crates
+  (piston, TNT), purpur, water and powder-snow cauldrons, and an iron door. The gallery now reaches x 110.
 - `mod_version` is 0.6.0.
 
 ## 0.5.0 (2026-11-16), for Photon v1.4

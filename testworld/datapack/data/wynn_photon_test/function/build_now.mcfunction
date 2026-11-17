@@ -1,13 +1,13 @@
 # Generated for the Wynn-Photon test world. Rebuilds the whole gallery.
 # Clear the gallery area (three fills, each under the 32768-block command limit) and reset the floor
-fill -4 -60 -24 102 -50 -1 air
-fill -4 -60 0 102 -50 15 air
-fill -4 -60 16 102 -50 30 air
-fill -4 -61 -24 102 -61 30 grass_block
+fill -4 -60 -24 110 -50 -1 air
+fill -4 -60 0 110 -50 15 air
+fill -4 -60 16 110 -50 30 air
+fill -4 -61 -24 110 -61 30 grass_block
 
 # ---- Dark hall (z 16-26): light sources, one per cell, behind a baffle so no daylight gets in
 # Floor at y -61, roof at y -55, air inside
-fill -1 -61 16 101 -55 26 stone_bricks hollow
+fill -1 -61 16 107 -55 26 stone_bricks hollow
 fill 5 -60 21 5 -56 25 stone_bricks
 fill 11 -60 21 11 -56 25 stone_bricks
 fill 17 -60 21 17 -56 25 stone_bricks
@@ -24,6 +24,7 @@ fill 77 -60 21 77 -56 25 stone_bricks
 fill 83 -60 21 83 -56 25 stone_bricks
 fill 89 -60 21 89 -56 25 stone_bricks
 fill 95 -60 21 95 -56 25 stone_bricks
+fill 101 -60 21 101 -56 25 stone_bricks
 # Entrance in the middle of the front wall, with a baffle wall just inside it
 fill 29 -60 16 30 -59 16 air
 fill 27 -60 18 32 -57 18 stone_bricks
@@ -72,6 +73,7 @@ setblock 91 -60 23 chest[facing=south]
 setblock 93 -60 23 trapped_chest[facing=south]
 setblock 97 -58 23 light[level=15]
 setblock 99 -60 25 light[level=10]
+setblock 104 -60 23 lava_cauldron
 
 # ---- Daylight row (z -12 to -6): materials, specular and SSS
 fill 0 -61 -9 2 -61 -7 nether_bricks
@@ -156,6 +158,17 @@ setblock 90 -60 -8 lever[face=wall,facing=west,powered=true]
 setblock 91 -59 -8 redstone_torch[lit=false]
 setblock 93 -60 -8 chest[facing=south]
 setblock 94 -60 -8 trapped_chest[facing=south]
+setblock 96 -60 -8 piston[facing=up]
+setblock 97 -60 -8 tnt
+fill 99 -61 -9 101 -61 -7 purpur_block
+setblock 99 -60 -8 purpur_pillar
+setblock 100 -60 -8 purpur_block
+setblock 100 -59 -8 purpur_slab[type=bottom]
+setblock 101 -60 -8 purpur_stairs[facing=south]
+setblock 103 -60 -8 water_cauldron[level=3]
+setblock 104 -60 -8 powder_snow_cauldron[level=3]
+setblock 106 -60 -8 iron_door[facing=north,half=lower]
+setblock 106 -59 -8 iron_door[facing=north,half=upper]
 
 # Signs, then the vine states last: any block placed next to a vine afterwards would strip its faces
 function wynn_photon_test:labels

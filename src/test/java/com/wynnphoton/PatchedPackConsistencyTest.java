@@ -114,13 +114,16 @@ class PatchedPackConsistencyTest {
 		assertTrue(blockIds.get(10076).contains("emerald_block"));
 		assertTrue(blockIds.get(10097).contains("vine:east=true:north=true:south=true:west=false"));
 		assertEquals(List.of("obsidian"), blockIds.get(10011));
-		// 10054 was Photon's enchanting table light. The table no longer glows, and 0.4.0 reuses the slot for glowstone.
+		// 10054 was Photon's enchanting table light; 0.4.0 reuses the slot for glowstone. The table's faint purple light
+		// moved to 10068 (the brown modded light slot, merged into orange) in 0.6.0.
 		assertEquals(List.of("glowstone"), blockIds.get(10054));
-		blockIds.forEach((id, entries) -> {
-			if (10032 <= id && id < 10080) {
-				assertFalse(entries.contains("enchanting_table"), "enchanting table has no light");
-			}
-		});
+		assertEquals(List.of("enchanting_table"), blockIds.get(10068));
+		assertTrue(blockIds.get(10070).contains("luminax:brown_luminax_block"), "brown modded lights merged into orange");
+		// The 0.6.0 texture audit: Wynncraft wood, and lava cauldrons stay on lava
+		assertTrue(blockIds.get(10029).containsAll(List.of("piston", "tnt", "purpur_block", "water_cauldron")));
+		assertTrue(blockIds.get(10030).containsAll(List.of("piston_head", "purpur_slab", "iron_door")));
+		assertFalse(blockIds.get(10018).contains("iron_door"), "iron doors left transparent metal");
+		assertTrue(blockIds.get(10039).contains("lava_cauldron"));
 		assertEquals(List.of("magma_block"), blockIds.get(10067));
 		assertEquals(List.of("iron_block"), blockIds.get(10099));
 		assertTrue(blockIds.get(10098).contains("quartz_block"));

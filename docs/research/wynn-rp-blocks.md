@@ -362,3 +362,103 @@ movement animation, and `custom_model_data` item matching.
 
 Each item still needs the in-game check from the plan's principles: `installDevPack` and a Wynncraft area where the
 block appears.
+
+## Full texture audit (roadmap step 9, 2026-11-16)
+
+The first texture scan (roadmap step 5) read only the 8-bit textures. This audit reads all of them and compares each
+one with vanilla 1.21.11 and with the Photon material its block is on today (0.6.0 patches applied). It is research
+only. Nothing here is built yet.
+
+### Method
+
+- **Same pack** as the survey (`PRODUCTION_d2668821…`, 2026-11-06), read the same way through the central directory.
+- **Decoding:** every block PNG in the pack has wrong chunk CRCs and a wrong zlib Adler checksum, so Pillow rejects
+  all of them, not just the palette ones. A small decoder that ignores both checksums reads all 459. It was checked
+  against Pillow on all 1,111 vanilla block textures, with identical pixels.
+- **Formats:** 267 8-bit palette, 151 palette at 1, 2 or 4 bits (the ~150 the first scan skipped), 41 RGB, RGBA or
+  grey.
+- **Texture → block:** every 1.21.11 blockstate (the pack's override where it has one, else vanilla), through its
+  models' parents and texture variables. Each block state then gets its Photon ID from `block.properties`, first match
+  wins, tags expanded from the vanilla tag files. This reproduces the 0.2.0 vine split exactly, which is a good check
+  that the mapping is right.
+- **Vanilla comparison:** the average colour of opaque pixels, as a CIELAB distance (ΔE), lightness change and hue
+  change. Animated textures are averaged over all frames.
+- **Photon comparison:** Photon's material formula from `material.glsl`, run per pixel for the block's ID on both the
+  Wynn and the vanilla texture: average emission, share of glowing pixels, and average smoothness. Note that Photon's
+  `rgb_to_hsl` is really HSV, so its "lightness" is the brightest channel.
+- **Visual check:** side-by-side sheets of the ~100 largest changes, kept outside the repo. The tables below
+  describe textures and do not copy them.
+- **Tinted foliage:** vanilla leaves, grass, ferns, vines and lily pads are grey and tinted per biome. Wynn ships
+  them pre-coloured green. That makes them top the ΔE list (ΔE 45-53), but it means nothing for Photon, which keys
+  leaves on brightness only.
+
+Of the 459 textures, 336 have a vanilla file of the same name and none is byte-identical to vanilla. 123 exist only
+in the pack: 116 under `variants/` and 7 pre-1.13 names. 26 are used by no 1.21.11 blockstate. Most are pre-1.13 names
+the game no longer loads (`grass_path_*`, `mob_spawner`, `purpur_pillar_side`, `quartz_pillar_side`, `stone_slab_*`,
+`trip_wire_hook`, `farmland_wet`, `oak_sign`), plus textures the pack's own models replaced (`comparator*`,
+`enchanting_table_*`).
+
+### Redrawn as something else (new)
+
+| Block | What Wynncraft draws | Photon today | Proposed | Confidence |
+|---|---|---|---|---|
+| `lava_cauldron` | The wooden tub from 0.4.0's `cauldron` change. The pack retextures `cauldron_*` as brown wood, and the vanilla lava, water and powder-snow cauldron models use those textures. | 39 (lava). Wood is orange-brown at about 0.45-0.5 saturation, so the lava formula (`step(0.4, s)`) lights the whole tub. The tub glows *more* than Wynn's dark lava does: emission 0.20-0.29 on 75-100 % of tub pixels, against 0.14 on 35 % of lava pixels. | Raise the lava formula's saturation gate from 0.4 to 0.6. That removes 100 % of the tub's glow and 0 % of the lava's, for Wynn's lava and vanilla's alike, so "lava stays as Photon draws it" still holds. No new ID needed. | high |
+| `water_cauldron`, `powder_snow_cauldron` | The same wooden tub. | 0 (no category) | 29 (wood), next to `cauldron`. | high |
+| `piston`, `piston_head`, `moving_piston` | The same wooden crate as `sticky_piston` (all-plank faces, `#745838`). Only the sticky piston was moved in 0.4.0. | 0 | `piston` → 29; `piston_head`, `moving_piston` → 30 (non-full). | high |
+| `tnt` | A wooden crate with "TNT" painted on the side and red-orange sticks on top. | 0 | 29 (wood). | high |
+| `purpur_block`, `purpur_pillar`, `purpur_slab`, `purpur_stairs` | Dark wooden planks (`#625138`). The pillar's top is a grey-blue round end. | 0 | Block and pillar → 29, slab and stairs → 30. | med-high |
+| `iron_door` | A cream, painted-looking door with a dark window (`#a29a8b` average), not bare iron. | 18 (transparent metal): albedo-tinted metal at smoothness 0.81, so it can read as chrome. | Check in game. If it is a painted wooden door, move it to 30 (transparent wood). | med |
+| `farmland` | Vertical wooden boards with nail heads (`#624928`). | 0 | Check in game what Wynn uses farmland for. If it is floorboards or planter boxes, move it to 29. | med-low |
+| `sponge`, `wet_sponge` | **Animated rainbow block.** Five interpolated frames, 48 ticks each, cycling yellow → green → teal → magenta → orange. The wet sponge is a darker version. This answers the brainstorm lead. | 0 | Find where Wynn places it. If it reads as magical, give it a faint emission with no light, since the colored-light volume can't follow a changing colour. Otherwise no change. | low |
+| `dragon_egg` | A mossy green texture on the vanilla egg shape. | 0 | No change. | low |
+| `brick_slab` | Bottom and top: dirt slabs (survey). **Double: `vanta_block`, pure black `#000000`.** | 0 | No change. Pure black reflects nothing and needs no material. | high |
+
+### Hue- and brightness-keyed materials
+
+Every block on a Photon material whose look depends on the texture's colour, with the Wynn texture under that
+formula:
+
+- **Lights:**
+  - Redstone lamp, torch, lit furnace, jack o'lantern, fire, beacon, end portal frame eye: within ±0.08 of
+    vanilla's emission.
+  - Powered rail: dimmer but still red in the centre.
+  - Observer (powered, 38): the back still has a red dot, so its red glow and light fit.
+  - Redstone block: unchanged.
+  - Brewing stand: glows on 22 % of pixels instead of 32 %. No change.
+  - Chorus flower: barely glows on Wynn's darker texture. Rare in Wynn. No change.
+- **Glowstone (54):** Wynn's flat pale texture glows on 100 % of its pixels at 0.67, against vanilla's 0.24 on 44 %.
+  0.4.0 changed only its light colour. Check in game that it doesn't look like a flat white panel. If it does, scale
+  its emission down.
+- **Lava (39):** emission 0.14 on 35 % of pixels, against vanilla's 0.41 on 100 %, because Wynn's deep red sits outside
+  the formula's orange hue window. This is the 0.4.0 retune that was tried and reverted. No change. The lava
+  cauldron row above is separate.
+- **Magma (67), molten rock (77), emerald (75, 76), candles (73, 79, 104):** match their 0.2.0-0.5.0 tuning.
+- **Gems (13):** diamond and lapis blocks are within 0.08 of vanilla's smoothness.
+- **Metals (12, 18, 99):** gold is a little darker, which is fine (the plan says gold stays as is). Anvils and hoppers
+  are darker, so anvils are less shiny (-0.17). That fits Wynn's dark iron.
+- **Sand and red sand (7, 9):** Wynn's sand is darker, so it is 0.06-0.17 less glossy. Red sand and red sandstone
+  drop to almost matte (0.04-0.10). No change. It follows the texture.
+- **Granite and diorite (10):** lighter than vanilla, so 0.11-0.15 *more* glossy. Diorite, a near-white rock, hits the
+  formula's 0.5 cap. Low priority: check in game whether diorite looks wet.
+- **Ice (8):** Wynn's ice is greyer and darker. Its smoothness change is negligible, because the formula is a
+  fourth-power curve.
+- **Copper (27, 28):** the pack retextures no copper.
+- **Default blocks (0):** Photon gives unmapped blocks smoothness up to 0.33 by brightness. Wynn's darker stone,
+  cobblestone, stone bricks and netherrack lose 0.05-0.11 of it. That needs no change.
+
+### Ranked list
+
+1. **Lava cauldron tub stops glowing.** Change the lava formula's saturation gate in `material.glsl` from 0.4 to 0.6.
+   This is one number. It leaves lava untouched and keeps the cauldron's lava light.
+2. **Pistons and TNT become wood.** `piston` and `tnt` → 29; `piston_head` and `moving_piston` → 30. This finishes
+   0.4.0's sticky-piston crate.
+3. **Water and powder-snow cauldrons become wood** (29), matching `cauldron`.
+4. **Purpur becomes wood.** Block and pillar → 29, slab and stairs → 30.
+5. **Iron door:** check in game. If it is painted wood, move it to 30.
+6. **Farmland:** check in game. If it is boards, move it to 29.
+7. **Glowstone brightness:** check in game. Scale its emission down if it reads as a flat panel.
+8. **Sponge:** find it in game, then decide whether it gets a faint glow.
+9. **Diorite gloss:** check in game.
+
+Items 2-4 are `block.properties` lines with no shader code. None of them are lights, so they need no Photonics or
+`light_colors.glsl` change. Each still needs a test-world exhibit and the in-game check.

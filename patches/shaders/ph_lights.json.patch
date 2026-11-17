@@ -8,7 +8,7 @@
  #define AMETHYST_CLUSTER_ID `*10055`
  #define CALIBRATED_SCULK_SENSOR_ID `*10056`
  #define ACTIVE_SCULK_SENSOR_ID `*10057`
-@@ -30,6 +29,14 @@
+@@ -30,6 +29,15 @@
  #define COPPER_BULBS_ID `*10061`
  #define NETHER_PORTAL_ID `*10062`
  #define END_PORTAL_ID `*10063`
@@ -20,10 +20,11 @@
 +#define GLOWSTONE_ID `*10054`
 +#define MAGMA_BLOCK_ID `*10067`
 +#define CHEST_ID `*10105`
++#define ENCHANTING_TABLE_ID `*10068`
  
  
  {
-@@ -63,7 +70,7 @@
+@@ -63,7 +71,7 @@
        "enchanting_table": "#9919ff",
        "nether_portal": "#9919ff",
        "soul_lights": "#72baff",
@@ -32,7 +33,7 @@
      },
      "intensities": {
        "strong_white_light": 257,
-@@ -198,7 +205,8 @@
+@@ -198,7 +206,8 @@
            "color": "*beacon",
            "intensity": "*beacon",
            "blocks": [
@@ -42,7 +43,7 @@
            ]
          },
          "end_portal_frame": {
-@@ -280,13 +288,6 @@
+@@ -280,13 +289,6 @@
              PEARLESCENT_FROGLIGHT_ID
            ]
          },
@@ -56,7 +57,7 @@
          "amethyst_cluster": {
            "color": "*amethyst_cluster",
            "intensity": "*amethyst_cluster",
-@@ -343,6 +344,70 @@
+@@ -343,6 +345,78 @@
              NETHER_PORTAL_ID
            ]
          },
@@ -117,6 +118,14 @@
 +            { "value": "minecraft:magma_block", "priority": 100 }
 +          ]
 +        },
++        "enchanting_table": {
++          "color": "*enchanting_table",
++          "intensity": "*enchanting_table",
++          "blocks": [
++            ENCHANTING_TABLE_ID,
++            { "value": "minecraft:enchanting_table", "priority": 100 }
++          ]
++        },
 +        "chest": {
 +          "color": "#ffd9a6",
 +          "intensity": 21,
@@ -127,14 +136,13 @@
          "disabled": {
            "color": "#000000",
            "intensity": 0,
-@@ -351,7 +416,9 @@
+@@ -351,7 +425,8 @@
              "minecraft:respawn_anchor",
              "minecraft:dragon_egg",
              "minecraft:vault",
 -            { "value": "minecraft:redstone_wire[power=0]", "priority": 100 }
 +            { "value": "minecraft:redstone_wire", "priority": 100 },
-+            { "value": "minecraft:comparator", "priority": 100 },
-+            { "value": "minecraft:enchanting_table", "priority": 100 }
++            { "value": "minecraft:comparator", "priority": 100 }
            ]
          }
        }

@@ -51,34 +51,38 @@
  
  # Chorus plant
  block.10016 = chorus_plant chorus_flower
-@@ -123,7 +131,9 @@
+@@ -123,7 +131,10 @@
  block.10017 = end_stone
  
  # Transparent metal objects
 -block.10018 = iron_bars iron_door iron_trapdoor heavy_weighted_pressure_plate light_weighted_pressure_plate anvil chipped_anvil damaged_anvil
 +# (Wynn-Photon: Wynncraft iron chain (vine carrier state), comparator spike traps and the dark spawner cage, none of them glow;
-+#  iron_trapdoor moved to block.10080, it shouldn't shine like polished metal in Wynncraft's builds)
-+block.10018 = iron_bars iron_door heavy_weighted_pressure_plate light_weighted_pressure_plate anvil chipped_anvil damaged_anvil vine:east=false:north=true:south=true:west=false comparator spawner
++#  iron_trapdoor moved to block.10080, it shouldn't shine like polished metal in Wynncraft's builds;
++#  iron_door moved to block.10030, Wynncraft draws it as a cream painted door)
++block.10018 = iron_bars heavy_weighted_pressure_plate light_weighted_pressure_plate anvil chipped_anvil damaged_anvil vine:east=false:north=true:south=true:west=false comparator spawner
  
  # Warped stem (x axis)
  block.10019 = warped_stem:axis=x
-@@ -156,10 +166,13 @@
+@@ -156,10 +167,16 @@
  block.10028 = lightning_rod exposed_lightning_rod weathered_lightning_rod oxidized_lightning_rod waxed_lightning_rod waxed_exposed_lightning_rod waxed_weathered_lightning_rod waxed_oxidized_lightning_rod copper_grate exposed_copper_grate weathered_copper_grate oxidized_copper_grate waxed_copper_grate waxed_exposed_copper_grate waxed_weathered_copper_grate waxed_oxidized_copper_grate copper_bars exposed_copper_bars weathered_copper_bars oxidized_copper_bars waxed_copper_bars waxed_exposed_copper_bars waxed_weathered_copper_bars waxed_oxidized_copper_bars copper_chain exposed_copper_chain weathered_copper_chain oxidized_copper_chain waxed_copper_chain waxed_exposed_copper_chain waxed_weathered_copper_chain waxed_oxidized_copper_chain cut_copper_slab exposed_cut_copper_slab weathered_cut_copper_slab oxidized_cut_copper_slab waxed_cut_copper_slab waxed_exposed_cut_copper_slab waxed_weathered_cut_copper_slab waxed_oxidized_cut_copper_slab copper_chest exposed_copper_chest weathered_copper_chest oxidized_copper_chest waxed_copper_chest waxed_exposed_copper_chest waxed_weathered_copper_chest waxed_oxidized_copper_chest copper_golem_statue exposed_copper_golem_statue weathered_copper_golem_statue oxidized_copper_golem_statue waxed_copper_golem_statue waxed_exposed_copper_golem_statue waxed_weathered_copper_golem_statue waxed_oxidized_copper_golem_statue copper_door exposed_copper_door weathered_copper_door oxidized_copper_door waxed_copper_door waxed_exposed_copper_door waxed_weathered_copper_door waxed_oxidized_copper_door copper_trapdoor exposed_copper_trapdoor weathered_copper_trapdoor oxidized_copper_trapdoor waxed_copper_trapdoor waxed_exposed_copper_trapdoor waxed_weathered_copper_trapdoor waxed_oxidized_copper_trapdoor cut_copper_stairs exposed_cut_copper_stairs weathered_cut_copper_stairs oxidized_cut_copper_stairs waxed_cut_copper_stairs waxed_exposed_cut_copper_stairs waxed_weathered_cut_copper_stairs waxed_oxidized_cut_copper_stairs
  
  # Wood
 -block.10029 = stripped_oak_log stripped_oak_wood bookshelf crafting_table oak_log oak_wood spruce_planks stripped_spruce_log stripped_spruce_wood spruce_log spruce_wood birch_planks stripped_birch_log stripped_birch_wood loom chiseled_bookshelf birch_log birch_wood jungle_planks stripped_jungle_log stripped_jungle_wood jungle_log jungle_wood acacia_planks stripped_acacia_log stripped_acacia_wood acacia_log acacia_wood dark_oak_planks stripped_dark_oak_log stripped_dark_oak_wood dark_oak_log dark_oak_wood mangrove_planks stripped_mangrove_log stripped_mangrove_wood mangrove_log mangrove_wood crimson_planks stripped_crimson_stem stripped_crimson_hyphae warped_planks stripped_warped_stem stripped_warped_hyphae noteblock note_block jukebox barrel beehive bamboo_block stripped_bamboo_block bamboo_planks bamboo_mosaic cherry_planks stripped_cherry_log stripped_cherry_wood cherry_log cherry_wood pale_oak_planks stripped_pale_oak_log stripped_pale_oak_wood pale_oak_log pale_oak_wood fletching_table cartography_table smithing_table creaking_heart:creaking_heart_state=uprooted
 +# (Wynn-Photon: sticky_piston and cauldron added. Wynncraft draws them as a wooden crate and a wooden tub)
-+block.10029 = sticky_piston cauldron stripped_oak_log stripped_oak_wood bookshelf crafting_table oak_log oak_wood spruce_planks stripped_spruce_log stripped_spruce_wood spruce_log spruce_wood birch_planks stripped_birch_log stripped_birch_wood loom chiseled_bookshelf birch_log birch_wood jungle_planks stripped_jungle_log stripped_jungle_wood jungle_log jungle_wood acacia_planks stripped_acacia_log stripped_acacia_wood acacia_log acacia_wood dark_oak_planks stripped_dark_oak_log stripped_dark_oak_wood dark_oak_log dark_oak_wood mangrove_planks stripped_mangrove_log stripped_mangrove_wood mangrove_log mangrove_wood crimson_planks stripped_crimson_stem stripped_crimson_hyphae warped_planks stripped_warped_stem stripped_warped_hyphae noteblock note_block jukebox barrel beehive bamboo_block stripped_bamboo_block bamboo_planks bamboo_mosaic cherry_planks stripped_cherry_log stripped_cherry_wood cherry_log cherry_wood pale_oak_planks stripped_pale_oak_log stripped_pale_oak_wood pale_oak_log pale_oak_wood fletching_table cartography_table smithing_table creaking_heart:creaking_heart_state=uprooted
++# (Wynn-Photon: piston, tnt, water and powder snow cauldrons and purpur blocks added. Wynncraft draws pistons and TNT
++#  as wooden crates, every cauldron as the same wooden tub, and purpur as dark wooden planks)
++block.10029 = sticky_piston cauldron piston tnt water_cauldron powder_snow_cauldron purpur_block purpur_pillar stripped_oak_log stripped_oak_wood bookshelf crafting_table oak_log oak_wood spruce_planks stripped_spruce_log stripped_spruce_wood spruce_log spruce_wood birch_planks stripped_birch_log stripped_birch_wood loom chiseled_bookshelf birch_log birch_wood jungle_planks stripped_jungle_log stripped_jungle_wood jungle_log jungle_wood acacia_planks stripped_acacia_log stripped_acacia_wood acacia_log acacia_wood dark_oak_planks stripped_dark_oak_log stripped_dark_oak_wood dark_oak_log dark_oak_wood mangrove_planks stripped_mangrove_log stripped_mangrove_wood mangrove_log mangrove_wood crimson_planks stripped_crimson_stem stripped_crimson_hyphae warped_planks stripped_warped_stem stripped_warped_hyphae noteblock note_block jukebox barrel beehive bamboo_block stripped_bamboo_block bamboo_planks bamboo_mosaic cherry_planks stripped_cherry_log stripped_cherry_wood cherry_log cherry_wood pale_oak_planks stripped_pale_oak_log stripped_pale_oak_wood pale_oak_log pale_oak_wood fletching_table cartography_table smithing_table creaking_heart:creaking_heart_state=uprooted
  
  # Wood transparent
 -block.10030 = oak_sign spruce_sign birch_sign jungle_sign acacia_sign dark_oak_sign oak_wall_sign spruce_wall_sign birch_wall_sign jungle_wall_sign acacia_wall_sign dark_oak_wall_sign crimson_sign crimson_wall_sign warped_sign warped_wall_sign mangrove_sign mangrove_wall_sign bamboo_sign bamboo_wall_sign oak_hanging_sign spruce_hanging_sign birch_hanging_sign jungle_hanging_sign acacia_hanging_sign dark_oak_hanging_sign oak_wall_hanging_sign spruce_wall_hanging_sign birch_wall_hanging_sign jungle_wall_hanging_sign acacia_wall_hanging_sign dark_oak_wall_hanging_sign crimson_hanging_sign crimson_wall_hanging_sign warped_hanging_sign warped_wall_hanging_sign mangrove_hanging_sign mangrove_wall_hanging_sign bamboo_hanging_sign bamboo_wall_hanging_sign cherry_sign cherry_wall_sign cherry_hanging_sign cherry_wall_hanging_sign pale_oak_sign pale_oak_hanging_sign chest trapped_chest tripwire_hook fence fence_gate oak_fence oak_fence_gate oak_button oak_pressure_plate oak_trapdoor oak_shelf oak_slab petrified_oak_slab oak_stairs spruce_fence spruce_fence_gate spruce_button spruce_pressure_plate spruce_trapdoor spruce_shelf spruce_slab spruce_stairs birch_fence birch_fence_gate birch_button birch_pressure_plate birch_trapdoor birch_shelf birch_slab birch_stairs jungle_fence jungle_fence_gate jungle_button jungle_pressure_plate composter jungle_trapdoor jungle_shelf jungle_slab jungle_stairs acacia_fence acacia_fence_gate acacia_button acacia_pressure_plate acacia_trapdoor acacia_shelf acacia_slab acacia_stairs dark_oak_fence dark_oak_fence_gate dark_oak_button dark_oak_pressure_plate dark_oak_trapdoor dark_oak_shelf dark_oak_slab dark_oak_stairs mangrove_fence mangrove_fence_gate mangrove_button mangrove_pressure_plate mangrove_trapdoor mangrove_shelf mangrove_slab mangrove_stairs crimson_fence crimson_fence_gate crimson_button crimson_pressure_plate crimson_trapdoor crimson_shelf crimson_slab crimson_stairs warped_fence warped_fence_gate warped_button warped_pressure_plate warped_trapdoor warped_shelf warped_slab warped_stairs campfire:lit=false soul_campfire:lit=false ladder bamboo_fence bamboo_fence_gate bamboo_pressure_plate bamboo_button scaffolding bamboo_trapdoor bamboo_shelf bamboo_slab bamboo_mosaic_slab bamboo_stairs bamboo_mosaic_stairs cherry_fence cherry_fence_gate cherry_pressure_plate cherry_button cherry_trapdoor cherry_shelf cherry_slab cherry_stairs oak_door spruce_door birch_door jungle_door acacia_door dark_oak_door mangrove_door crimson_door warped_door bamboo_door cherry_door pale_oak_door pale_oak_fence pale_oak_fence_gate pale_oak_pressure_plate pale_oak_button pale_oak_trapdoor pale_oak_shelf pale_oak_stairs pale_oak_slab lectern
 +# (Wynn-Photon: petrified_oak_slab moved out. Its halves are Wynncraft dark cobblestone slabs (no category), its double slab is molten rock, block.10077)
 +# (Wynn-Photon: daylight_detector added. Wynncraft draws it as stacks of books on an oak base)
-+block.10030 = daylight_detector oak_sign spruce_sign birch_sign jungle_sign acacia_sign dark_oak_sign oak_wall_sign spruce_wall_sign birch_wall_sign jungle_wall_sign acacia_wall_sign dark_oak_wall_sign crimson_sign crimson_wall_sign warped_sign warped_wall_sign mangrove_sign mangrove_wall_sign bamboo_sign bamboo_wall_sign oak_hanging_sign spruce_hanging_sign birch_hanging_sign jungle_hanging_sign acacia_hanging_sign dark_oak_hanging_sign oak_wall_hanging_sign spruce_wall_hanging_sign birch_wall_hanging_sign jungle_wall_hanging_sign acacia_wall_hanging_sign dark_oak_wall_hanging_sign crimson_hanging_sign crimson_wall_hanging_sign warped_hanging_sign warped_wall_hanging_sign mangrove_hanging_sign mangrove_wall_hanging_sign bamboo_hanging_sign bamboo_wall_hanging_sign cherry_sign cherry_wall_sign cherry_hanging_sign cherry_wall_hanging_sign pale_oak_sign pale_oak_hanging_sign tripwire_hook fence fence_gate oak_fence oak_fence_gate oak_button oak_pressure_plate oak_trapdoor oak_shelf oak_slab oak_stairs spruce_fence spruce_fence_gate spruce_button spruce_pressure_plate spruce_trapdoor spruce_shelf spruce_slab spruce_stairs birch_fence birch_fence_gate birch_button birch_pressure_plate birch_trapdoor birch_shelf birch_slab birch_stairs jungle_fence jungle_fence_gate jungle_button jungle_pressure_plate composter jungle_trapdoor jungle_shelf jungle_slab jungle_stairs acacia_fence acacia_fence_gate acacia_button acacia_pressure_plate acacia_trapdoor acacia_shelf acacia_slab acacia_stairs dark_oak_fence dark_oak_fence_gate dark_oak_button dark_oak_pressure_plate dark_oak_trapdoor dark_oak_shelf dark_oak_slab dark_oak_stairs mangrove_fence mangrove_fence_gate mangrove_button mangrove_pressure_plate mangrove_trapdoor mangrove_shelf mangrove_slab mangrove_stairs crimson_fence crimson_fence_gate crimson_button crimson_pressure_plate crimson_trapdoor crimson_shelf crimson_slab crimson_stairs warped_fence warped_fence_gate warped_button warped_pressure_plate warped_trapdoor warped_shelf warped_slab warped_stairs campfire:lit=false soul_campfire:lit=false ladder bamboo_fence bamboo_fence_gate bamboo_pressure_plate bamboo_button scaffolding bamboo_trapdoor bamboo_shelf bamboo_slab bamboo_mosaic_slab bamboo_stairs bamboo_mosaic_stairs cherry_fence cherry_fence_gate cherry_pressure_plate cherry_button cherry_trapdoor cherry_shelf cherry_slab cherry_stairs oak_door spruce_door birch_door jungle_door acacia_door dark_oak_door mangrove_door crimson_door warped_door bamboo_door cherry_door pale_oak_door pale_oak_fence pale_oak_fence_gate pale_oak_pressure_plate pale_oak_button pale_oak_trapdoor pale_oak_shelf pale_oak_stairs pale_oak_slab lectern
++# (Wynn-Photon: piston heads, purpur slabs and stairs (Wynncraft wood) and iron_door (a cream painted door) added)
++block.10030 = daylight_detector piston_head moving_piston purpur_slab purpur_stairs iron_door oak_sign spruce_sign birch_sign jungle_sign acacia_sign dark_oak_sign oak_wall_sign spruce_wall_sign birch_wall_sign jungle_wall_sign acacia_wall_sign dark_oak_wall_sign crimson_sign crimson_wall_sign warped_sign warped_wall_sign mangrove_sign mangrove_wall_sign bamboo_sign bamboo_wall_sign oak_hanging_sign spruce_hanging_sign birch_hanging_sign jungle_hanging_sign acacia_hanging_sign dark_oak_hanging_sign oak_wall_hanging_sign spruce_wall_hanging_sign birch_wall_hanging_sign jungle_wall_hanging_sign acacia_wall_hanging_sign dark_oak_wall_hanging_sign crimson_hanging_sign crimson_wall_hanging_sign warped_hanging_sign warped_wall_hanging_sign mangrove_hanging_sign mangrove_wall_hanging_sign bamboo_hanging_sign bamboo_wall_hanging_sign cherry_sign cherry_wall_sign cherry_hanging_sign cherry_wall_hanging_sign pale_oak_sign pale_oak_hanging_sign tripwire_hook fence fence_gate oak_fence oak_fence_gate oak_button oak_pressure_plate oak_trapdoor oak_shelf oak_slab oak_stairs spruce_fence spruce_fence_gate spruce_button spruce_pressure_plate spruce_trapdoor spruce_shelf spruce_slab spruce_stairs birch_fence birch_fence_gate birch_button birch_pressure_plate birch_trapdoor birch_shelf birch_slab birch_stairs jungle_fence jungle_fence_gate jungle_button jungle_pressure_plate composter jungle_trapdoor jungle_shelf jungle_slab jungle_stairs acacia_fence acacia_fence_gate acacia_button acacia_pressure_plate acacia_trapdoor acacia_shelf acacia_slab acacia_stairs dark_oak_fence dark_oak_fence_gate dark_oak_button dark_oak_pressure_plate dark_oak_trapdoor dark_oak_shelf dark_oak_slab dark_oak_stairs mangrove_fence mangrove_fence_gate mangrove_button mangrove_pressure_plate mangrove_trapdoor mangrove_shelf mangrove_slab mangrove_stairs crimson_fence crimson_fence_gate crimson_button crimson_pressure_plate crimson_trapdoor crimson_shelf crimson_slab crimson_stairs warped_fence warped_fence_gate warped_button warped_pressure_plate warped_trapdoor warped_shelf warped_slab warped_stairs campfire:lit=false soul_campfire:lit=false ladder bamboo_fence bamboo_fence_gate bamboo_pressure_plate bamboo_button scaffolding bamboo_trapdoor bamboo_shelf bamboo_slab bamboo_mosaic_slab bamboo_stairs bamboo_mosaic_stairs cherry_fence cherry_fence_gate cherry_pressure_plate cherry_button cherry_trapdoor cherry_shelf cherry_slab cherry_stairs oak_door spruce_door birch_door jungle_door acacia_door dark_oak_door mangrove_door crimson_door warped_door bamboo_door cherry_door pale_oak_door pale_oak_fence pale_oak_fence_gate pale_oak_pressure_plate pale_oak_button pale_oak_trapdoor pale_oak_shelf pale_oak_stairs pale_oak_slab lectern
  
  # ---------------------------------------
  #   10032-10063 - Light-emitting blocks
-@@ -175,7 +188,8 @@
+@@ -175,7 +192,8 @@
  block.10034 = glow_lichen
  
  # Strong golden light
@@ -88,7 +92,7 @@
  
  # Medium golden light
  block.10036 = torch wall_torch campfire:lit=true furnace:lit=true smoker:lit=true blast_furnace:lit=true torchflower potted_torchflower trial_spawner:ominous=false  
-@@ -184,13 +198,16 @@
+@@ -184,13 +202,16 @@
  block.10037 = cave_vines_plant:berries=true cave_vines:berries=true
  
  # Redstone components
@@ -107,7 +111,7 @@
  
  # Brewing stand
  block.10041 = brewing_stand 
-@@ -211,7 +228,8 @@
+@@ -211,7 +232,8 @@
  block.10046 = sculk sculk_vein sculk_catalyst sculk_shrieker sculk_sensor:sculk_sensor_phase=inactive sculk_sensor:sculk_sensor_phase=cooldown trial_spawner:ominous=true
  
  # Pink glow
@@ -117,7 +121,7 @@
  
  # Sea pickle
  block.10048 = sea_pickle:waterlogged=true
-@@ -232,8 +250,11 @@
+@@ -232,8 +254,11 @@
  block.10053 = pearlescent_froglight
  
  # Enchanting table
@@ -130,7 +134,7 @@
  # Amethyst cluster
  block.10055 = small_amethyst_bud medium_amethyst_bud large_amethyst_bud amethyst_cluster 
  
-@@ -244,7 +265,9 @@
+@@ -244,7 +269,9 @@
  block.10057 = calibrated_sculk_sensor:sculk_sensor_phase=active sculk_sensor:sculk_sensor_phase=active 
  
  # Redstone block
@@ -141,7 +145,7 @@
  
  # Open eyeblossom
  block.10059 = open_eyeblossom
-@@ -271,11 +294,12 @@
+@@ -271,50 +298,57 @@
  # Light gray
  block.10065 = simplylight:illuminant_light_gray_block_on luminax:light_gray_luminax_block
  
@@ -156,9 +160,21 @@
 +# glow, and the light is redder and a little dimmer than fire's
 +block.10067 = magma_block
  
- # Brown
- block.10068 = simplylight:illuminant_brown_block_on luminax:brown_luminax_block
-@@ -289,32 +313,36 @@
+-# Brown
+-block.10068 = simplylight:illuminant_brown_block_on luminax:brown_luminax_block
++# Wynn-Photon: enchanting table (moved back in from no category). Wynncraft draws it as a dark stone table with a
++# blue inlay; it sits next to the item identifiers, so it gets a faint purple light and the inlay glows softly
++# (brown modded lights folded into orange, block.10070, their slot is reused)
++block.10068 = enchanting_table
+ 
+ # Red
+ block.10069 = simplylight:illuminant_red_block_on luminax:red_luminax_block
+ 
+-# Orange
+-block.10070 = simplylight:illuminant_orange_block_on luminax:orange_luminax_block
++# Orange (Wynn-Photon: brown modded lights folded in here, their slot is reused)
++block.10070 = simplylight:illuminant_orange_block_on luminax:orange_luminax_block simplylight:illuminant_brown_block_on luminax:brown_luminax_block
+ 
  # Yellow
  block.10071 = simplylight:illuminant_yellow_block_on luminax:yellow_luminax_block
  
@@ -212,7 +228,7 @@
  
  # --------------------------------------
  #   10081-10096 - Light-tinting blocks
-@@ -368,6 +396,28 @@
+@@ -368,6 +402,28 @@
  # Light gray
  block.10096 = light_gray_stained_glass light_gray_stained_glass_pane
  

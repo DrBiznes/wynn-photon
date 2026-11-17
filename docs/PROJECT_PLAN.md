@@ -33,9 +33,9 @@ that, one small labelled patch at a time.
 - **0.3.0 (done):** shortlist items 7-10, emeralds, nether bricks, obsidian, iron trapdoors, the dev client
   (`gradlew dev`) and the test world ([testworld/README.md](../testworld/README.md)). See [CHANGELOG.md](CHANGELOG.md).
   Not checked in game yet.
-- **Texture scan (done in part, 2026-11-16):** the average colour of the server pack's 8-bit block textures was
-  compared with Photon's hardcoded materials. It produced roadmap step 5. About 150 textures are still unscanned
-  (step 9).
+- **Texture scan (done, 2026-11-16):** the average colour of the server pack's 8-bit block textures was compared
+  with Photon's hardcoded materials. It produced roadmap step 5. The full audit of all 459 textures (step 9) is done
+  too, and its build list is in step 9.
 - **0.4.0 (done):** roadmap step 5, the texture-scan fixes and the survey's optional leftovers. See
   [CHANGELOG.md](CHANGELOG.md). Not checked in game yet.
 - **0.5.0 (done):** a Wynn-Photon settings page in the shader menu (emerald and chest glow toggles and strengths,
@@ -71,6 +71,8 @@ that, one small labelled patch at a time.
 - [x] Sea level Y 33 (0.6.0, checked on Wynncraft)
 - [x] Vanilla light fallback under Photonics, with Vanilla Light Strength and a daytime fade on open ground (0.6.0)
 - [ ] In-game check of the light fallback: caves, paths by day and night, cave mouths
+- [x] Full texture audit (step 9) and its fixes: lava cauldron, more wood, iron door, emerald glow, enchanting table
+  light (0.6.0)
 
 ## Roadmap
 
@@ -233,16 +235,29 @@ and from biome temperature and humidity. Wynncraft's regions don't have to match
   `docs/research/`.
 - [ ] Check whether rain ever falls on Wynncraft. If not, rain puddles, rainbows and sandstorms are dead code there.
 
-### 9. Full texture audit
+### 9. Full texture audit (done, 2026-11-16)
 
-Finish the scan that produced step 5.
+Result: "Full texture audit" in [research/wynn-rp-blocks.md](research/wynn-rp-blocks.md).
 
-- [ ] Decode the ~150 textures the first scan skipped (palette and low-bit-depth PNGs): wool, netherrack, soul sand,
-  snow, clay, prismarine bricks, purpur, coal block, pistons, farmland, most of `variants/`.
-- [ ] Compare every texture with its vanilla counterpart's colour, not just with Photon's category, to find blocks
-  Wynncraft redrew as something else. Lead: the sponge textures are animated in the pack.
-- [ ] Check every block on a hue- or brightness-keyed Photon material (lights, gems, metals, sand, ice, copper).
-- [ ] Add the results to `docs/research/wynn-rp-blocks.md` and turn the findings into a ranked list.
+- [x] Decode the ~150 textures the first scan skipped. All 459 block textures decode. Every PNG in the pack has
+  broken checksums, which is why standard decoders fail.
+- [x] Compare every texture with its vanilla counterpart's colour. New finds: lava cauldrons glow across the whole
+  wooden tub; plain pistons, TNT and purpur are drawn as wood; the iron door and farmland may be wood; and the sponge
+  is an animated rainbow block.
+- [x] Check every block on a hue- or brightness-keyed Photon material. Only the lava cauldron is wrong. Glowstone
+  (whole surface glows) and diorite (glossier) need an in-game look.
+- [x] Add the results to `docs/research/wynn-rp-blocks.md`, with a ranked list.
+
+**Next (build list from the audit):**
+
+- [x] Lava formula saturation gate 0.4 → 0.6, so the wooden lava-cauldron tub stops glowing and lava stays unchanged
+  (0.6.0).
+- [x] Wood: `piston`, `tnt`, `purpur_block`, `purpur_pillar`, `water_cauldron` and `powder_snow_cauldron` → 29;
+  `piston_head`, `moving_piston`, `purpur_slab` and `purpur_stairs` → 30 (0.6.0).
+- [x] Iron door → 30, a painted door rather than metal (0.6.0).
+- [x] Also from this pass: emerald blocks glow less (light unchanged), and enchanting tables get a faint purple light
+  on `10068` (0.6.0). This settles shortlist item 10.
+- [ ] In-game checks: farmland, glowstone brightness, sponge placement, diorite gloss, and all of the above.
 
 ### 10. Mod and project polish
 

@@ -32,16 +32,16 @@ def vs(e, n, s, w, up):
 # ---------------------------------------------------------------- clear and floor
 build += [
     "# Clear the gallery area (three fills, each under the 32768-block command limit) and reset the floor",
-    "fill -4 -60 -24 102 -50 -1 air",
-    "fill -4 -60 0 102 -50 15 air",
-    "fill -4 -60 16 102 -50 30 air",
-    "fill -4 -61 -24 102 -61 30 grass_block",
+    "fill -4 -60 -24 110 -50 -1 air",
+    "fill -4 -60 0 110 -50 15 air",
+    "fill -4 -60 16 110 -50 30 air",
+    "fill -4 -61 -24 110 -61 30 grass_block",
     "",
     "# ---- Dark hall (z 16-26): light sources, one per cell, behind a baffle so no daylight gets in",
 ]
 
 # ---------------------------------------------------------------- dark hall
-CELLS = 17
+CELLS = 18
 X1 = 6 * CELLS - 1  # east outer wall
 build += [
     "# Floor at y -61, roof at y -55, air inside",
@@ -119,9 +119,9 @@ b(c, G, 23, "spawner")
 b(c + 2, G, 23, "activator_rail[shape=north_south,powered=true]")
 build.append(lever(c + 3, 23))
 b(c + 4, G, 23, "detector_rail[shape=north_south]")
-# 9: enchanting table (still Photon's purple light, shortlist item 10)
+# 9: enchanting table: a faint purple light, and its blue inlay glows softly (Wynncraft puts them by identifiers)
 c = cell(9)
-hall.append(("Enchanting table", "no purple", "light now", ""))
+hall.append(("Enchanting table", "faint purple", "light, inlay", "glows softly"))
 b(c + 2, G, 23, "enchanting_table")
 # 10: references, unchanged Photon lights
 c = cell(10)
@@ -159,6 +159,10 @@ c = cell(16)
 hall.append(("Light blocks", "invisible,", "levels 15, 10", "vanilla fallback"))
 b(c + 1, G + 2, 23, "light[level=15]")
 b(c + 3, G, 25, "light[level=10]")
+# 17: lava cauldron. Wynncraft's cauldrons are wooden tubs: only the lava glows, not the wood around it
+c = cell(17)
+hall.append(("Lava cauldron", "lava glows,", "wooden tub", "doesn't"))
+b(c + 2, G, 23, "lava_cauldron")
 
 for i, lines in enumerate(hall):
     sign(lines, cell(i) + 2, G, 21, 8, labels)
@@ -290,6 +294,23 @@ label(89, "Unlit candles", "iron metal,", "wax weak SSS")
 b(93, G, Z, "chest[facing=south]")
 b(94, G, Z, "trapped_chest[facing=south]")
 label(93, "Chests", "wood +", "faint glow")
+# more Wynncraft wood: crates (piston, TNT), purpur planks and the other cauldrons' tubs
+b(96, G, Z, "piston[facing=up]")
+b(97, G, Z, "tnt")
+label(96, "Crates", "piston, TNT", "wood")
+build.append(f"fill 99 -61 -9 101 -61 -7 purpur_block")
+b(99, G, Z, "purpur_pillar")
+b(100, G, Z, "purpur_block")
+b(100, G + 1, Z, "purpur_slab[type=bottom]")
+b(101, G, Z, "purpur_stairs[facing=south]")
+label(100, "Purpur", "dark planks", "wood")
+b(103, G, Z, "water_cauldron[level=3]")
+b(104, G, Z, "powder_snow_cauldron[level=3]")
+label(103, "Cauldrons", "water, snow", "wooden tubs")
+# iron door: Wynncraft draws a cream painted door, so it is wood, not polished metal
+b(106, G, Z, "iron_door[facing=north,half=lower]")
+b(106, G + 1, Z, "iron_door[facing=north,half=upper]")
+label(106, "Iron door", "painted, wood", "(was metal)")
 
 build += [
     "",

@@ -33,7 +33,7 @@
  # Amethyst cluster
  item.10055 = small_amethyst_bud medium_amethyst_bud large_amethyst_bud amethyst_cluster
  
-@@ -142,12 +145,9 @@
+@@ -142,48 +145,35 @@
  # Light gray
  item.10065 = simplylight:illuminant_light_gray_block_on luminax:light_gray_luminax_block
  
@@ -44,11 +44,20 @@
  
 -# Black
 -item.10067 = simplylight:illuminant_black_block_on luminax:black_luminax_block
--
- # Brown
- item.10068 = simplylight:illuminant_brown_block_on luminax:brown_luminax_block
++# Wynn-Photon: enchanting table, a faint purple light in hand (brown modded lights folded into item.10070)
++item.10068 = enchanting_table
  
-@@ -160,30 +160,20 @@
+-# Brown
+-item.10068 = simplylight:illuminant_brown_block_on luminax:brown_luminax_block
+-
+ # Red
+ item.10069 = simplylight:illuminant_red_block_on luminax:red_luminax_block
+ 
+-# Orange
+-item.10070 = simplylight:illuminant_orange_block_on luminax:orange_luminax_block
++# Orange (Wynn-Photon: brown modded lights folded in here, item.10068 is the enchanting table)
++item.10070 = simplylight:illuminant_orange_block_on luminax:orange_luminax_block simplylight:illuminant_brown_block_on luminax:brown_luminax_block
+ 
  # Yellow
  item.10071 = simplylight:illuminant_yellow_block_on luminax:yellow_luminax_block
  
