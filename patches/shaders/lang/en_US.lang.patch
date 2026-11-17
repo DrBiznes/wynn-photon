@@ -19,7 +19,7 @@
  option.SNOW_OPACITY                    = Snow Opacity
  option.SNOW_OPACITY.comment            = Adjust the opacity of snow particles
  option.EDGE_HIGHLIGHT                  = Edge Highlight
-@@ -819,4 +822,24 @@
+@@ -819,4 +822,28 @@
  option.PHOTONICS_RESTIR_COMBINED_GI       = Include Skylight GI
  option.PHOTONICS_RESTIR_COMBINED_GI.comment = Whether Gi should be ran through ReSTIR's denoiser instead of its usual path. \nResults in much sharper Gi, at the cost of performance.
  
@@ -42,5 +42,9 @@
 +option.WYNN_MAGMA_GLOW_I.comment       = Brightness of the glowing cracks in magma and molten rock, and their light. 0 turns them off
 +option.WYNN_ENCHANTING_GLOW_I          = Enchanting Table Glow Strength
 +option.WYNN_ENCHANTING_GLOW_I.comment  = Brightness of the enchanting table's faint purple light and its softly glowing blue inlay. Wynncraft places them next to item identifiers. 0 turns them off
-+option.WYNN_VANILLA_LIGHT_I             = Vanilla Light Strength
++option.WYNN_VANILLA_LIGHT_I             = Light Block Strength
 +option.WYNN_VANILLA_LIGHT_I.comment     = Lights blocks from the vanilla lightmap where Colored Lights and Photonics see no light source. Wynncraft lights many caves and rooms with invisible light blocks, which neither light system can see. It fades out on open, sky-lit ground during the day, as in vanilla, but stays in caves. 0 turns it off
++option.WYNN_PHOTONICS_SKY_FILL_I        = Photonics Sky Fill
++option.WYNN_PHOTONICS_SKY_FILL_I.comment = Only with Photonics. Photonics replaces Photon's sky light with its traced bounce light, which is very dim in shade, forests and under overhangs. This adds Photon's own sky light back where the traced light is weaker. 1.00 makes shade as bright as without Photonics. 0 turns it off
++option.WYNN_MIN_LIGHT_I                 = Minimum Light
++option.WYNN_MIN_LIGHT_I.comment         = The least light any surface gets, so nights, dense cities and caves never go fully black. It fades away where other light is brighter, so daylight and lit rooms don't change. Higher values show more detail in the dark but look flatter. 0 turns it off

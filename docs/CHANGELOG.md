@@ -2,28 +2,33 @@
 
 All notable changes to Wynn-Photon are listed here. Each version names the Photon release its patches apply to.
 
-## 0.6.0 (unreleased), for Photon v1.4
+## 0.7.0 (unreleased), for Photon v1.4
 
-Wynncraft's sea level and the light from invisible light blocks: the first half of roadmap steps 6 and 7. Not
-checked in game yet.
+Brightness: dark places keep their detail. The cave check and overall brightness from roadmap step 6. Minimum
+light is checked on Wynncraft; the cave check is not yet. Also the full texture audit (roadmap step 9) and its fixes,
+dimmer emerald blocks and a faint enchanting-table light, not checked in game yet.
 
 ### Shader changes
 
-- **Sea level is Y 33.** Wynncraft's sea is at Y 33, but Photon's `SEA_LEVEL` defaults to 63. The air fog volume
-  starts at `SEA_LEVEL - 24`, so Wynn's coast sat below it. The block-light fog switched to its underground look
-  between Y 63 and 43, which covered most of the surface. Clouds and cloud shadows also measure height from
-  `SEA_LEVEL`. The default is now 33.0, and 33.0 is added to the option list. The cave check (`biome_cave` in
-  `shaders.properties`) still uses its own hardcoded 63 and is left for step 6.
-- **Vanilla light fallback under Photonics.** With Photonics on, Photon dropped vanilla block light completely and
-  lit blocks only with the lights Photonics traces. Wynncraft lights many caves and rooms with invisible
-  `minecraft:light` blocks, which Photonics can't see, so those places were black even at block light 10. The
-  Photonics path in `diffuse_lighting.glsl` now mixes the vanilla lightmap back in where Photonics' light is weak.
-  It uses the same formula as the colored-light volume (`lpv/blocklight.glsl`), and it follows the same Vanilla
-  Lightmap Contribution toggle and falloff option.
-- **The fallback fades out in open daylight.** Every Wynncraft path is lined with light blocks, which vanilla barely
-  shows during the day, and the fallback drew bright pools on them at noon. On blocks with skylight above about 6
-  of 15 it now fades out during the day (`1 - time_midnight`), fully above about 12 of 15. Caves keep it all day and
-  everything keeps it at night. The fade applies with and without Photonics.
+- **Cave check by skylight alone.** Photon's `biome_cave` (cave fog, extra vignette, darker horizon and clouds)
+  multiplied a height ramp below Y 63 by missing skylight at the eye. On Wynncraft the height ramp was always full
+  near the sea, so roof and tree shade counted partly as cave, and caves above Y 63 (Sky Islands, Canyon of the
+  Lost) never counted. It now uses eye skylight only: full cave at skylight 2 of 15 or less, none from 6 up, with
+  Photon's smoothing kept.
+- **Photonics sky fill.** With Photonics on, Photon swaps its sky light for Photonics' traced indirect light. That
+  light is very weak in shade, forests and under overhangs, so those were much darker than without Photonics, and
+  `SKYLIGHT_I` barely changed them. The Photonics path in `diffuse_lighting.glsl` now adds Photon's own sky light
+  back, only as far as the traced light falls short of it.
+- **Minimum light.** Photon's cave light fades out where a block sees the sky, so sky-lit places at night, such as
+  dense cities, and cave roofs far from any light went nearly black. Every surface now gets a small neutral light
+  (twice Photon's default cave light at 1×). It fades away smoothly as the other light gets brighter than it, so
+  daylight and lit rooms don't change, and it keeps ambient occlusion and face shading. It works the same with and
+  without Photonics.
+- **Light blocks reach further.** The vanilla lightmap's Contribution Falloff now defaults to Linear (Photon's
+  default is Squared), so the light-block fallback is softer at the source and reaches roofs and far walls.
+- **Sky Light Strength works without Photonics.** Photon v1.4 reads `SKYLIGHT_I` only in its Photonics code, so the
+  slider did nothing without Photonics. It now also scales Photon's own sky light in the Overworld, and with it the
+  Photonics sky fill.
 - **Lava cauldrons: only the lava glows.** Wynncraft draws every cauldron as a wooden tub, and the lava cauldron
   reuses those wood textures. Photon's lava formula lit any orange-brown pixel above 0.4 saturation, so the whole tub
   glowed, brighter than Wynn's dark lava itself. The gate is now 0.6 saturation. That removes all of the tub's glow and
@@ -44,15 +49,54 @@ checked in game yet.
 
 ### Settings page
 
-- **Vanilla Light Strength** (0-3×, default 1×) scales the vanilla light fallback, with and without Photonics.
+- **Minimum Light** (0-4×, default 1×) scales the minimum light. 0 turns it off.
+- **Photonics Sky Fill** (0-2×, default 1×) scales the sky fill. 1× makes shade as bright as without Photonics, 0
+  turns it off.
 - **Enchanting Table Glow Strength** (0-3×, default 1×) scales the enchanting table's light and inlay glow. 0 turns
   them off.
 
 ### Tooling
 
-- **Test world.** The dark hall has a 17th cell with two invisible light blocks (levels 15 and 10), and an 18th
-  with a lava cauldron. Cell 9's enchanting table is relabelled for its new light. The daylight row adds crates
-  (piston, TNT), purpur, water and powder-snow cauldrons, and an iron door. The gallery now reaches x 110.
+- **Lighting test.** `gradlew lightTest` photographs the test world's light test spots under the option sets in
+  `testworld/light_test.txt`, with nobody at the keyboard, and writes `build/light-test/report.html` with mean
+  luminances. See [DEVELOPMENT.md](DEVELOPMENT.md).
+- **Test world.** Seven light test spots: open ground, tree canopy, overhang, windowed room, light-block room,
+  torch room and cave mouth.
+- **Test world exhibits for the texture-audit fixes.** The dark hall has an 18th cell with a lava cauldron, and cell
+  9's enchanting table is relabelled for its new light. The daylight row adds crates (piston, TNT), purpur, water and
+  powder-snow cauldrons, and an iron door. The gallery now reaches x 110.
+- `mod_version` is 0.7.0.
+
+## 0.6.0 (2026-11-16), for Photon v1.4
+
+Wynncraft's sea level and the light from invisible light blocks: the first half of roadmap steps 6 and 7. Sea
+level is checked on Wynncraft.
+
+### Shader changes
+
+- **Sea level is Y 33.** Wynncraft's sea is at Y 33, but Photon's `SEA_LEVEL` defaults to 63. The air fog volume
+  starts at `SEA_LEVEL - 24`, so Wynn's coast sat below it. The block-light fog switched to its underground look
+  between Y 63 and 43, which covered most of the surface. Clouds and cloud shadows also measure height from
+  `SEA_LEVEL`. The default is now 33.0, and 33.0 is added to the option list. The cave check (`biome_cave` in
+  `shaders.properties`) still used its own hardcoded 63; 0.7.0 replaces it.
+- **Vanilla light fallback under Photonics.** With Photonics on, Photon dropped vanilla block light completely and
+  lit blocks only with the lights Photonics traces. Wynncraft lights many caves and rooms with invisible
+  `minecraft:light` blocks, which Photonics can't see, so those places were black even at block light 10. The
+  Photonics path in `diffuse_lighting.glsl` now mixes the vanilla lightmap back in where Photonics' light is weak.
+  It uses the same formula as the colored-light volume (`lpv/blocklight.glsl`), and it follows the same Vanilla
+  Lightmap Contribution toggle and falloff option.
+- **The fallback fades out in open daylight.** Every Wynncraft path is lined with light blocks, which vanilla barely
+  shows during the day, and the fallback drew bright pools on them at noon. On blocks with skylight above about 6
+  of 15 it now fades out during the day (`1 - time_midnight`), fully above about 12 of 15. Caves keep it all day and
+  everything keeps it at night. The fade applies with and without Photonics.
+
+### Settings page
+
+- **Light Block Strength** (0-3×, default 1×) scales the vanilla light fallback, with and without Photonics.
+
+### Tooling
+
+- **Test world.** The dark hall has a 17th cell with two invisible light blocks (levels 15 and 10).
 - `mod_version` is 0.6.0.
 
 ## 0.5.0 (2026-11-16), for Photon v1.4

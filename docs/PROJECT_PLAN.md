@@ -40,11 +40,15 @@ that, one small labelled patch at a time.
   [CHANGELOG.md](CHANGELOG.md). Not checked in game yet.
 - **0.5.0 (done):** a Wynn-Photon settings page in the shader menu (emerald and chest glow toggles and strengths,
   candle and magma strengths) and faintly glowing chests. See [CHANGELOG.md](CHANGELOG.md). Not checked in game yet.
-- **0.6.0 (in progress):** sea level 33, and a vanilla light fallback so Wynncraft's invisible light blocks light
-  caves under Photonics, faded out on open ground by day (steps 6 and 7, first half). Sea level is checked on
-  Wynncraft: the coast's fog and haze look much better. The fallback is installed for testing.
-- **Next:** finish checking 0.6.0, then the skylight-only cave check and brightness defaults (step 6, "Still to
-  do"). Auto exposure is the last resort for brightness.
+- **0.6.0 (done):** sea level 33, and a vanilla light fallback so Wynncraft's invisible light blocks light caves
+  under Photonics, faded out on open ground by day (steps 6 and 7, first half). Sea level is checked on Wynncraft.
+- **0.7.0 (done, not released yet):** brightness and the full texture audit. The cave check uses skylight alone,
+  every surface gets a minimum light, light blocks reach further, `SKYLIGHT_I` works without Photonics, and Photon's
+  sky light fills in under Photonics. Adds the lighting test (`gradlew lightTest`). From the audit: lava cauldron tubs
+  stop glowing, pistons, TNT, purpur, cauldrons and the iron door shade as wood, emerald blocks glow less, and
+  enchanting tables get a faint purple light.
+- **Block work is done.** Steps 1-7 and 9 are closed.
+- **Next:** region atmosphere (step 8) and mod and project polish (step 10). Nothing else is open.
 
 ### Done so far
 
@@ -66,13 +70,17 @@ that, one small labelled patch at a time.
 - [x] In-game check of the 0.3.0 changes in the test world and on Wynncraft
 - [x] Redstone dust off; magma, glowstone and beacon lights retuned; quartz and iron block less reflective (0.4.0)
 - [x] Survey leftovers: crate, cauldron and book stacks to wood; unlit candle props metal and wax (0.4.0)
-- [ ] In-game check of the 0.4.0 changes
+- [x] In-game check of the 0.4.0 changes
 - [x] Wynn-Photon settings page; chests glow faintly (0.5.0)
 - [x] Sea level Y 33 (0.6.0, checked on Wynncraft)
-- [x] Vanilla light fallback under Photonics, with Vanilla Light Strength and a daytime fade on open ground (0.6.0)
-- [ ] In-game check of the light fallback: caves, paths by day and night, cave mouths
+- [x] Vanilla light fallback under Photonics, with Light Block Strength and a daytime fade on open ground (0.6.0)
+- [x] In-game check of the light fallback: caves, paths by day and night, cave mouths
+- [x] Cave check by skylight alone, minimum light, light-block reach, `SKYLIGHT_I` fix, Photonics sky fill (0.7.0)
+- [x] Lighting screenshot test, `gradlew lightTest` (0.7.0)
 - [x] Full texture audit (step 9) and its fixes: lava cauldron, more wood, iron door, emerald glow, enchanting table
-  light (0.6.0)
+  light (0.7.0)
+- [ ] Region atmosphere (step 8)
+- [ ] Mod and project polish (step 10)
 
 ## Roadmap
 
@@ -112,10 +120,10 @@ This covers colored lighting (`light_colors.glsl`), Photonics (`ph_lights.json`)
 - lit candelabras (`repeater:powered=true`) → candle light;
 - spike traps, spawners and wooden rails lose their wrong light;
 - molten rock gets a dim ember light;
-- the four-candle candelabra and the enchanting table follow once checked in game. Also look for Wynn props that should glow but don't, and vanilla lights that Wynncraft turned
-into something that shouldn't glow.
+- the four-candle candelabra gets its own brighter light (0.3.0), and the enchanting table a faint purple one
+  (0.7.0).
 
-### 4. Wynn-only materials (done for molten rock and murky water)
+### 4. Wynn-only materials (done)
 
 Some Wynn looks fit no Photon category, such as the torch's "only the flame glows" mask. These need new branches in
 `material.glsl`. Photon's block ID ranges are full (10001-10096 are all used). The survey answered the ID range question: the mask
@@ -152,7 +160,7 @@ and each block gets a test-world exhibit.
   IDs: magma `10067` (black modded lights merged into gray), glowstone `10054` (the enchanting table's slot), quartz
   `10098`, iron block `10099`.
 
-### 6. Sea level, caves and brightness
+### 6. Sea level, caves and brightness (done, 0.6.0 and 0.7.0)
 
 Wynncraft's sea is at Y 33 everywhere, but Photon assumes 63. Caves sit far above it (Sky Islands, Canyon of the
 Lost) and far below it (the jungles, Fruma), so no single height can mean "cave". Photon is also darker overall than
@@ -172,34 +180,27 @@ always at its maximum near the sea, so shade from a roof or tree counts partly a
 count. Cave *lighting* (`CAVE_LIGHTING_I`, `diffuse_lighting.glsl`) is separate: it uses each block's skylight only,
 so it already works at any height.
 
-**Still to do: cave check**
+**Cave check (0.7.0)**
 
-- [ ] Drop the height part of `biome_cave` and use eye skylight alone, through a threshold (about 5 of 15) so roofs
-  and trees don't count. Keep Photon's smoothing.
-- [ ] Check in a surface town, under a big tree, at a cave mouth, in a deep cave (Fruma or the jungle) and in a high
+- [x] Drop the height part of `biome_cave` and use eye skylight alone (full cave at skylight 2 of 15 or less, none
+  from 6 up) so roofs and trees don't count. Photon's smoothing is kept.
+- [x] Check in a surface town, under a big tree, at a cave mouth, in a deep cave (Fruma or the jungle) and in a high
   cave (Sky Islands or Canyon of the Lost).
 
-**Still to do: overall brightness, without auto exposure**
+**Overall brightness, without auto exposure (0.7.0)**
 
-Explore the fixed-exposure options in the dev client first, each on its own, then pick defaults. Turn on auto
-exposure only if none of these is enough.
+- [x] Minimum light (Wynn-Photon page, default 1.0): a small light on every surface that fades out where other
+  light is brighter. Built for dense cities at night and cave roofs. Checked on Wynncraft.
+- [x] Light-block fallback falloff defaults to Linear, so it reaches further.
+- [x] `SKYLIGHT_I` now scales Photon's own sky light too. Stock Photon reads it only under Photonics.
+- [x] Photonics sky fill: with Photonics, shade was lit only by Photonics' weak traced indirect light, so
+  `SKYLIGHT_I` did little. Photon's sky light now fills in where the traced light is weaker (Photonics Sky Fill,
+  default 1.0).
+- [x] Defaults settled. With minimum light and the sky fill, Photon's own `CAVE_LIGHTING_I`, `SKYLIGHT_I`,
+  `BLOCKLIGHT_I`, `MANUAL_EXPOSURE_VALUE`, `GRADE_BRIGHTNESS` and `MOON_I` keep their defaults, and auto exposure
+  stays off. They remain player settings, and `gradlew lightTest` measures any later change.
 
-- [ ] `CAVE_LIGHTING_I` (default 1.0): the ambient light in places with little skylight. Lifts caves and interiors,
-  leaves daylight alone. Try 1.5-3.0.
-- [ ] `SKYLIGHT_I` (default 1.0): the sky's ambient light, so shade, forests and overhangs get brighter by day.
-- [ ] `BLOCKLIGHT_I` (default 1.0): every torch, lantern and Wynn candle, in both light systems.
-- [ ] Vanilla Light Strength (Wynn-Photon page, default 1.0): only the light-block fallback. Pairs with the
-  Linear/Squared falloff option; Linear reaches further from each light block.
-- [ ] `MANUAL_EXPOSURE_VALUE` (default 0): brightens everything, sky included. Its steps are whole EV (each one
-  doubles the brightness), so add steps like -0.25 and -0.5 if it's the right lever.
-- [ ] `GRADE_BRIGHTNESS` (default 1.0): a brightness step after tonemapping. It's simple, but it can flatten
-  contrast.
-- [ ] Night: `MOON_I` and the night sky, if nights read too dark on Wynncraft.
-- [ ] Last resort: auto exposure "Simple" with a narrow range (`AUTO_EXPOSURE_MIN`/`MAX`), so it only lifts dark
-  places a little.
-- [ ] Ship the chosen values as patched defaults, like `CLOUDS_SCALE` 9.0, and note them in the changelog.
-
-### 7. Invisible light blocks
+### 7. Invisible light blocks (done, 0.6.0 and 0.7.0)
 
 Builders use `minecraft:light` all over the map. It has no geometry, so the colored-light volume's voxelisation
 never sees it. Today it only lights through the vanilla lightmap.
@@ -207,16 +208,14 @@ never sees it. Today it only lights through the vanilla lightmap.
 - [x] Research: what Photon does with vanilla blocklight that has no voxel emitter. Without Photonics,
   `COLORED_LIGHTS_VANILLA_LIGHTMAP_CONTRIBUTION` mixes it in where the colored light is weak. With Photonics it was
   dropped completely, so light-block caves were black. 0.6.0 adds the same fallback to the Photonics path, plus a
-  Vanilla Light Strength setting for both.
+  Light Block Strength setting for both.
 - [x] Paths: every Wynncraft path is lined with light blocks, and the fallback lit them in bright pools at noon. On
   sky-lit blocks it now fades out by day (fading in from skylight 6, gone by 12) and stays in caves and at night (0.6.0).
 - [x] Colour and "both halves": the fallback uses Photon's warm block-light colour, and it covers both light systems,
   so light blocks need no Photonics entry.
-- [ ] Check in game whether the fallback is bright enough, or whether light blocks need their own falloff, and
-  whether the day fade's skylight window (6-12 of 15) suits cave mouths.
-- [ ] Optional research: whether Photonics lists `minecraft:light` in its defaults, and whether it can ray-trace a block
-  with no model. If so, add `light[level=N]` entries to `ph_lights.json`, scaled by level.
-- [ ] Optional: if Photonics can trace light blocks, compare its shadowed light with the fallback.
+- [x] Closed: the fallback stays as built, with the Linear falloff from 0.7.0 and the day fade's skylight window
+  (6-12 of 15).
+- **Dropped (optional):** tracing light blocks in Photonics. The fallback covers them in both light systems.
 
 ### 8. Region atmosphere
 
@@ -248,25 +247,25 @@ Result: "Full texture audit" in [research/wynn-rp-blocks.md](research/wynn-rp-bl
   (whole surface glows) and diorite (glossier) need an in-game look.
 - [x] Add the results to `docs/research/wynn-rp-blocks.md`, with a ranked list.
 
-**Next (build list from the audit):**
+**Built (0.7.0):**
 
 - [x] Lava formula saturation gate 0.4 → 0.6, so the wooden lava-cauldron tub stops glowing and lava stays unchanged
-  (0.6.0).
+  (0.7.0).
 - [x] Wood: `piston`, `tnt`, `purpur_block`, `purpur_pillar`, `water_cauldron` and `powder_snow_cauldron` → 29;
-  `piston_head`, `moving_piston`, `purpur_slab` and `purpur_stairs` → 30 (0.6.0).
-- [x] Iron door → 30, a painted door rather than metal (0.6.0).
+  `piston_head`, `moving_piston`, `purpur_slab` and `purpur_stairs` → 30 (0.7.0).
+- [x] Iron door → 30, a painted door rather than metal (0.7.0).
 - [x] Also from this pass: emerald blocks glow less (light unchanged), and enchanting tables get a faint purple light
-  on `10068` (0.6.0). This settles shortlist item 10.
-- [ ] In-game checks: farmland, glowstone brightness, sponge placement, diorite gloss, and all of the above.
+  on `10068` (0.7.0). This settles shortlist item 10.
+- [x] Closed without changes: farmland, glowstone brightness, the sponge and diorite gloss stay as Photon draws them.
 
 ### 10. Mod and project polish
 
-- Show an in-game notice when Photon is missing, not just a log line.
-- A Mod Menu screen for the two config options.
-- A GitHub repo with CI that runs `gradlew build`.
-- Publishing, which needs SixthSurge's written permission for Modrinth. Asked on Discord 2026-11-16, waiting for a
-  reply.
-- Track new Photon releases (see README, "Updating to a new Photon release").
+- [ ] Show an in-game notice when Photon is missing, not just a log line.
+- [ ] A Mod Menu screen for the two config options.
+- [x] A GitHub repo (`DrBiznes/wynn-photon`).
+- [ ] CI that runs `gradlew build` on every push and pull request.
+- [x] Publishing workflow: `.github/workflows/publish.yml` publishes to Modrinth and CurseForge on a GitHub release.
+- [ ] Track new Photon releases (see README, "Updating to a new Photon release").
 
 ## Brainstorm
 
@@ -325,5 +324,5 @@ packs. Check what it covers so the two don't duplicate or fight each other.
 - ~~What are Wynncraft's sea and ground levels?~~ Y 33 everywhere.
 - ~~Can either light system see `minecraft:light`?~~ No. The vanilla light fallback covers it in both (0.6.0).
 - Which vanilla biome does the server assign to each region? (Step 8.)
-- Does Photonics' default `redstone` group override Photon's `ph_lights.json` group for `repeater[powered=true]`?
-  Check in game with the candelabra change.
+- ~~Does Photonics' default `redstone` group override Photon's `ph_lights.json` group for `repeater[powered=true]`?~~
+  No: candelabras light as candles in game.

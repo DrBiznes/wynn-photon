@@ -31,12 +31,71 @@
      );
  #else
      lighting += mc_blocklight;
-@@ -352,7 +367,34 @@
+@@ -188,6 +203,12 @@
+ 
+     lighting += skylight * get_skylight_falloff(light_levels.y);
+ 
++#if defined WORLD_OVERWORLD
++    // Wynn-Photon: Photon only read SKYLIGHT_I in its Photonics code, so the
++    // option did nothing without Photonics. Scale Photon's own sky light too
++    lighting *= SKYLIGHT_I;
++#endif
++
+     return lighting;
+ }
+ 
+@@ -311,6 +332,10 @@
+     // Skylight
+ 
+ #if defined PHOTONICS_DIFFUSE
++    // Wynn-Photon: Photonics' traced indirect light, kept for the sky fill
++    // below
++    vec3 wynn_photonics_gi = vec3(0.0);
++
+     if (is_lod) {
+         lighting += get_sky_lighting(
+             material,
+@@ -324,7 +349,8 @@
+ // When combined gi is enabled
+ // Photonics includes gi in the result of sample_photonics_direct
+ #ifndef PHOTONICS_RESTIR_COMBINED_GI
+-        lighting += texture2D(radiosity_indirect, uv).xyz * SKYLIGHT_I;
++        wynn_photonics_gi = texture2D(radiosity_indirect, uv).xyz * SKYLIGHT_I;
++        lighting += wynn_photonics_gi;
+ #endif
+     }
+ 
+@@ -352,7 +378,59 @@
  #endif
  
          // BLOCKLIGHT_I is applied in /photonics/modifiers/modify_lights.glsl
 -        lighting += blocklight * blocklight_scale;
 +        blocklight *= blocklight_scale;
++
++        // Wynn-Photon: Photonics sky fill. With Photonics, Photon swaps its
++        // sky light for Photonics' traced indirect light, which is very weak
++        // in shade, forests and overhangs, so those were much darker than
++        // without Photonics and SKYLIGHT_I barely changed them. Add Photon's
++        // own sky light back in, only as far as the traced light falls short
++        // of it
++        {
++#ifdef PHOTONICS_RESTIR_COMBINED_GI
++            // Combined GI arrives inside sample_photonics_direct
++            wynn_photonics_gi = blocklight;
++#endif
++            vec3 sky_fill = WYNN_PHOTONICS_SKY_FILL_I
++                * get_sky_lighting(
++                    material,
++                    bent_normal,
++                    light_levels,
++                    ao,
++                    ambient_sss,
++                    directional_lighting
++                );
++            float fill_lum = dot(sky_fill, luminance_weights_rec2020);
++            float gi_lum = dot(wynn_photonics_gi, luminance_weights_rec2020);
++            lighting += sky_fill * clamp01(1.0 - gi_lum / max(fill_lum, eps));
++        }
 +
 +#ifdef COLORED_LIGHTS_VANILLA_LIGHTMAP_CONTRIBUTION
 +        // Wynn-Photon: vanilla light fallback. Photonics only traces the
@@ -67,3 +126,23 @@
      } else {
          lighting += get_block_lighting(
              scene_pos,
+@@ -381,6 +459,19 @@
+         * (1.0 - light_levels.y * light_levels.y)
+         * (1.0 - 0.7 * darknessFactor);
+     lighting += nightVision * night_vision_scale * directional_lighting * ao;
++
++    // Wynn-Photon: minimum light. Photon's cave light fades out where a block
++    // sees the sky, so sky-lit places at night (dense cities) and cave roofs
++    // far from any light went nearly black. Every surface gets a small
++    // neutral light, which fades away smoothly as the other light gets
++    // brighter than it, so daylight and lit rooms don't change. It keeps AO
++    // and face shading, so shapes stay readable
++    {
++        float min_light = 0.3 * WYNN_MIN_LIGHT_I * directional_lighting * ao
++            * (1.0 - 0.7 * darknessFactor);
++        float lit = dot(lighting, luminance_weights_rec2020);
++        lighting += min_light * min_light / max(lit + min_light, eps);
++    }
+ #endif
+ 
+     return max0(lighting) * material.albedo * rcp_pi

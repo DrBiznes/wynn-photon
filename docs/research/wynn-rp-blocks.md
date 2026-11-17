@@ -462,3 +462,7 @@ formula:
 
 Items 2-4 are `block.properties` lines with no shader code. None of them are lights, so they need no Photonics or
 `light_colors.glsl` change. Each still needs a test-world exhibit and the in-game check.
+
+**Outcome (0.7.0):** items 1-5 are built, the iron door as transparent wood (30). Items 6-9 are closed without
+changes. Built alongside them: emerald blocks glow about a third as bright with the same light, and the enchanting
+table gets a faint purple light on `10068` (shortlist item 10).

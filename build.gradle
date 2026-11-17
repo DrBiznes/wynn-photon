@@ -22,6 +22,11 @@ sourceSets {
 		// so the patches are written and applied by the same code.
 		java.srcDir 'patcher-core/src/main/java'
 	}
+	// Dev only: the lighting screenshot test (gradlew lightTest). Never part of the mod jar.
+	lighttest {
+		compileClasspath += sourceSets.main.compileClasspath
+		runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+	}
 }
 
 repositories {
@@ -250,13 +255,36 @@ def installDevTestWorld = tasks.register('installDevTestWorld', InstallTestWorld
 	fresh = providers.gradleProperty('fresh').isPresent()
 }
 
+def lightTestCases = layout.projectDirectory.file('testworld/light_test.txt')
+def lightTestOut = layout.buildDirectory.dir('light-test')
+
 loom {
+	mods {
+		wynn_photon {
+			sourceSet sourceSets.main
+		}
+		wynn_photon_lighttest {
+			sourceSet sourceSets.lighttest
+		}
+	}
 	runs {
 		dev {
 			client()
 			configName = 'Wynn-Photon dev client'
 			runDir 'run'
 			programArgs '--quickPlaySingleplayer', 'Wynn-Photon Test'
+		}
+		// The dev client plus the lighttest source set, which photographs every case and then closes the game.
+		// -Ponly=<regex> shoots only the cases whose file name (<spot>__<time>__<set>.png) matches.
+		lightTest {
+			client()
+			configName = 'Wynn-Photon light test'
+			runDir 'run'
+			source sourceSets.lighttest
+			programArgs '--quickPlaySingleplayer', 'Wynn-Photon Test', '--width', '960', '--height', '540'
+			property 'wynnphoton.lightTest', lightTestCases.asFile.absolutePath
+			property 'wynnphoton.lightTest.out', lightTestOut.get().asFile.absolutePath
+			property 'wynnphoton.lightTest.only', providers.gradleProperty('only').getOrElse('')
 		}
 	}
 }
@@ -265,6 +293,33 @@ tasks.named('runDev') {
 	group = 'wynn-photon'
 	description = 'Starts the dev client in the Wynn-Photon test world.'
 	dependsOn installDevTestWorld
+}
+
+// -----------------------------------------------------------------------------
+// Lighting test: gradlew lightTest
+//
+// Photographs the light test spots of the test world under the option sets in testworld/light_test.txt, with nobody
+// at the keyboard, and writes build/light-test/report.html. See docs/DEVELOPMENT.md.
+// -----------------------------------------------------------------------------
+
+tasks.named('runLightTest') {
+	description = 'Runs the dev client through every lighting test case and saves the screenshots.'
+	dependsOn installDevTestWorld
+}
+
+def lightTestReport = tasks.register('lightTestReport', JavaExec) {
+	group = 'wynn-photon'
+	description = 'Writes build/light-test/report.html from the screenshots of the last lightTest run.'
+	classpath = sourceSets.lighttest.output
+	mainClass = 'com.wynnphoton.lighttest.LightTestReport'
+	args lightTestCases.asFile.absolutePath, lightTestOut.get().asFile.absolutePath
+	mustRunAfter 'runLightTest'
+}
+
+tasks.register('lightTest') {
+	group = 'wynn-photon'
+	description = 'Photographs every lighting test case in the dev client and writes build/light-test/report.html.'
+	dependsOn 'runLightTest', lightTestReport
 }
 
 tasks.register('dev') {

@@ -1,0 +1,44 @@
+# The lighting comparison that `gradlew lightTest` runs (see docs/DEVELOPMENT.md, "The lighting test").
+# Every spot is photographed at every time with every option set: spots x times x sets shots.
+#
+#   spot <name> <x> <y> <z> <yaw> <pitch>     camera feet position and angle (yaw 0 looks south, pitch 90 looks down)
+#   time <name> <ticks>
+#   set <name> [KEY=value ...]                shader options; everything not listed is the pack's default
+#   compare <set A> <set B> <title...>        a report table of the brightness of B relative to A
+#
+# The spots are built by gen_gallery.py ("light test spots"). Keep the two in step.
+
+spot open_ground   6.5 -60 50.5   0 40
+spot tree_canopy  26.5 -60 50.5   0 50
+spot overhang     47.5 -60 55.5   0 15
+spot window_room  62.5 -60 48.5   0 10
+spot light_block  74.5 -60 47.5   0 10
+spot torch_room   86.5 -60 47.5   0 10
+spot cave_mouth    5.5 -60 65.5   0  5
+
+time noon     6000
+time midnight 18000
+
+set off         PHOTONICS_ENABLED=false
+set off_sky2    PHOTONICS_ENABLED=false SKYLIGHT_I=2.00
+set off_block2  PHOTONICS_ENABLED=false BLOCKLIGHT_I=2.00
+set off_cave2   PHOTONICS_ENABLED=false CAVE_LIGHTING_I=2.00
+set on          PHOTONICS_ENABLED=true
+set on_fill0    PHOTONICS_ENABLED=true WYNN_PHOTONICS_SKY_FILL_I=0.00
+set on_fill2    PHOTONICS_ENABLED=true WYNN_PHOTONICS_SKY_FILL_I=2.00
+set on_sky2     PHOTONICS_ENABLED=true SKYLIGHT_I=2.00
+set on_block2   PHOTONICS_ENABLED=true BLOCKLIGHT_I=2.00
+set on_cave2    PHOTONICS_ENABLED=true CAVE_LIGHTING_I=2.00
+# The same options as "on", shot again at the end: its difference from "on" is the noise of the measurement
+set on_again    PHOTONICS_ENABLED=true
+
+compare off on            Photonics on, relative to off
+compare on on_again       Measurement noise: the same options shot twice
+compare on on_fill0       Photonics Sky Fill 0, relative to 1
+compare on on_fill2       Photonics Sky Fill 2, relative to 1
+compare off off_sky2      Skylight 2.0 relative to 1.0, Photonics off
+compare on on_sky2        Skylight 2.0 relative to 1.0, Photonics on
+compare off off_block2    Blocklight 2.0 relative to 1.0, Photonics off
+compare on on_block2      Blocklight 2.0 relative to 1.0, Photonics on
+compare off off_cave2     Cave Brightness 2.0 relative to 1.0, Photonics off
+compare on on_cave2       Cave Brightness 2.0 relative to 1.0, Photonics on

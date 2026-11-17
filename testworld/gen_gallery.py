@@ -7,7 +7,7 @@ os.makedirs(out, exist_ok=True)
 NS = "wynn_photon_test"
 G = -60  # ground level: superflat grass top is y = -61
 
-build, labels, vines = [], [], []
+build, labels, vines, lighttest = [], [], [], []
 
 
 def sign(lines, x, y, z, rot, target):
@@ -154,7 +154,7 @@ hall.append(("Chests", "faint glow", "chest, trapped", ""))
 b(c + 1, G, 23, "chest[facing=south]")
 b(c + 3, G, 23, "trapped_chest[facing=south]")
 # 16: invisible light blocks, as Wynncraft lights its caves. No light system sees them, so they light only through
-# the vanilla light fallback (Vanilla Light Strength). Without it, Photonics left this cell black
+# the vanilla light fallback (Light Block Strength). Without it, Photonics left this cell black
 c = cell(16)
 hall.append(("Light blocks", "invisible,", "levels 15, 10", "vanilla fallback"))
 b(c + 1, G + 2, 23, "light[level=15]")
@@ -312,6 +312,50 @@ b(106, G, Z, "iron_door[facing=north,half=lower]")
 b(106, G + 1, Z, "iron_door[facing=north,half=upper]")
 label(106, "Iron door", "painted, wood", "(was metal)")
 
+# ---------------------------------------------------------------- light test spots
+# Seven lighting situations south of the dark hall (z 40-80), photographed by `gradlew lightTest`. The camera
+# positions are in testworld/light_test.txt: keep the two in step.
+lighttest += [
+    "# Clear the light test area and reset the floor",
+    "fill -4 -60 40 102 -50 59 air",
+    "fill -4 -60 60 102 -50 80 air",
+    "fill -4 -61 40 102 -61 80 grass_block",
+    "# Open ground: three reference blocks in the sun",
+    "setblock 5 -60 54 stone",
+    "setblock 6 -60 54 white_concrete",
+    "setblock 7 -60 54 oak_planks",
+    "# Tree canopy: leaves three thick over 21 x 21 blocks, open at the sides",
+    "fill 16 -55 44 36 -53 64 oak_leaves[persistent=true]",
+    "fill 26 -60 54 26 -56 54 oak_log",
+    "fill 23 -60 56 23 -56 56 oak_log",
+    "fill 30 -60 58 30 -56 58 oak_log",
+    "# Stone overhang: 13 wide, 4 high, 13 deep, open to the north",
+    "fill 40 -61 46 54 -56 60 stone hollow",
+    "fill 41 -60 46 53 -57 46 air",
+    "# Room with one 1 x 1 window in the north wall",
+    "fill 58 -61 46 66 -56 54 stone hollow",
+    "setblock 62 -58 46 air",
+    "# Sealed room lit by one invisible light block",
+    "fill 70 -61 46 78 -56 54 stone hollow",
+    "setblock 74 -58 50 light[level=15]",
+    "# Sealed room lit by one torch",
+    "fill 82 -61 46 90 -56 54 stone hollow",
+    "setblock 86 -60 51 torch",
+    "# Cave mouth: a 3 x 3 tunnel 16 blocks into solid stone, open to the north",
+    "fill 2 -61 62 8 -56 78 stone",
+    "fill 4 -60 62 6 -58 77 air",
+]
+for x, name in [(6, "Open ground"), (26, "Tree canopy"), (47, "Stone overhang"), (62, "Window room"),
+                (74, "Light block room"), (86, "Torch room")]:
+    sign(("Light test", name), x, G, 42, 8, labels)
+sign(("Light test", "Cave mouth"), 9, G, 61, 8, labels)
+
+build += [
+    "",
+    "# Light test spots, in their own function",
+    f"function {NS}:lighttest",
+]
+
 build += [
     "",
     "# Signs, then the vine states last: any block placed next to a vine afterwards would strip its faces",
@@ -322,6 +366,9 @@ build += [
 header = "# Generated for the Wynn-Photon test world. Rebuilds the whole gallery.\n"
 with open(os.path.join(out, "build_now.mcfunction"), "w", newline="\n") as f:
     f.write(header + "\n".join(build) + "\n")
+with open(os.path.join(out, "lighttest.mcfunction"), "w", newline="\n") as f:
+    f.write("# The lighting spots that gradlew lightTest photographs (see testworld/light_test.txt).\n"
+            + "\n".join(lighttest) + "\n")
 with open(os.path.join(out, "labels.mcfunction"), "w", newline="\n") as f:
     f.write("# Signs naming each exhibit. Kept apart so a sign syntax error can't stop the build.\n"
             + "\n".join(labels) + "\n")
