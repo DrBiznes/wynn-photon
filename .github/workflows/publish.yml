@@ -1,0 +1,65 @@
+# Publishes WynnPhoton to Modrinth and CurseForge (and attaches the jar to the GitHub release).
+#
+# How to release:
+#   1. Bump mod_version in gradle.properties and commit.
+#   2. Create a GitHub release (e.g. tag v<version>). The release title becomes the version name,
+#      the release notes become the changelog. A tag ending in -alpha/-beta (or a version containing
+#      alpha/beta) is published as that release channel.
+#   Or run it by hand from the Actions tab (workflow_dispatch); that skips the GitHub upload.
+#
+# Needs repository secrets MODRINTH_TOKEN and CURSEFORGE_TOKEN.
+# A platform with an empty project ID below is skipped.
+name: Publish
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  MODRINTH_ID: "jl9IlGRb"
+  CURSEFORGE_ID: "1811616"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # The Gradle daemon runs on Java 25 (gradle/gradle-daemon-jvm.properties); the mod targets Java 21.
+      - name: Set up JDKs
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: |
+            21
+            25
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      # build also runs the tests, which download the Photon base pack from Modrinth and apply patches/ to it.
+      - name: Build
+        run: |
+          chmod +x gradlew
+          ./gradlew build
+
+      - name: Publish
+        uses: Kira-NT/mc-publish@v3.3
+        with:
+          modrinth-id: ${{ env.MODRINTH_ID }}
+          modrinth-token: ${{ env.MODRINTH_ID != '' && secrets.MODRINTH_TOKEN || '' }}
+          curseforge-id: ${{ env.CURSEFORGE_ID }}
+          curseforge-token: ${{ env.CURSEFORGE_ID != '' && secrets.CURSEFORGE_TOKEN || '' }}
+          github-token: ${{ github.event_name == 'release' && secrets.GITHUB_TOKEN || '' }}
+
+          files: build/libs/!(*-@(dev|sources|javadoc)).jar
+          loaders: fabric
+          game-versions: 1.21.11
+          java: 21
+          dependencies: |
+            iris(optional){modrinth:iris}{curseforge:irisshaders}
