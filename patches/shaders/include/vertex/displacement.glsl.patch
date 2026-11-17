@@ -1,0 +1,56 @@
+--- a/shaders/include/vertex/displacement.glsl
++++ b/shaders/include/vertex/displacement.glsl
+@@ -113,11 +113,23 @@
+ }
+ #endif
+ 
++// Wynn-Photon: height of a vertex above the bottom of its block, in blocks.
++// mid_block is Iris's at_midBlock: the offset to the block centre, in 1/64ths.
++float vertex_height_in_block(vec3 mid_block) {
++    return clamp(0.5 - mid_block.y * rcp(64.0), 0.0, 2.0);
++}
++
++// Wynn-Photon: small plants sway by plant_height, the vertex's height in its
++// block, instead of only at their top vertices. Wynncraft's two-block-tall crops
++// are two stacked quads in one model (y -1..15 and 15..31); with a per-quad
++// top/bottom flag the shared edge at y = 15 opened up as they swayed. Vanilla
++// plants span y 0..16, where both give the same result.
+ vec3 animate_vertex(
+     vec3 world_pos,
+     bool is_top_vertex,
+     float skylight,
+-    uint material_mask
++    uint material_mask,
++    float plant_height
+ ) {
+     float wind_speed = 0.3;
+     float wind_strength = sqr(skylight) * (0.25 + 0.66 * rainStrength);
+@@ -150,7 +162,7 @@
+                        false
+                    )
+                    + player_displacement)
+-                * float(is_top_vertex);
++                * plant_height;
+ 
+         case MATERIAL_TALL_PLANTS_LOWER:
+             return world_pos
+@@ -190,4 +202,19 @@
+     }
+ }
+ 
++vec3 animate_vertex(
++    vec3 world_pos,
++    bool is_top_vertex,
++    float skylight,
++    uint material_mask
++) {
++    return animate_vertex(
++        world_pos,
++        is_top_vertex,
++        skylight,
++        material_mask,
++        float(is_top_vertex)
++    );
++}
++
+ #endif // INCLUDE_VERTEX_DISPLACEMENT

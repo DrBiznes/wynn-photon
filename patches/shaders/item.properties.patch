@@ -9,19 +9,53 @@
  
  # Lava
  item.10039 = lava_bucket
-@@ -178,11 +178,11 @@
- # Purple
- item.10077 = simplylight:illuminant_purple_block_on luminax:purple_luminax_block
+@@ -102,8 +102,7 @@
+ # Pearlescent froglight
+ item.10053 = pearlescent_froglight
  
--# Magenta
--item.10078 = simplylight:illuminant_magenta_block_on luminax:magenta_luminax_block
-+# Magenta (Wynn-Photon: pink modded lights folded in here, their slot is reused below)
-+item.10078 = simplylight:illuminant_magenta_block_on luminax:magenta_luminax_block simplylight:illuminant_pink_block_on luminax:pink_luminax_block
+-# Enchanting table
+-item.10054 = enchanting_table
++# (Wynn-Photon: enchanting_table moved out, it doesn't glow in Wynncraft)
  
--# Pink
--item.10079 = simplylight:illuminant_pink_block_on luminax:pink_luminax_block
+ # Amethyst cluster
+ item.10055 = small_amethyst_bud medium_amethyst_bud large_amethyst_bud amethyst_cluster
+@@ -160,30 +159,20 @@
+ # Yellow
+ item.10071 = simplylight:illuminant_yellow_block_on luminax:yellow_luminax_block
+ 
+-# Lime
+-item.10072 = simplylight:illuminant_lime_block_on luminax:lime_luminax_block
++# Lime (Wynn-Photon: green modded lights folded in here, block.10073 is the Wynncraft four-candle candelabra)
++item.10072 = simplylight:illuminant_lime_block_on luminax:lime_luminax_block simplylight:illuminant_green_block_on luminax:green_luminax_block
+ 
+-# Green
+-item.10073 = simplylight:illuminant_green_block_on luminax:green_luminax_block
++# Cyan (Wynn-Photon: light blue and blue modded lights folded in here, block.10075-10076 are Wynncraft emeralds)
++item.10074 = simplylight:illuminant_cyan_block_on luminax:cyan_luminax_block simplylight:illuminant_light_blue_block_on luminax:light_blue_luminax_block simplylight:illuminant_blue_block_on luminax:blue_luminax_block
+ 
+-# Cyan
+-item.10074 = simplylight:illuminant_cyan_block_on luminax:cyan_luminax_block
++# (Wynn-Photon: purple modded lights moved to item.10078, block.10077 is Wynncraft molten rock)
+ 
+-# Light Blue
+-item.10075 = simplylight:illuminant_light_blue_block_on luminax:light_blue_luminax_block
++# Magenta (Wynn-Photon: purple and pink modded lights folded in here, their slots are reused)
++item.10078 = simplylight:illuminant_purple_block_on luminax:purple_luminax_block simplylight:illuminant_magenta_block_on luminax:magenta_luminax_block simplylight:illuminant_pink_block_on luminax:pink_luminax_block
+ 
+-# Blue
+-item.10076 = simplylight:illuminant_blue_block_on luminax:blue_luminax_block
 +# Wynn-Photon: redstone torch held in hand lights like the candle sconce
 +item.10079 = redstone_torch
  
+-# Purple
+-item.10077 = simplylight:illuminant_purple_block_on luminax:purple_luminax_block
+-
+-# Magenta
+-item.10078 = simplylight:illuminant_magenta_block_on luminax:magenta_luminax_block
+-
+-# Pink
+-item.10079 = simplylight:illuminant_pink_block_on luminax:pink_luminax_block
+-
  #-------------------------------------------------------------------------------
  # 1.12 item.mapping
+ #-------------------------------------------------------------------------------

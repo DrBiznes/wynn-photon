@@ -1,13 +1,26 @@
 --- a/shaders/include/surface/material.glsl
 +++ b/shaders/include/surface/material.glsl
-@@ -825,7 +825,17 @@
+@@ -265,7 +265,10 @@
+                         } else { // 11
+ // Obsidian, nether bricks
+ #ifdef HARDCODED_SPECULAR
+-                            float smoothness = linear_step(0.02, 0.4, hsl.z);
++                            // Wynn-Photon: obsidian is a floor stone in Wynncraft
++                            // (Magma Heights) as well as volcanic rock, so it keeps
++                            // only a faint, rough sheen instead of a mirror finish
++                            float smoothness = 0.45 * linear_step(0.02, 0.4, hsl.z);
+                             material.roughness = sqr(1.0 - smoothness);
+                             material.f0 = vec3(0.02);
+                             material.ssr_multiplier = 1.0;
+@@ -825,7 +828,45 @@
          }
      }
  
 -    if (64u <= material_mask && material_mask < 80u) {
-+    if (material_mask == 79u) {
++    if (material_mask == 79u || material_mask == 73u) {
 +#ifdef HARDCODED_EMISSION
-+        // Wynn-Photon: redstone torch drawn as Wynncraft's candle sconce.
++        // Wynn-Photon: redstone torch drawn as Wynncraft's candle sconce,
++        // and the candelabras (73 is the brighter four-candle one).
 +        // The flame (fully saturated red-orange to a pale yellow core) glows
 +        // like a lantern's; the cream wax glows softly; the dark metal holder
 +        // does not glow.
@@ -15,7 +28,49 @@
 +        float wax   = linear_step(0.65, 0.80, hsl.z);
 +        material.emission = albedo_sqrt * max(0.90 * flame, 0.30 * wax);
 +#endif
++    } else if (material_mask == 76u) {
++        // Wynn-Photon: emerald block. Keeps the gem shine (13) and glows a
++        // faint green, brighter on its pale highlights.
++#ifdef HARDCODED_SPECULAR
++        float smoothness = sqrt(linear_step(0.1, 0.9, hsl.z));
++        material.roughness = max(sqr(1.0 - smoothness), 0.04);
++        material.f0 = vec3(0.25);
++        material.ssr_multiplier = 1.0;
++#endif
++#ifdef HARDCODED_EMISSION
++        material.emission = albedo_sqrt * (0.10 + 0.15 * hsl.z);
++#endif
++    } else if (material_mask == 75u) {
++#ifdef HARDCODED_EMISSION
++        // Wynn-Photon: emerald ore. Only the green specks glow; the grey
++        // stone around them does not.
++        float speck = isolate_hue(hsl, 110.0, 40.0) * step(0.4, hsl.y);
++        material.emission = 0.45 * albedo_sqrt * speck;
++#endif
++    } else if (material_mask == 77u) {
++#ifdef HARDCODED_EMISSION
++        // Wynn-Photon: old wooden double slab drawn as Wynncraft's molten rock.
++        // Only the saturated red-orange embers glow; the near-black rock
++        // around them stays plain stone.
++        float ember = step(0.8, hsl.y) * linear_step(0.25, 0.38, hsl.z);
++        material.emission = 0.80 * albedo_sqrt * ember;
++#endif
 +    } else if (64u <= material_mask && material_mask < 80u) {
  // Stained glass, honey and slime
  #ifdef HARDCODED_SPECULAR
          material.f0 = vec3(0.04);
+@@ -836,6 +877,14 @@
+ #ifdef HARDCODED_SSS
+         material.sss_amount = 0.5;
+ #endif
++    } else if (material_mask == 97u) {
++#ifdef HARDCODED_SPECULAR
++        // Wynn-Photon: vine state drawn as Wynncraft's murky water, a still
++        // puddle surface. Smooth and reflective, no subsurface scattering.
++        material.f0 = vec3(0.02);
++        material.roughness = 0.06;
++        material.ssr_multiplier = 1.0;
++#endif
+     }
+ 
+     return material;

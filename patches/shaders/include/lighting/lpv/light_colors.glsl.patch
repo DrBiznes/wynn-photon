@@ -1,8 +1,18 @@
 --- a/shaders/include/lighting/lpv/light_colors.glsl
 +++ b/shaders/include/lighting/lpv/light_colors.glsl
-@@ -50,7 +50,7 @@
-     vec3(0.15, 0.30, 1.00) * 10.0, // 44 - Blue        (block 76)
-     vec3(0.55, 0.15, 1.00) * 10.0, // 45 - Purple      (block 77)
+@@ -44,13 +44,13 @@
+     vec3(1.00, 0.45, 0.10) * 10.0, // 38 - Orange      (block 70)
+     vec3(1.00, 0.95, 0.20) * 10.0, // 39 - Yellow      (block 71)
+     vec3(0.55, 1.00, 0.20) * 10.0, // 40 - Lime        (block 72)
+-    vec3(0.15, 1.00, 0.20) * 10.0, // 41 - Green       (block 73)
++    vec3(1.00, 0.45, 0.12) * 14.0, // 41 - Wynn-Photon: Wynncraft four-candle candelabra (block 73), the sconce colour at a lantern's strength
+     vec3(0.15, 0.95, 1.00) * 10.0, // 42 - Cyan        (block 74)
+-    vec3(0.45, 0.75, 1.00) * 10.0, // 43 - Light Blue  (block 75)
+-    vec3(0.15, 0.30, 1.00) * 10.0, // 44 - Blue        (block 76)
+-    vec3(0.55, 0.15, 1.00) * 10.0, // 45 - Purple      (block 77)
++    vec3(0.45, 1.00, 0.35) *  1.5, // 43 - Wynn-Photon: emerald ore (block 75), a very faint green
++    vec3(0.45, 1.00, 0.35) *  4.0, // 44 - Wynn-Photon: emerald block (block 76), a faint green
++    vec3(1.00, 0.30, 0.08) *  3.0, // 45 - Wynn-Photon: Wynncraft molten rock (block 77), a dull ember glow, a third of magma's 9
      vec3(1.00, 0.20, 0.90) * 10.0, // 46 - Magenta     (block 78)
 -    vec3(1.00, 0.55, 0.85) * 10.0  // 47 - Pink        (block 79)
 +    vec3(1.00, 0.45, 0.12) * 12.0  // 47 - Wynn-Photon: redstone torch as Wynncraft candle sconce (block 79), warm fire orange, a little under the lantern's 14

@@ -2,6 +2,81 @@
 
 All notable changes to Wynn-Photon are listed here. Each version names the Photon release its patches apply to.
 
+## 0.3.0 (2026-11-16), for Photon v1.4
+
+The rest of the survey's ranked shortlist (items 7-10), more Wynncraft material fixes, and a dev client with a test
+world. Not checked in game yet, except that the dev client starts and loads the test world.
+
+### Shader changes
+
+- **The four-candle candelabra is brighter.** `repeater:delay=4:powered=true` gets its own ID, `10073`, with the
+  sconce's look and a lantern-strength light, `(1.00, 0.45, 0.12) × 14`. Photonics: a new `four_candle_candelabra`
+  light (`#ff7219`, 300). The sconce's Photonics entries now name delays 1-3 only.
+- **Murky water is glossy.** The vine state Wynncraft draws as murky water gets a new Wynn-only material, `10097`: a
+  smooth, reflective puddle surface with no SSS.
+- **Two-block-tall crops no longer split when they sway.** Several Wynncraft crop ages are two stacked quads in one
+  model (y -1..15 and 15..31). Photon only moved each quad's top edge, so the seam at y = 15 opened up. Small plants
+  now sway by each vertex's height in its block (from Iris's `at_midBlock`), in both the gbuffers and the shadow pass,
+  so stacked quads move together. Vanilla plants look the same as before.
+- **The enchanting table loses its purple light.** Wynncraft draws it as a dark stone table with a slate-blue top and
+  nothing that glows. It leaves the light range (`10054`). Photonics: `minecraft:enchanting_table` joins the
+  `disabled` override, and Photon's `enchanting_table` light group, now empty, is removed. (An empty group makes
+  Photonics reject the pack's whole light list.)
+- **Emeralds glow faintly.** The emerald block gets its own ID, `10076`. It keeps the gem shine, glows a faint green
+  and casts a faint green light, `(0.45, 1.00, 0.35) × 4`. Emerald ore (`10075`, deepslate included) glows only in
+  its green specks and casts a very faint light (`× 1.5`). Photonics: new `emerald_block` (`#73ff59`, 86) and
+  `emerald_ore` (`#73ff59`, 32) lights.
+- **Nether bricks are no longer glossy.** Wynncraft draws nether bricks as dark stone bricks for town streets.
+  Photon gave them obsidian's smooth, reflective specular (`10011`). The bricks, their cracked and chiseled variants,
+  and their stairs and slabs now shade as plain stone.
+- **Obsidian is much less reflective.** Wynncraft uses it as floor stone (Magma Heights) as well as volcanic rock.
+  It keeps a faint, rough sheen: its smoothness is cut to 45 % of Photon's.
+- **Iron trapdoors are no longer reflective.** They move from transparent metal (`10018`) to plain transparent blocks
+  (`10080`).
+- Light blue and blue modded lights (Simply Light, Luminax) now use the cyan slot, which frees `10075` and `10076` for
+  the emeralds. Green modded lights now use the lime slot, which frees `10073` for the four-candle candelabra.
+
+### Tooling
+
+- **Dev client.** `gradlew dev` starts a Loom dev client with Sodium, WynnIris, Photonics, Voxy, Fabric API and Mod
+  Menu, straight into the test world. `work/` is linked in as the selected shader pack, so edits show after pressing
+  R. The mod also builds its own patched pack there from the unmodified Photon zip. Everything lives in `run/`.
+- **Test world.** A creative superflat world, "Wynn-Photon Test", whose datapack builds a gallery of every block
+  Wynn-Photon changes: a daylight row for materials and a dark hall with one light per cell. It carries the
+  Wynncraft server pack that Minecraft cached when you joined Wynncraft. `gradlew installTestWorld` puts it in your
+  own instance instead. See `testworld/README.md`.
+- **Consistency tests.** The tests now check that every Photonics light group has blocks and that no block entry
+  sits on two `block.properties` lines (Iris keeps the first).
+
+## 0.2.0 (2026-11-16), for Photon v1.4
+
+Items 1-6 of the survey's ranked shortlist (`docs/research/wynn-rp-blocks.md`). The candelabras, sconces, spike traps
+and vine blocks are checked in game.
+
+### Shader changes
+
+- **Lit candelabras light like candles.** Powered repeaters, which Wynncraft draws as lit candelabras, move from the
+  red redstone light (`10038`) to the candle sconce (`10079`): warm fire-orange light, and only the flame and wax
+  glow.
+- **Photonics:** the sconce group now lists lit redstone torches, wall torches and powered repeaters by name with
+  priority 100, so it beats Photonics' own red `redstone` defaults for those blocks.
+- **Spike traps stop glowing.** All comparator states, which Wynncraft draws as floor spike traps, are now
+  transparent metal (`10018`) with no light. Photonics: `minecraft:comparator` is added to the `disabled` override.
+- **Vine custom blocks get their own materials.** Wynncraft draws some vine states as other things, and each now has
+  its own material: the iron chain becomes transparent metal (`10018`), the rope gets weak SSS (`10015`), the dead
+  leaves are leaves (`10005`), and cattails, dead grass and flowers, and hanging crops become small plants (`10002`).
+  Real vines and the murky-water state stay strong SSS (`10014`).
+- **Molten rock glows.** Old wooden double slabs (`petrified_oak_slab:type=double`), which Wynncraft draws as molten
+  rock, get a new ID, `10077`. Only the red-orange embers glow, and they cast a dim ember light,
+  `(1.00, 0.30, 0.08) × 3`. Photonics: a new `molten_rock` light, `#ff4c14`, intensity 64.
+- The single slabs (`petrified_oak_slab` top and bottom) are Wynncraft dark cobblestone slabs. They lose the wood
+  material and now shade as plain stone.
+- **Wrong lights removed.** The spawner (a dark cage in Wynncraft) is now transparent metal with no pink light.
+  Powered activator and detector rails (wooden track) lose the red redstone light.
+- **Voxy:** unmapped blocks now get material 0 at LOD, as they do up close. Photon's unsigned subtraction wrapped them
+  around to 255, so distant stone, dirt and most other Wynn terrain shaded differently from nearby terrain.
+- Purple modded lights (Simply Light, Luminax) now use the magenta slot, which frees `10077` for molten rock.
+
 ## 0.1.0 (2026-11-16), for Photon v1.4
 
 First release.

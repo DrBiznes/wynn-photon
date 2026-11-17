@@ -1,0 +1,20 @@
+--- a/shaders/program/gbuffers_all_solid.vsh
++++ b/shaders/program/gbuffers_all_solid.vsh
+@@ -49,6 +49,7 @@
+ //   Attributes
+ // --------------
+ 
++attribute vec3 at_midBlock; // Wynn-Photon: for the plant sway height
+ attribute vec4 at_tangent;
+ attribute vec3 mc_Entity;
+ attribute vec2 mc_midTexCoord;
+@@ -161,7 +162,8 @@
+     vec3 pos = transform(gl_ModelViewMatrix, gl_Vertex.xyz);
+     pos = view_to_scene_space(pos);
+     pos = pos + cameraPosition;
+-    pos = animate_vertex(pos, is_top_vertex, light_levels.y, material_mask);
++    // Wynn-Photon: pass the vertex height so stacked plant quads sway together
++    pos = animate_vertex(pos, is_top_vertex, light_levels.y, material_mask, vertex_height_in_block(at_midBlock));
+     pos = pos - cameraPosition;
+ 
+     scene_pos = pos;

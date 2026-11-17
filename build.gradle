@@ -1,7 +1,9 @@
 import wynnphoton.gradle.ApplyPatchesTask
 import wynnphoton.gradle.DownloadFileTask
 import wynnphoton.gradle.GeneratePatchBundleTask
+import wynnphoton.gradle.InstallTestWorldTask
 import wynnphoton.gradle.MakePatchesTask
+import wynnphoton.gradle.PrepareDevClientTask
 
 plugins {
 	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
@@ -22,10 +24,52 @@ sourceSets {
 	}
 }
 
+repositories {
+	// Mods for the dev client (gradlew dev), from Modrinth's Maven
+	exclusiveContent {
+		forRepository {
+			maven {
+				name = 'Modrinth'
+				url = 'https://api.modrinth.com/maven'
+			}
+		}
+		filter {
+			includeGroup 'maven.modrinth'
+		}
+	}
+}
+
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	// Only in the dev client, never in the mod's dependencies: the Wynncraft shader stack.
+	modLocalRuntime "net.fabricmc.fabric-api:fabric-api:${project.dev_fabric_api_version}"
+	modLocalRuntime "maven.modrinth:sodium:${project.dev_sodium_version}"
+	modLocalRuntime "maven.modrinth:wynniris:${project.dev_wynniris_version}"
+	modLocalRuntime "maven.modrinth:photonics:${project.dev_photonics_version}"
+	modLocalRuntime "maven.modrinth:voxy:${project.dev_voxy_version}"
+	modLocalRuntime "maven.modrinth:modmenu:${project.dev_modmenu_version}"
+
+	// The libraries WynnIris and Voxy nest in their jars (META-INF/jars). Fabric Loader doesn't load jars nested in
+	// classpath mods, so the dev client needs them listed. Versions match the nested jars.
+	[
+		'org.anarres:jcpp:1.4.14',
+		'org.antlr:antlr4-runtime:4.13.1',
+		'io.github.douira:glsl-transformer:3.0.0-pre3',
+		'org.rocksdb:rocksdbjni:10.2.1',
+		'org.lz4:lz4-java:1.8.0',
+		'org.tukaani:xz:1.10',
+		'redis.clients:jedis:5.1.0',
+		'org.apache.commons:commons-pool2:2.12.0',
+		'org.lwjgl:lwjgl-lmdb:3.3.3',
+		'org.lwjgl:lwjgl-lmdb:3.3.3:natives-windows',
+		'org.lwjgl:lwjgl-lmdb:3.3.3:natives-linux',
+		'org.lwjgl:lwjgl-zstd:3.3.3',
+		'org.lwjgl:lwjgl-zstd:3.3.3:natives-windows',
+		'org.lwjgl:lwjgl-zstd:3.3.3:natives-linux',
+	].each { localRuntime(it) { transitive = false } }
 
 	testImplementation platform("org.junit:junit-bom:${project.junit_version}")
 	testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -134,6 +178,99 @@ tasks.register('installDevPack', Sync) {
 			throw new GradleException('work/ does not exist yet. Run applyPatches first.')
 		}
 	}
+}
+
+// installTestWorld: the creative superflat "Wynn-Photon Test" world with a gallery of every block Wynn-Photon
+// changes. It goes in the instance that holds shaderpacksDir. See testworld/README.md.
+def installDevPack = tasks.named('installDevPack')
+tasks.register('installTestWorld', InstallTestWorldTask) {
+	group = 'wynn-photon'
+	description = 'Installs the Wynn-Photon test world, with the Wynncraft resource pack, and selects the dev shader pack. -Pfresh starts the world over.'
+	dependsOn installDevPack
+	def configured = !devShaderpacks.isBlank()
+	instanceDir = configured ? file(devShaderpacks).parentFile : layout.buildDirectory.dir('unconfigured-instance').get().asFile
+	datapackDir = layout.projectDirectory.dir('testworld/datapack')
+	worldName = 'Wynn-Photon Test'
+	shaderPack = devPackName
+	fresh = providers.gradleProperty('fresh').isPresent()
+	doFirst {
+		if (!configured) {
+			throw new GradleException('Set shaderpacksDir in local.properties (or pass -PshaderpacksDir=...) to use installTestWorld.')
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Dev client: gradlew dev
+//
+// Starts Minecraft with Sodium, WynnIris, Photonics, Voxy and this mod, straight into the "Wynn-Photon Test" world,
+// with work/ linked in as the shader pack and the Wynncraft resource pack in the world. Everything lives in run/.
+// -----------------------------------------------------------------------------
+
+def devRunDir = layout.projectDirectory.dir('run')
+
+// work/ is built on the first run only, so gradlew dev never touches unsaved edits.
+def applyPatchesIfMissing = tasks.register('applyPatchesIfMissing', ApplyPatchesTask) {
+	description = 'Builds work/ if it does not exist yet.'
+	dependsOn extractPhoton
+	it.baseDir = baseDir
+	it.patchesDir = patchesDir
+	it.workDir = workDir
+	it.snapshotFile = workSnapshot
+	force = false
+	onlyIf { !workDir.dir('shaders').asFile.exists() }
+}
+
+def prepareDevClient = tasks.register('prepareDevClient', PrepareDevClientTask) {
+	description = 'Links work/ into run/shaderpacks and adds the Photon zip for the dev client.'
+	dependsOn applyPatchesIfMissing, downloadPhoton
+	it.runDir = devRunDir
+	it.workDir = workDir
+	photonZip = photonDir.file("${photon_pack_name}.zip")
+	it.devPackName = devPackName
+}
+
+def installDevTestWorld = tasks.register('installDevTestWorld', InstallTestWorldTask) {
+	description = 'Installs the test world into run/ for the dev client. -Pfresh starts it over.'
+	dependsOn prepareDevClient
+	instanceDir = devRunDir
+	datapackDir = layout.projectDirectory.dir('testworld/datapack')
+	// Wynncraft's resource pack isn't downloadable outside the game, so take the one Minecraft cached when you joined
+	// Wynncraft: from wynncraftInstanceDir (local.properties), the instance holding shaderpacksDir, or .minecraft.
+	def packSources = []
+	def wynnInstance = providers.gradleProperty('wynncraftInstanceDir').getOrElse(localProps.getProperty('wynncraftInstanceDir', ''))
+	if (!wynnInstance.isBlank()) packSources << file(wynnInstance)
+	if (!devShaderpacks.isBlank()) packSources << file(devShaderpacks).parentFile
+	if (System.getenv('APPDATA')) packSources << file("${System.getenv('APPDATA')}/.minecraft")
+	packSources << file("${System.getProperty('user.home')}/.minecraft")
+	packSources << file("${System.getProperty('user.home')}/Library/Application Support/minecraft")
+	packSourceInstances.from(packSources)
+	worldName = 'Wynn-Photon Test'
+	shaderPack = devPackName
+	fresh = providers.gradleProperty('fresh').isPresent()
+}
+
+loom {
+	runs {
+		dev {
+			client()
+			configName = 'Wynn-Photon dev client'
+			runDir 'run'
+			programArgs '--quickPlaySingleplayer', 'Wynn-Photon Test'
+		}
+	}
+}
+
+tasks.named('runDev') {
+	group = 'wynn-photon'
+	description = 'Starts the dev client in the Wynn-Photon test world.'
+	dependsOn installDevTestWorld
+}
+
+tasks.register('dev') {
+	group = 'wynn-photon'
+	description = 'Starts the dev client in the Wynn-Photon test world (same as runDev).'
+	dependsOn 'runDev'
 }
 
 processResources {

@@ -1,0 +1,7 @@
+{
+  "pack": {
+    "description": "Wynn-Photon test gallery: rebuilds the test blocks every time the world loads",
+    "min_format": [94, 1],
+    "max_format": 94
+  }
+}

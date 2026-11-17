@@ -30,6 +30,14 @@ unified diffs (`patches/`), never Photon itself. See README.md for the user-faci
 
 `gradlew installDevPack` copies `work/` into the user's shaderpacks folder, which is set in `local.properties`, for
 testing in game.
+`gradlew dev` starts a Loom dev client (Sodium, WynnIris, Photonics, Voxy, all in `run/`) straight into the test
+world, with `work/` junction-linked as the selected shader pack, so edits show after pressing R. Never delete
+`run/shaderpacks/photon_v1.4 + WynnPhoton-dev` recursively: it is a link to `work/`. Dev-only mods are
+`modLocalRuntime` from Modrinth's Maven; pin a Modrinth version ID when a version number is shared across Minecraft
+versions (Voxy, Mod Menu). Wynncraft's CDN refuses downloads outside the game, so the world copies the pack Minecraft
+cached in an instance's `downloads/`.
+`gradlew installTestWorld` also installs the "Wynn-Photon Test" gallery world and selects the dev pack in Iris (see
+`testworld/README.md`). Add an exhibit there for every new block change.
 
 ## Rules and gotchas
 
@@ -42,8 +50,20 @@ testing in game.
 - Only text files can be patched. Binary changes, such as textures, are not supported yet.
 - Bump `mod_version` in `gradle.properties` for each release. The patched pack's folder name includes it.
 - Block and item IDs: `10079` was Photon's pink light slot. It is now the Wynncraft candle sconce (lit redstone
-  torch), and pink was merged into `10078`. Before taking another ID, check `block.properties`, `item.properties`,
+  torch and repeater candelabra), and pink was merged into `10078`. `10077` (purple) is now Wynncraft molten rock, and
+  purple was merged into `10078` too. `10075`/`10076` are emerald ore/block, and light blue and blue were merged
+  into `10074`. `10073` (green, merged into `10072`) is the four-candle candelabra, and `10097` is murky water.
+  Before taking another ID, check `block.properties`, `item.properties`,
   `light_colors.glsl` and `ph_lights.json`.
+- Wynn-Photon changes terrain only: blocks, block lights, block materials and Voxy. WynnIris (an Iris fork) already
+  handles Wynncraft's entity, item, text and sky effects: glints, translucency, alpha-254/251 emissive and shadeless
+  pixels, skyboxes, fog. Don't edit Photon's entity, hand or text programs, don't reuse colortex11-13, and keep
+  "photon" in the pack name. See "Scope" in `docs/research/wynn-rp-blocks.md`.
+- Every light change updates both the colored-light volume (`block.properties` + `light_colors.glsl`) and Photonics
+  (`ph_lights.json`). Photonics' built-in defaults list `repeater`, `comparator`, `redstone_torch` and
+  `enchanting_table` by name. To remove one of those lights, also add the block to the `"disabled"` override in
+  `ph_lights.json`.
+- `docs/research/wynn-rp-blocks.md` holds the survey and the ranked build list.
 - Photon's license does not allow publishing derivatives on Modrinth or CurseForge without SixthSurge's written
   permission. Don't set up publishing to those platforms unless the user confirms permission was granted.
 

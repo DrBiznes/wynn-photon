@@ -1,14 +1,40 @@
 --- a/shaders/ph_lights.json
 +++ b/shaders/ph_lights.json
-@@ -30,6 +30,7 @@
+@@ -20,7 +20,6 @@
+ #define OCHRE_FROGLIGHT_ID `*10051`
+ #define VERDANT_FROGLIGHT_ID `*10052`
+ #define PEARLESCENT_FROGLIGHT_ID `*10053`
+-#define ENCHANTING_TABLE_ID `*10054`
+ #define AMETHYST_CLUSTER_ID `*10055`
+ #define CALIBRATED_SCULK_SENSOR_ID `*10056`
+ #define ACTIVE_SCULK_SENSOR_ID `*10057`
+@@ -30,6 +29,11 @@
  #define COPPER_BULBS_ID `*10061`
  #define NETHER_PORTAL_ID `*10062`
  #define END_PORTAL_ID `*10063`
++#define FOUR_CANDLE_CANDELABRA_ID `*10073`
++#define EMERALD_ORE_ID `*10075`
++#define EMERALD_BLOCK_ID `*10076`
++#define MOLTEN_ROCK_ID `*10077`
 +#define CANDLE_SCONCE_ID `*10079`
  
  
  {
-@@ -343,6 +344,13 @@
+@@ -280,13 +284,6 @@
+             PEARLESCENT_FROGLIGHT_ID
+           ]
+         },
+-        "enchanting_table": {
+-          "color": "*enchanting_table",
+-          "intensity": "*enchanting_table",
+-          "blocks": [
+-            ENCHANTING_TABLE_ID
+-          ]
+-        },
+         "amethyst_cluster": {
+           "color": "*amethyst_cluster",
+           "intensity": "*amethyst_cluster",
+@@ -343,6 +340,47 @@
              NETHER_PORTAL_ID
            ]
          },
@@ -16,9 +42,54 @@
 +          "color": "*medium_orange_light",
 +          "intensity": 257,
 +          "blocks": [
-+            CANDLE_SCONCE_ID
++            CANDLE_SCONCE_ID,
++            { "value": "minecraft:redstone_torch[lit=true]", "priority": 100 },
++            { "value": "minecraft:redstone_wall_torch[lit=true]", "priority": 100 },
++            { "value": "minecraft:repeater[delay=1,powered=true]", "priority": 100 },
++            { "value": "minecraft:repeater[delay=2,powered=true]", "priority": 100 },
++            { "value": "minecraft:repeater[delay=3,powered=true]", "priority": 100 }
++          ]
++        },
++        "four_candle_candelabra": {
++          "color": "*medium_orange_light",
++          "intensity": 300,
++          "blocks": [
++            FOUR_CANDLE_CANDELABRA_ID,
++            { "value": "minecraft:repeater[delay=4,powered=true]", "priority": 100 }
++          ]
++        },
++        "emerald_ore": {
++          "color": "#73ff59",
++          "intensity": 32,
++          "blocks": [
++            EMERALD_ORE_ID
++          ]
++        },
++        "emerald_block": {
++          "color": "#73ff59",
++          "intensity": 86,
++          "blocks": [
++            EMERALD_BLOCK_ID
++          ]
++        },
++        "molten_rock": {
++          "color": "#ff4c14",
++          "intensity": 64,
++          "blocks": [
++            MOLTEN_ROCK_ID
 +          ]
 +        },
          "disabled": {
            "color": "#000000",
            "intensity": 0,
+@@ -351,7 +389,9 @@
+             "minecraft:respawn_anchor",
+             "minecraft:dragon_egg",
+             "minecraft:vault",
+-            { "value": "minecraft:redstone_wire[power=0]", "priority": 100 }
++            { "value": "minecraft:redstone_wire[power=0]", "priority": 100 },
++            { "value": "minecraft:comparator", "priority": 100 },
++            { "value": "minecraft:enchanting_table", "priority": 100 }
+           ]
+         }
+       }

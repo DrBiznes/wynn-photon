@@ -48,9 +48,10 @@ work/           editable Photon = base + patches                              gi
 
 1. `gradlew applyPatches` downloads Photon (hash-checked), then rebuilds `work/` from it plus `patches/`.
 2. Edit files in `work/`. Label your edits with a `Wynn-Photon:` comment so they're easy to find.
-3. To try them in game, `gradlew installDevPack` copies `work/` to
-   `<shaderpacksDir>/photon_v1.4 + WynnPhoton-dev`. Select it in Iris and press `R` to reload after each install.
-   Set `shaderpacksDir` in `local.properties` (gitignored) using forward slashes:
+3. To try them in game, run `gradlew dev` (see [the dev client](#the-dev-client) below) and press `R` in game to
+   reload after each edit. Or `gradlew installDevPack` copies `work/` to `<shaderpacksDir>/photon_v1.4 + WynnPhoton-dev`
+   in your own Minecraft instance. Select it in Iris and press `R` after each install. Set `shaderpacksDir` in
+   `local.properties` (gitignored) using forward slashes:
    ```properties
    shaderpacksDir=C:/Users/you/AppData/Roaming/ModrinthApp/profiles/<profile>/shaderpacks
    ```
@@ -62,6 +63,24 @@ work/           editable Photon = base + patches                              gi
 `-Pforce` to discard them.
 
 Only text files can be patched for now. Adding new text files and deleting files both work.
+
+### The dev client
+
+`gradlew dev` starts Minecraft 1.21.11 with Sodium, WynnIris, Photonics, Voxy, Fabric API, Mod Menu and this mod, and
+opens the **Wynn-Photon Test** world: a creative superflat gallery of every block Wynn-Photon changes. Everything it
+uses lives in `run/` (gitignored), so it never touches your own Minecraft.
+
+- `work/` is linked into `run/shaderpacks` as `photon_v1.4 + WynnPhoton-dev` and is selected in Iris. Edit `work/`,
+  then press `R` in game. On Windows the link is a directory junction, so no admin rights are needed.
+- The unmodified Photon zip is in `run/shaderpacks` too, so the mod also builds its own patched pack on launch, as it
+  does for players. Switch to it in Iris's shader menu to check that `patches/` matches `work/`.
+- The world needs **Wynncraft's resource pack**, which can't be downloaded outside the game. The task copies the one
+  Minecraft cached when you last joined Wynncraft. It looks in `wynncraftInstanceDir` (set it in `local.properties`
+  to your Minecraft instance folder), then in the instance holding `shaderpacksDir`, then in the default
+  `.minecraft`. Without one, the world still works but the blocks look vanilla. Minecraft asks to load the pack when
+  the world opens.
+- `gradlew dev -Pfresh` starts the world over. See [testworld/README.md](testworld/README.md) for the gallery and its
+  commands.
 
 ### Updating to a new Photon release
 

@@ -1,0 +1,12 @@
+--- a/shaders/program/shadow.vsh
++++ b/shaders/program/shadow.vsh
+@@ -108,7 +108,8 @@
+         pos,
+         is_top_vertex,
+         clamp01(rcp(240.0) * gl_MultiTexCoord1.y),
+-        material_mask
++        material_mask,
++        vertex_height_in_block(at_midBlock) // Wynn-Photon: match the gbuffers sway
+     );
+     pos = pos - cameraPosition;
+ 

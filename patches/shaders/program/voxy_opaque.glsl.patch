@@ -1,0 +1,13 @@
+--- a/shaders/program/voxy_opaque.glsl
++++ b/shaders/program/voxy_opaque.glsl
+@@ -16,7 +16,9 @@
+                   )
+         * (float(int(parameters.face) & 1) * 2.0 - 1.0);
+ 
+-    uint material_mask = max(parameters.customId - 10000u, 0u);
++    // Wynn-Photon: unsigned subtraction wrapped unmapped blocks (customId 0)
++    // around to mask 255, so they shaded differently at LOD than up close
++    uint material_mask = parameters.customId >= 10000u ? parameters.customId - 10000u : 0u;
+ 
+     // Encode gbuffer data
+ 
