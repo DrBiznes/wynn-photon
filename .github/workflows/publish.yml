@@ -9,8 +9,8 @@
 #
 # Needs repository secrets MODRINTH_TOKEN and CURSEFORGE_TOKEN.
 # A platform with an empty project ID below is skipped.
-# WynnIris is listed on Modrinth only, so CurseForge gets just the Iris dependency. Modrinth also requires the
-# Photon shader pack (any version: mc-publish can't pin one). CurseForge mods can't depend on shader packs.
+# Modrinth lists WynnIris (optional) and requires the Photon shader pack (any version: mc-publish can't pin one).
+# WynnIris isn't on CurseForge, so CurseForge lists Iris instead. CurseForge mods can't depend on shader packs.
 name: Publish
 
 on:
@@ -64,7 +64,7 @@ jobs:
           game-versions: 1.21.11
           java: 21
           dependencies: |
-            iris(optional){modrinth:iris}{curseforge:irisshaders}
+            iris(optional){curseforge:irisshaders}#(ignore:modrinth)
             wynniris(optional){modrinth:wynniris}#(ignore:curseforge)
             photon-shader(required){modrinth:lLqFfGNs}#(ignore:curseforge)
 
