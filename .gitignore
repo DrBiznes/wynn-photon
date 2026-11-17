@@ -37,3 +37,6 @@ logs/
 marketing/*
 !marketing/banner.png
 !marketing/icon.png
+
+# Claude Code worktrees
+.claude/worktrees/
