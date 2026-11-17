@@ -32,7 +32,35 @@ that, one small labelled patch at a time.
 - **0.2.0 (done):** shortlist items 1-6. Candelabras, sconces, spike traps and vines are checked in game.
 - **0.3.0 (done):** shortlist items 7-10, emeralds, nether bricks, obsidian, iron trapdoors, the dev client
   (`gradlew dev`) and the test world ([testworld/README.md](../testworld/README.md)). See [CHANGELOG.md](CHANGELOG.md).
-  Next: check them in the test world, then tune lighting and the rest of the pack for Wynncraft.
+  Not checked in game yet.
+- **Texture scan (done in part, 2026-11-16):** the average colour of the server pack's 8-bit block textures was
+  compared with Photon's hardcoded materials. It produced roadmap step 5. About 150 textures are still unscanned
+  (step 9).
+- **0.4.0 (done):** roadmap step 5, the texture-scan fixes and the survey's optional leftovers. See
+  [CHANGELOG.md](CHANGELOG.md). Not checked in game yet.
+- **Next:** check 0.4.0 in the test world, then roadmap step 6.
+
+### Done so far
+
+- [x] Patcher mod, patch workflow, `patcher-core` shared by the build and the game (0.1.0)
+- [x] Survey of the Wynncraft resource pack (roadmap step 1)
+- [x] Candle sconce: redstone torches, standing, wall and in hand (0.1.0)
+- [x] Lit candelabras → candle light; four-candle candelabra on its own brighter ID (0.2.0, 0.3.0)
+- [x] Spike traps (comparators) → metal, no light (0.2.0)
+- [x] Vine carrier split: chain, rope, dead leaves, cattails, dead plants, hanging crops (0.2.0)
+- [x] Murky water material, `10097` (0.3.0)
+- [x] Molten rock embers and light; dark cobblestone slabs out of wood (0.2.0)
+- [x] Wrong lights removed: spawner, activator and detector rails, enchanting table (0.2.0, 0.3.0)
+- [x] Voxy unsigned-wrap fix (0.2.0)
+- [x] Two-block-tall crop sway (0.3.0)
+- [x] Emerald block and ore glow (0.3.0)
+- [x] Nether bricks → plain stone; obsidian less reflective; iron trapdoors not reflective (0.3.0)
+- [x] Dev client (`gradlew dev`) and test world (0.3.0)
+- [x] WynnIris boundary and material ID ranges settled
+- [x] In-game check of the 0.3.0 changes in the test world and on Wynncraft
+- [x] Redstone dust off; magma, glowstone and beacon lights retuned; quartz and iron block less reflective (0.4.0)
+- [x] Survey leftovers: crate, cauldron and book stacks to wood; unlit candle props metal and wax (0.4.0)
+- [ ] In-game check of the 0.4.0 changes
 
 ## Roadmap
 
@@ -54,7 +82,7 @@ build.
   the Photon category it's in today, the proposed category or light, and a confidence level. Lights get their own
   table with proposed color and brightness.
 
-### 2. Material remaps (cheap wins, next)
+### 2. Material remaps (done, 0.2.0 and 0.3.0)
 
 From the survey: `comparator` spike traps → transparent metal; the vine carrier split (chain, rope, dead plants,
 cattails, hanging crops, dead leaves); stone `petrified_oak_slab` halves unmapped; the Voxy unsigned-wrap fix in
@@ -64,7 +92,7 @@ Move blocks between Photon's existing categories in `block.properties`. Examples
 to "Metals", something drawn as wood or foliage gets wood specular or subsurface scattering, and a fake ore drawn as
 plain stone loses its glow. These changes need no shader code.
 
-### 3. Light sources
+### 3. Light sources (done, 0.1.0 to 0.3.0; glowstone and beacon moved to step 5)
 
 Give each remodelled light the color and strength of what Wynncraft actually draws, the way 0.1.0 handles the torch.
 This covers colored lighting (`light_colors.glsl`), Photonics (`ph_lights.json`) and handheld light
@@ -75,7 +103,7 @@ This covers colored lighting (`light_colors.glsl`), Photonics (`ph_lights.json`)
 - the four-candle candelabra and the enchanting table follow once checked in game. Also look for Wynn props that should glow but don't, and vanilla lights that Wynncraft turned
 into something that shouldn't glow.
 
-### 4. Wynn-only materials
+### 4. Wynn-only materials (done for molten rock and murky water)
 
 Some Wynn looks fit no Photon category, such as the torch's "only the flame glows" mask. These need new branches in
 `material.glsl`. Photon's block ID ranges are full (10001-10096 are all used). The survey answered the ID range question: the mask
@@ -83,7 +111,90 @@ is 8 bits, but the colored-light volume caps usable IDs at 127. Use **10064-1007
 Simply Light/Luminax slots) and **10097-10099, 10104-10127** for Wynn-only non-light materials. Candidates: the
 molten-rock embers and the murky-water gloss.
 
-### 5. Mod and project polish
+### 5. Texture-scan fixes (done, 0.4.0)
+
+From the 2026-11-16 texture scan, with the user's decisions. Each light change ships its LPV and Photonics halves,
+and each block gets a test-world exhibit.
+
+- [x] **Redstone dust stops glowing.** Builders use it as blood stains. `redstone_wire` sits on `10058` (redstone
+  block), so it glows and casts red light at any power. It is also listed on `10080`, but Iris keeps the first match.
+  Take it off `10058`. Photonics already disables `redstone_wire[power=0]`; check whether the other power levels need
+  disabling too.
+- [x] **Magma block: a little dimmer, not dim.** Wynncraft's magma is a dark block (`#53110c`), but it should still
+  cast a good amount of light. Today's orange ×9 may be a bit bright. Ember-only glow with a molten-rock-strength
+  light is too dark. Split it from fire and shroomlight onto its own ID, tune the light down slightly and make the
+  surface glow match the dark texture.
+- **Lava: tried and reverted.** A deep-red retune (hue window and light colour) was built for 0.4.0, then
+  dropped: lava stays as Photon draws it.
+- [x] **Quartz gets the obsidian fix.** Quartz is a white building stone in Wynncraft, but "gems" (`10013`) makes it
+  a near-mirror. Cut its smoothness the way 0.3.0 did for obsidian.
+- [x] **Iron block: a bit less reflective.** It stays metallic. Reduce it less than obsidian and quartz were reduced.
+  **Gold stays as is.**
+- [x] **Glowstone light.** Pale yellow (`#f5d79d`) instead of the lantern's orange. Needs its own ID, because `10035`
+  is shared with lanterns and redstone lamps.
+- [x] **Beacon light.** A pale, near-white teal (from Wynncraft's `#86d0cb`) instead of blue.
+- **Decided, no change:** the redstone block keeps its glow and light.
+- [x] **Optional survey leftovers:** sticky piston crate and cauldron to wood, daylight-detector book stacks to
+  transparent wood, and unlit sconces and candelabras on `10104` (iron holder metal, wax weak SSS).
+- **Answered:** Photonics' defaults light `redstone_wire` at power 1-15, so the whole block is in `"disabled"`. New
+  IDs: magma `10067` (black modded lights merged into gray), glowstone `10054` (the enchanting table's slot), quartz
+  `10098`, iron block `10099`.
+
+### 6. Cave detection
+
+Wynncraft's ground level differs from vanilla. Photon decides "in a cave" from altitude and skylight
+(`shaders.properties`: `biome_cave` uses `eyeAltitude` below 63, fading out by 50, times missing skylight), and
+`SEA_LEVEL` defaults to 63.
+
+- [ ] Find Wynncraft's real sea and ground levels, per province if they differ. Sky Islands and the Silent Expanse
+  are likely special cases.
+- [ ] List everything that reads `biome_cave`, `SEA_LEVEL` or `eyeAltitude` (cave fog, cave lighting, water, clouds).
+- [ ] Patch the thresholds, or drop the altitude term and rely on skylight alone if no single height fits.
+- [ ] Check in a surface town, an open low area, a real cave and a dungeon.
+
+### 7. Invisible light blocks
+
+Builders use `minecraft:light` all over the map. It has no geometry, so the colored-light volume's voxelisation
+never sees it. Today it only lights through the vanilla lightmap.
+
+- [ ] Research: what Photon does with vanilla blocklight that has no voxel emitter
+  (`COLORED_LIGHTS_VANILLA_LIGHTMAP_CONTRIBUTION`), and whether those areas look right or flat and uncoloured.
+- [ ] Research: whether Photonics lists `minecraft:light` in its defaults, and whether it can ray-trace a block
+  with no model. If so, add `light[level=N]` entries to `ph_lights.json`, scaled by level.
+- [ ] Decide the colour. A light block has none; a neutral warm white is the safe default.
+- [ ] Decide how to handle the "both halves" principle if only one light system can see the block. A lightmap-side
+  fix in the LPV path may be the other half.
+- [ ] If neither system can see it, write it up as a WynnIris or Photonics request.
+
+### 8. Region atmosphere
+
+Photon picks fog density and colour from the vanilla biome category (arid, snowy, taiga, jungle, swamp, temperate)
+and from biome temperature and humidity. Wynncraft's regions don't have to match the biome the server assigns them.
+
+- [ ] Record the biome the server assigns to each region. The wiki's region list: Aelumia Citadel, Auburn Forest,
+  Avos Territory, Canyon of the Lost, Corkus Island, Corrupted Plains, Dark Forest, Dernel Jungle, Desert of Almuj,
+  Detlas Suburbs, Elkurn Fields, Gateway Passage, Gylia Plains, Highlands, Ice Canyon, Industrial District, Kander
+  Forest, Light Forest, Llevigar Plains, Lower and Upper Molten Heights, Maltic Plains, Mistwoods, Nemract Swamp,
+  Nesaak Tundra, Nivla Woods, Olux Swamp, Pre-Light Forest, Rymek Mesa, Savannah, Silent Expanse, The Silent Road,
+  Sky Islands, Time Valley, Troms Jungle, Wastelands.
+- [ ] For each, note what Photon does today (fog, weather variation, sandstorm, aurora) and whether it fits.
+- [ ] Map what WynnIris's biome fog and Mist Woods fog already do, so the two don't stack or fight.
+- [ ] Propose changes: retuned per-category fog, or new categories keyed on Wynncraft's biomes. Write-up goes in
+  `docs/research/`.
+- [ ] Check whether rain ever falls on Wynncraft. If not, rain puddles, rainbows and sandstorms are dead code there.
+
+### 9. Full texture audit
+
+Finish the scan that produced step 5.
+
+- [ ] Decode the ~150 textures the first scan skipped (palette and low-bit-depth PNGs): wool, netherrack, soul sand,
+  snow, clay, prismarine bricks, purpur, coal block, pistons, farmland, most of `variants/`.
+- [ ] Compare every texture with its vanilla counterpart's colour, not just with Photon's category, to find blocks
+  Wynncraft redrew as something else. Lead: the sponge textures are animated in the pack.
+- [ ] Check every block on a hue- or brightness-keyed Photon material (lights, gems, metals, sand, ice, copper).
+- [ ] Add the results to `docs/research/wynn-rp-blocks.md` and turn the findings into a ranked list.
+
+### 10. Mod and project polish
 
 - Show an in-game notice when Photon is missing, not just a log line.
 - A Mod Menu screen for the two config options.
@@ -146,5 +257,8 @@ packs. Check what it covers so the two don't duplicate or fight each other.
   change.)
 - ~~Can Iris target custom item models at all?~~ Only by `item_model`, not `custom_model_data`, and Wynn props use
   the latter. A WynnIris request if ever needed.
+- What are Wynncraft's sea and ground levels, and do they differ by province? (Step 6.)
+- Can either light system see `minecraft:light`, and what colour should it cast? (Step 7.)
+- Which vanilla biome does the server assign to each region? (Step 8.)
 - Does Photonics' default `redstone` group override Photon's `ph_lights.json` group for `repeater[powered=true]`?
   Check in game with the candelabra change.

@@ -12,7 +12,23 @@
                              material.roughness = sqr(1.0 - smoothness);
                              material.f0 = vec3(0.02);
                              material.ssr_multiplier = 1.0;
-@@ -825,7 +828,45 @@
+@@ -727,7 +730,14 @@
+                         }
+                     } else { // 54-56
+                         if (material_mask == 54u) { // 54
+-
++#ifdef HARDCODED_EMISSION
++                            // Wynn-Photon: glowstone (was in 35, strong golden
++                            // light), same emission as 35
++                            material.emission = 0.85 * albedo_sqrt * hsl.z
++                                * linear_step(0.4,
++                                              0.6,
++                                              0.2 * hsl.y + 0.55 * hsl.z);
++#endif
+                         } else { // 55
+ #ifdef HARDCODED_EMISSION
+                             // Amethyst cluster
+@@ -825,7 +835,53 @@
          }
      }
  
@@ -55,11 +71,19 @@
 +        float ember = step(0.8, hsl.y) * linear_step(0.25, 0.38, hsl.z);
 +        material.emission = 0.80 * albedo_sqrt * ember;
 +#endif
++    } else if (material_mask == 67u) {
++#ifdef HARDCODED_EMISSION
++        // Wynn-Photon: magma block. Wynncraft's magma is near-black rock with
++        // saturated red cracks (average #53110c). Only the cracks glow; the
++        // rock around them does not.
++        float crack = step(0.7, hsl.y) * linear_step(0.15, 0.35, hsl.z);
++        material.emission = 1.0 * albedo_sqrt * crack;
++#endif
 +    } else if (64u <= material_mask && material_mask < 80u) {
  // Stained glass, honey and slime
  #ifdef HARDCODED_SPECULAR
          material.f0 = vec3(0.04);
-@@ -836,6 +877,14 @@
+@@ -836,6 +892,52 @@
  #ifdef HARDCODED_SSS
          material.sss_amount = 0.5;
  #endif
@@ -70,6 +94,44 @@
 +        material.f0 = vec3(0.02);
 +        material.roughness = 0.06;
 +        material.ssr_multiplier = 1.0;
++#endif
++    } else if (material_mask == 98u) {
++#ifdef HARDCODED_SPECULAR
++        // Wynn-Photon: quartz blocks. Wynncraft uses quartz as a white
++        // building stone, so it gets polished stone instead of the gems' (13)
++        // near-mirror: smoothness cut to 45 %, like obsidian (11), and a
++        // dielectric f0
++        float smoothness = 0.45 * sqrt(linear_step(0.1, 0.9, hsl.z));
++        material.roughness = sqr(1.0 - smoothness);
++        material.f0 = vec3(0.04);
++        material.ssr_multiplier = 1.0;
++#endif
++    } else if (material_mask == 99u) {
++#ifdef HARDCODED_SPECULAR
++        // Wynn-Photon: iron block. Still metal like the metals (12), with its
++        // smoothness cut to 70 %, so it reflects a little less
++        float smoothness = 0.70 * sqrt(linear_step(0.1, 0.9, hsl.z));
++        material.roughness = max(sqr(1.0 - smoothness), 0.04);
++        material.f0 = material.albedo;
++        material.is_metal = true;
++        material.ssr_multiplier = 1.0;
++#endif
++    } else if (material_mask == 104u) {
++        // Wynn-Photon: unlit Wynncraft candle props (unlit sconces and
++        // candelabras). The cream wax gets weak SSS; the dark iron holder
++        // and stand are metal.
++        float wax = step(0.6, hsl.z);
++#ifdef HARDCODED_SSS
++        material.sss_amount = 0.1 * wax;
++#endif
++#ifdef HARDCODED_SPECULAR
++        if (wax < 0.5) {
++            float smoothness = sqrt(linear_step(0.1, 0.9, hsl.z));
++            material.roughness = max(sqr(1.0 - smoothness), 0.04);
++            material.f0 = material.albedo;
++            material.is_metal = true;
++            material.ssr_multiplier = 1.0;
++        }
 +#endif
      }
  

@@ -1,12 +1,13 @@
 # Generated for the Wynn-Photon test world. Rebuilds the whole gallery.
-# Clear the gallery area (two fills, each under the 32768-block command limit) and reset the floor
-fill -4 -60 -24 70 -50 -1 air
-fill -4 -60 0 70 -50 30 air
-fill -4 -61 -24 70 -61 30 grass_block
+# Clear the gallery area (three fills, each under the 32768-block command limit) and reset the floor
+fill -4 -60 -24 96 -50 -1 air
+fill -4 -60 0 96 -50 15 air
+fill -4 -60 16 96 -50 30 air
+fill -4 -61 -24 96 -61 30 grass_block
 
 # ---- Dark hall (z 16-26): light sources, one per cell, behind a baffle so no daylight gets in
 # Floor at y -61, roof at y -55, air inside
-fill -1 -61 16 65 -55 26 stone_bricks hollow
+fill -1 -61 16 89 -55 26 stone_bricks hollow
 fill 5 -60 21 5 -56 25 stone_bricks
 fill 11 -60 21 11 -56 25 stone_bricks
 fill 17 -60 21 17 -56 25 stone_bricks
@@ -17,6 +18,10 @@ fill 41 -60 21 41 -56 25 stone_bricks
 fill 47 -60 21 47 -56 25 stone_bricks
 fill 53 -60 21 53 -56 25 stone_bricks
 fill 59 -60 21 59 -56 25 stone_bricks
+fill 65 -60 21 65 -56 25 stone_bricks
+fill 71 -60 21 71 -56 25 stone_bricks
+fill 77 -60 21 77 -56 25 stone_bricks
+fill 83 -60 21 83 -56 25 stone_bricks
 # Entrance in the middle of the front wall, with a baffle wall just inside it
 fill 29 -60 16 30 -59 16 air
 fill 27 -60 18 32 -57 18 stone_bricks
@@ -50,9 +55,17 @@ setblock 50 -60 23 activator_rail[shape=north_south,powered=true]
 setblock 51 -60 23 lever[face=floor,facing=north,powered=true]
 setblock 52 -60 23 detector_rail[shape=north_south]
 setblock 56 -60 23 enchanting_table
-setblock 60 -60 23 lantern
-setblock 62 -60 23 torch
-setblock 64 -60 23 glowstone
+setblock 61 -60 23 lantern
+setblock 63 -60 23 torch
+setblock 66 -60 23 redstone_wire
+setblock 67 -60 23 redstone_wire
+setblock 68 -60 23 redstone_wire
+setblock 69 -60 23 lever[face=floor,facing=north,powered=true]
+setblock 67 -60 25 redstone_wire
+fill 73 -61 22 75 -61 24 magma_block
+setblock 74 -60 23 magma_block
+setblock 80 -60 23 glowstone
+setblock 86 -60 23 beacon
 
 # ---- Daylight row (z -12 to -6): materials, specular and SSS
 fill 0 -61 -9 2 -61 -7 nether_bricks
@@ -116,6 +129,25 @@ setblock 66 -60 -8 cauldron
 setblock 68 -60 -8 iron_trapdoor[half=bottom,open=false]
 setblock 69 -60 -8 iron_trapdoor[half=top,open=false]
 setblock 70 -60 -8 iron_trapdoor[facing=north,half=bottom,open=true]
+fill 72 -61 -9 74 -61 -7 quartz_block
+setblock 72 -60 -8 quartz_pillar
+setblock 73 -60 -8 quartz_block
+setblock 73 -59 -8 chiseled_quartz_block
+setblock 74 -60 -8 smooth_quartz
+setblock 76 -60 -8 iron_block
+setblock 76 -59 -8 iron_block
+setblock 78 -60 -8 gold_block
+setblock 78 -59 -8 gold_block
+setblock 80 -60 -8 redstone_wire
+setblock 81 -60 -8 redstone_wire
+setblock 82 -60 -8 lever[face=floor,facing=north,powered=true]
+fill 84 -61 -9 86 -61 -7 magma_block
+setblock 85 -60 -8 magma_block
+setblock 88 -60 -8 repeater[delay=1,facing=north,powered=false]
+setblock 89 -60 -8 repeater[delay=4,facing=north,powered=false]
+setblock 91 -60 -8 stone
+setblock 90 -60 -8 lever[face=wall,facing=west,powered=true]
+setblock 91 -59 -8 redstone_torch[lit=false]
 
 # Signs, then the vine states last: any block placed next to a vine afterwards would strip its faces
 function wynn_photon_test:labels

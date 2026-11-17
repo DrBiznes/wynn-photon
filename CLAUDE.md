@@ -53,6 +53,9 @@ cached in an instance's `downloads/`.
   torch and repeater candelabra), and pink was merged into `10078`. `10077` (purple) is now Wynncraft molten rock, and
   purple was merged into `10078` too. `10075`/`10076` are emerald ore/block, and light blue and blue were merged
   into `10074`. `10073` (green, merged into `10072`) is the four-candle candelabra, and `10097` is murky water.
+  `10067` (black, merged into `10066`) is the magma block, `10054` (the old enchanting table) is glowstone, `10098` is
+  quartz, `10099` is the iron block and `10104` is unlit candle props. A non-light Wynn ID that light should pass
+  through must also be listed in `is_transparent_block` in `voxelization.glsl`, as `10104` is.
   Before taking another ID, check `block.properties`, `item.properties`,
   `light_colors.glsl` and `ph_lights.json`.
 - Wynn-Photon changes terrain only: blocks, block lights, block materials and Voxy. WynnIris (an Iris fork) already

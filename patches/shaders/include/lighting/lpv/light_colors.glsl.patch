@@ -1,6 +1,33 @@
 --- a/shaders/include/lighting/lpv/light_colors.glsl
 +++ b/shaders/include/lighting/lpv/light_colors.glsl
-@@ -44,13 +44,13 @@
+@@ -14,7 +14,7 @@
+     vec3(1.00, 0.63, 0.15) * 4.0, // Brewing stand
+     vec3(1.00, 0.57, 0.30) * 12.0, // Medium golden light
+     vec3(0.45, 0.73, 1.00) * 6.0, // Soul lights
+-    vec3(0.45, 0.73, 1.00) * 14.0, // Beacon
++    vec3(0.78, 1.00, 0.96) * 14.0, // Beacon (Wynn-Photon: a pale, near-white teal, from Wynncraft's #86d0cb beacon; was blue (0.45, 0.73, 1.00))
+     vec3(0.75, 1.00, 0.83) * 3.0, // Sculk
+     vec3(0.75, 1.00, 0.83) * 1.0, // End portal frame
+     vec3(0.60, 0.10, 1.00) * 2.5, // Pink glow
+@@ -24,7 +24,7 @@
+     vec3(1.00, 0.65, 0.30) * 8.0, // Ochre froglight
+     vec3(0.86, 1.00, 0.44) * 8.0, // Verdant froglight
+     vec3(0.75, 0.44, 1.00) * 8.0, // Pearlescent froglight
+-    vec3(0.60, 0.10, 1.00) * 2.0, // Enchanting table
++    vec3(1.00, 0.80, 0.52) * 14.0, // Wynn-Photon: glowstone (block 54, the old enchanting table slot), pale yellow like Wynncraft's #f5d79d, the lantern's strength
+     vec3(0.75, 0.44, 1.00) * 4.0, // Amethyst cluster
+     vec3(0.75, 0.44, 1.00) * 4.0, // Calibrated sculk sensor
+     vec3(0.75, 1.00, 0.83) * 6.0, // Active sculk sensor
+@@ -37,20 +37,20 @@
+ 	// Colors for modded light sources (block IDs 64-79)
+     vec3(1.00, 1.00, 1.00) * 10.0, // 32 - White       (block 64)
+     vec3(0.85, 0.85, 0.85) *  9.0, // 33 - Light Gray  (block 65)
+-    vec3(0.55, 0.55, 0.55) *  8.0, // 34 - Gray        (block 66)
+-    vec3(0.20, 0.20, 0.22) *  6.0, // 35 - Black       (block 67)
++    vec3(0.55, 0.55, 0.55) *  8.0, // 34 - Gray        (block 66) (Wynn-Photon: black modded lights folded in here)
++    vec3(1.00, 0.33, 0.10) *  7.0, // 35 - Wynn-Photon: magma block (block 67), redder than fire to match Wynncraft's dark red magma, and a little under its 9
+     vec3(0.55, 0.35, 0.20) *  8.0, // 36 - Brown       (block 68)
+     vec3(1.00, 0.10, 0.10) * 10.0, // 37 - Red         (block 69)
      vec3(1.00, 0.45, 0.10) * 10.0, // 38 - Orange      (block 70)
      vec3(1.00, 0.95, 0.20) * 10.0, // 39 - Yellow      (block 71)
      vec3(0.55, 1.00, 0.20) * 10.0, // 40 - Lime        (block 72)

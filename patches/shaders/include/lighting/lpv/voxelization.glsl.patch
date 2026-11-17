@@ -1,0 +1,12 @@
+--- a/shaders/include/lighting/lpv/voxelization.glsl
++++ b/shaders/include/lighting/lpv/voxelization.glsl
+@@ -64,7 +64,8 @@
+         block_id == 18u || // Transparent metal objects
+         block_id == 28u || // Transparent copper objects
+         block_id == 30u || // Transparent wood objects
+-        block_id == 80u; // Miscellaneous transparent
++        block_id == 80u || // Miscellaneous transparent
++        block_id == 104u; // Wynn-Photon: unlit Wynncraft candle props, transparent like block 80 was for them
+ 
+     bool is_light_emitting_block = 32u <= block_id && block_id < 80u;
+ 

@@ -31,16 +31,17 @@ def vs(e, n, s, w, up):
 
 # ---------------------------------------------------------------- clear and floor
 build += [
-    "# Clear the gallery area (two fills, each under the 32768-block command limit) and reset the floor",
-    "fill -4 -60 -24 70 -50 -1 air",
-    "fill -4 -60 0 70 -50 30 air",
-    "fill -4 -61 -24 70 -61 30 grass_block",
+    "# Clear the gallery area (three fills, each under the 32768-block command limit) and reset the floor",
+    "fill -4 -60 -24 96 -50 -1 air",
+    "fill -4 -60 0 96 -50 15 air",
+    "fill -4 -60 16 96 -50 30 air",
+    "fill -4 -61 -24 96 -61 30 grass_block",
     "",
     "# ---- Dark hall (z 16-26): light sources, one per cell, behind a baffle so no daylight gets in",
 ]
 
 # ---------------------------------------------------------------- dark hall
-CELLS = 11
+CELLS = 15
 X1 = 6 * CELLS - 1  # east outer wall
 build += [
     "# Floor at y -61, roof at y -55, air inside",
@@ -124,10 +125,29 @@ hall.append(("Enchanting table", "no purple", "light now", ""))
 b(c + 2, G, 23, "enchanting_table")
 # 10: references, unchanged Photon lights
 c = cell(10)
-hall.append(("Reference", "lantern, torch,", "glowstone", "(unchanged)"))
-b(c, G, 23, "lantern")
-b(c + 2, G, 23, "torch")
-b(c + 4, G, 23, "glowstone")
+hall.append(("Reference", "lantern, torch", "(unchanged)", ""))
+b(c + 1, G, 23, "lantern")
+b(c + 3, G, 23, "torch")
+# 11: redstone dust (Wynncraft blood stains), no glow and no light at any power
+c = cell(11)
+hall.append(("Redstone dust", "no light, even", "at power 15", "back: power 0"))
+for dx in range(3):
+    b(c + dx, G, 23, "redstone_wire")
+build.append(f"setblock {c + 3} {G} 23 lever[face=floor,facing=north,powered=true]")
+b(c + 1, G, 25, "redstone_wire")
+# 12: magma block
+c = cell(12)
+hall.append(("Magma block", "own ID, red,", "a bit dimmer", "cracks glow"))
+build.append(f"fill {c + 1} -61 22 {c + 3} -61 24 magma_block")
+b(c + 2, G, 23, "magma_block")
+# 13: glowstone
+c = cell(13)
+hall.append(("Glowstone", "own ID,", "pale yellow", "light"))
+b(c + 2, G, 23, "glowstone")
+# 14: beacon (a beacon gives light without a pyramid)
+c = cell(14)
+hall.append(("Beacon", "pale teal", "light", "(was blue)"))
+b(c + 2, G, 23, "beacon")
 
 for i, lines in enumerate(hall):
     sign(lines, cell(i) + 2, G, 21, 8, labels)
@@ -214,18 +234,47 @@ for age in range(4):
     b(48 + age, G, Z - 3, f"beetroots[age={age}]")
 label(51, "Crops, age 0-7", "wheat carrots", "potatoes beets", "no sway seam")
 
-# props drawn as other things, current materials
+# props drawn as other things: the books, crate and cauldron are wood now
 b(58, G, Z, "iron_bars")
 b(60, G, Z, "daylight_detector")
 b(62, G, Z, "sticky_piston[facing=up]")
 b(64, G, Z, "note_block")
 b(66, G, Z, "cauldron")
-label(62, "Props", "bars, books,", "crate, note,", "cauldron")
+label(62, "Props", "bars, books,", "crate, note,", "cauldron (wood)")
 # iron trapdoors: no metal reflections
 b(68, G, Z, "iron_trapdoor[half=bottom,open=false]")
 b(69, G, Z, "iron_trapdoor[half=top,open=false]")
 b(70, G, Z, "iron_trapdoor[facing=north,half=bottom,open=true]")
 label(69, "Iron trapdoors", "no metal", "reflections")
+# quartz: polished stone, not a gem mirror
+build.append(f"fill 72 -61 -9 74 -61 -7 quartz_block")
+b(72, G, Z, "quartz_pillar")
+b(73, G, Z, "quartz_block")
+b(73, G + 1, Z, "chiseled_quartz_block")
+b(74, G, Z, "smooth_quartz")
+label(73, "Quartz", "polished stone", "(was a mirror)")
+# iron block: a bit rougher; gold next to it is unchanged
+b(76, G, Z, "iron_block")
+b(76, G + 1, Z, "iron_block")
+b(78, G, Z, "gold_block")
+b(78, G + 1, Z, "gold_block")
+label(77, "Iron block", "a bit rougher", "gold unchanged")
+# redstone dust as blood stains
+for x in (80, 81):
+    b(x, G, Z, "redstone_wire")
+build.append(f"setblock 82 {G} {Z} lever[face=floor,facing=north,powered=true]")
+label(81, "Redstone dust", "no glow,", "powered too")
+# magma
+build.append(f"fill 84 -61 -9 86 -61 -7 magma_block")
+b(85, G, Z, "magma_block")
+label(85, "Magma block", "only the", "cracks glow")
+# unlit candle props: dark iron is metal, the wax gets weak SSS
+b(88, G, Z, "repeater[delay=1,facing=north,powered=false]")
+b(89, G, Z, "repeater[delay=4,facing=north,powered=false]")
+b(91, G, Z, "stone")
+build.append(f"setblock 90 {G} {Z} lever[face=wall,facing=west,powered=true]")
+b(91, G + 1, Z, "redstone_torch[lit=false]")
+label(89, "Unlit candles", "iron metal,", "wax weak SSS")
 
 build += [
     "",

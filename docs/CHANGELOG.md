@@ -2,6 +2,55 @@
 
 All notable changes to Wynn-Photon are listed here. Each version names the Photon release its patches apply to.
 
+## 0.4.0 (2026-11-16), for Photon v1.4
+
+Roadmap step 5: fixes from the texture scan, which compared the server pack's block textures with Photon's hardcoded
+materials, plus the survey's optional leftovers. Not checked in game yet.
+
+### Shader changes
+
+- **Redstone dust no longer glows.** Wynncraft builders use it as blood stains. It sat on the redstone block's ID
+  (`10058`), so it glowed and cast red light at any power. It now shades as a plain transparent block (`10080`).
+  Photonics: Photonics' own defaults light `redstone_wire` at power 1-15, so the `disabled` override now names the whole
+  block instead of only `power=0`.
+- **Magma is redder, a little dimmer, and only its cracks glow.** Wynncraft's magma is near-black rock with saturated
+  red cracks (average `#53110c`). It moves off the fire and shroomlight ID (`10040`) onto its own, `10067`. Only the
+  cracks glow, and the light changes from orange `(1.00, 0.45, 0.10) × 9` to red-orange `(1.00, 0.33, 0.10) × 7`.
+  Photonics: a new `magma_block` light (`#ff541a`, 150, down from 193).
+- **Quartz is polished stone, not a mirror.** Wynncraft uses quartz as a white building stone. The quartz blocks,
+  pillars, bricks, slabs and stairs leave the gems (`10013`) for a new Wynn-only material, `10098`: smoothness cut to
+  45 %, like obsidian in 0.3.0, and a stone-like reflectance.
+- **The iron block is a little less reflective.** It leaves the metals (`10012`) for a new Wynn-only material,
+  `10099`. It stays metal, with its smoothness cut to 70 %. Gold, netherite and the rest of the metals are unchanged.
+- **Glowstone casts pale yellow light.** Wynncraft's glowstone is pale yellow (`#f5d79d`), but it shared the lantern's
+  orange light (`10035`). It gets its own ID, `10054`, the enchanting table's freed slot, with a pale yellow light at
+  the lantern's strength, `(1.00, 0.80, 0.52) × 14`. Its glow is unchanged. Held glowstone lights the same way.
+  Photonics: a new `glowstone` light (`#ffcc85`, 300).
+- **The beacon casts a pale teal light.** Wynncraft's beacon is teal (`#86d0cb`). The light changes from blue
+  `(0.45, 0.73, 1.00)` to a near-white teal, `(0.78, 1.00, 0.96)`, same strength. Photonics: `beacon` is now
+  `#c7fff5`.
+- Photonics: the beacon, glowstone and magma groups also list their blocks by name with priority 100, so they
+  beat Photonics' own defaults for those blocks.
+- **Unlit candle props get materials.** Unlit sconces (`redstone_torch:lit=false`, wall too) and unlit candelabras
+  (`repeater:powered=false`) get a new Wynn-only material, `10104`. The dark iron holder and stand are metal, and the
+  cream wax gets weak SSS. They still let colored light through, as they did before.
+- **Wooden props shade as wood.** Wynncraft draws the sticky piston as a wooden crate and the cauldron as a wooden
+  tub, and both join wood (`10029`). The daylight detector, which Wynncraft draws as stacks of books on an oak base,
+  joins transparent wood (`10030`). (Photon lists `daylight_sensor`, which matches nothing.) The cauldron's own
+  textures are brown wood too, so this holds even if Wynncraft's `level`-keyed cauldron models don't load on 1.21.11.
+- Black modded lights (Simply Light, Luminax) now use the gray slot, which frees `10067` for magma.
+
+### Default settings
+
+- **Cloud scale defaults to 9.0×, was 10.0×.** Photon's `CLOUDS_SCALE` default in `settings.glsl` changes, so it can
+  still be set to any value in the shader menu.
+
+### Tooling
+
+- **Test world.** The dark hall has four new cells: redstone dust (powered and unpowered), magma, glowstone and the
+  beacon. The daylight row adds quartz, the iron block next to gold, redstone dust, magma and the unlit candle props.
+  The gallery now reaches x = 96.
+
 ## 0.3.0 (2026-11-16), for Photon v1.4
 
 The rest of the survey's ranked shortlist (items 7-10), more Wynncraft material fixes, and a dev client with a test

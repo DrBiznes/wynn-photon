@@ -8,7 +8,7 @@
  #define AMETHYST_CLUSTER_ID `*10055`
  #define CALIBRATED_SCULK_SENSOR_ID `*10056`
  #define ACTIVE_SCULK_SENSOR_ID `*10057`
-@@ -30,6 +29,11 @@
+@@ -30,6 +29,13 @@
  #define COPPER_BULBS_ID `*10061`
  #define NETHER_PORTAL_ID `*10062`
  #define END_PORTAL_ID `*10063`
@@ -17,10 +17,31 @@
 +#define EMERALD_BLOCK_ID `*10076`
 +#define MOLTEN_ROCK_ID `*10077`
 +#define CANDLE_SCONCE_ID `*10079`
++#define GLOWSTONE_ID `*10054`
++#define MAGMA_BLOCK_ID `*10067`
  
  
  {
-@@ -280,13 +284,6 @@
+@@ -63,7 +69,7 @@
+       "enchanting_table": "#9919ff",
+       "nether_portal": "#9919ff",
+       "soul_lights": "#72baff",
+-      "beacon": "#72baff"
++      "beacon": "#c7fff5"
+     },
+     "intensities": {
+       "strong_white_light": 257,
+@@ -198,7 +204,8 @@
+           "color": "*beacon",
+           "intensity": "*beacon",
+           "blocks": [
+-            BEACON_ID
++            BEACON_ID,
++            { "value": "minecraft:beacon", "priority": 100 }
+           ]
+         },
+         "end_portal_frame": {
+@@ -280,13 +287,6 @@
              PEARLESCENT_FROGLIGHT_ID
            ]
          },
@@ -34,7 +55,7 @@
          "amethyst_cluster": {
            "color": "*amethyst_cluster",
            "intensity": "*amethyst_cluster",
-@@ -343,6 +340,47 @@
+@@ -343,6 +343,63 @@
              NETHER_PORTAL_ID
            ]
          },
@@ -79,15 +100,31 @@
 +            MOLTEN_ROCK_ID
 +          ]
 +        },
++        "glowstone": {
++          "color": "#ffcc85",
++          "intensity": "*strong_golden_light",
++          "blocks": [
++            GLOWSTONE_ID,
++            { "value": "minecraft:glowstone", "priority": 100 }
++          ]
++        },
++        "magma_block": {
++          "color": "#ff541a",
++          "intensity": 150,
++          "blocks": [
++            MAGMA_BLOCK_ID,
++            { "value": "minecraft:magma_block", "priority": 100 }
++          ]
++        },
          "disabled": {
            "color": "#000000",
            "intensity": 0,
-@@ -351,7 +389,9 @@
+@@ -351,7 +408,9 @@
              "minecraft:respawn_anchor",
              "minecraft:dragon_egg",
              "minecraft:vault",
 -            { "value": "minecraft:redstone_wire[power=0]", "priority": 100 }
-+            { "value": "minecraft:redstone_wire[power=0]", "priority": 100 },
++            { "value": "minecraft:redstone_wire", "priority": 100 },
 +            { "value": "minecraft:comparator", "priority": 100 },
 +            { "value": "minecraft:enchanting_table", "priority": 100 }
            ]

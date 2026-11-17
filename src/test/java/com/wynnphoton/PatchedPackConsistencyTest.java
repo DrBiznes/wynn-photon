@@ -17,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Cross-file checks on the patched pack that a broken ID move would fail, built from the real Photon release. */
@@ -113,6 +114,17 @@ class PatchedPackConsistencyTest {
 		assertTrue(blockIds.get(10076).contains("emerald_block"));
 		assertTrue(blockIds.get(10097).contains("vine:east=true:north=true:south=true:west=false"));
 		assertEquals(List.of("obsidian"), blockIds.get(10011));
-		assertTrue(blockIds.getOrDefault(10054, List.of()).isEmpty(), "enchanting table has no light");
+		// 10054 was Photon's enchanting table light. The table no longer glows, and 0.4.0 reuses the slot for glowstone.
+		assertEquals(List.of("glowstone"), blockIds.get(10054));
+		blockIds.forEach((id, entries) -> {
+			if (10032 <= id && id < 10080) {
+				assertFalse(entries.contains("enchanting_table"), "enchanting table has no light");
+			}
+		});
+		assertEquals(List.of("magma_block"), blockIds.get(10067));
+		assertEquals(List.of("iron_block"), blockIds.get(10099));
+		assertTrue(blockIds.get(10098).contains("quartz_block"));
+		assertTrue(blockIds.get(10104).contains("repeater:powered=false"));
+		assertFalse(blockIds.get(10058).contains("redstone_wire"), "redstone dust has no light");
 	}
 }
