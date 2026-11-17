@@ -9,8 +9,9 @@
 #
 # Needs repository secrets MODRINTH_TOKEN and CURSEFORGE_TOKEN.
 # A platform with an empty project ID below is skipped.
-# Modrinth lists WynnIris (optional) and requires the Photon shader pack (any version: mc-publish can't pin one).
-# WynnIris isn't on CurseForge, so CurseForge lists Iris instead. CurseForge mods can't depend on shader packs.
+# Modrinth requires WynnIris and the Photon shader pack, pinned to the Photon version the patches apply to (the
+# "Pin Photon on Modrinth" step). WynnIris isn't on CurseForge, so CurseForge lists Iris instead. CurseForge mods
+# can't depend on shader packs.
 name: Publish
 
 on:
@@ -51,6 +52,7 @@ jobs:
           ./gradlew build
 
       - name: Publish
+        id: publish
         uses: Kira-NT/mc-publish@v3.3
         with:
           modrinth-id: ${{ env.MODRINTH_ID }}
@@ -65,6 +67,28 @@ jobs:
           java: 21
           dependencies: |
             iris(optional){curseforge:irisshaders}#(ignore:modrinth)
-            wynniris(optional){modrinth:wynniris}#(ignore:curseforge)
+            wynniris(required){modrinth:wynniris}#(ignore:curseforge)
             photon-shader(required){modrinth:lLqFfGNs}#(ignore:curseforge)
 
+      # mc-publish sends Modrinth a project ID per dependency but never a version, so this sets the new version's
+      # dependency list again through the Modrinth API, with Photon pinned. The Photon version ID comes from
+      # photon_url in gradle.properties, so moving to a new Photon there moves the pin too.
+      - name: Pin Photon on Modrinth
+        if: env.MODRINTH_ID != '' && steps.publish.outputs.modrinth-version != ''
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          VERSION_ID: ${{ steps.publish.outputs.modrinth-version }}
+          WYNNIRIS: pa6h8e27
+          PHOTON: lLqFfGNs
+        run: |
+          photon_version=$(sed -n 's#^photon_url=.*/versions/\([^/]*\)/.*#\1#p' gradle.properties)
+          test -n "$photon_version"
+          curl --fail-with-body -sS -X PATCH "https://api.modrinth.com/v2/version/$VERSION_ID" \
+            -H "Authorization: $MODRINTH_TOKEN" \
+            -H "Content-Type: application/json" \
+            -H "User-Agent: DrBiznes/wynn-photon (publish workflow)" \
+            -d "{\"dependencies\": [
+              {\"project_id\": \"$WYNNIRIS\", \"dependency_type\": \"required\"},
+              {\"project_id\": \"$PHOTON\", \"version_id\": \"$photon_version\", \"dependency_type\": \"required\"}
+            ]}"
+          echo "Modrinth version $VERSION_ID requires WynnIris and Photon version $photon_version"
