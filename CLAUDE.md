@@ -72,8 +72,6 @@ cached in an instance's `downloads/`.
 - Wynn-Photon's own shader options live in the Wynn-Photon section of `settings.glsl` and on the `screen.wynn_photon`
   page in `shaders.properties`, named in `lang/en_US.lang`; strengths (`_I`) go in `sliders` too. A strength that
   scales a light also needs a `case` in `photonics/modifiers/light_modifier.glsl`, keyed by block ID.
-- Photon's license does not allow publishing derivatives on Modrinth or CurseForge without SixthSurge's written
-  permission. Don't set up publishing to those platforms unless the user confirms permission was granted.
 
 ## Local setup
 
