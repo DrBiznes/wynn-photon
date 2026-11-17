@@ -78,7 +78,7 @@
 +
 +  // Wynn-Photon: the least light any surface gets, so nights and caves never
 +  // go fully black. 1.00 is twice Photon's default cave light
-+  #define WYNN_MIN_LIGHT_I 1.00 // [0.00 0.25 0.50 0.75 1.00 1.25 1.50 1.75 2.00 2.50 3.00 4.00]
++  #define WYNN_MIN_LIGHT_I 0.50 // [0.00 0.25 0.50 0.75 1.00 1.25 1.50 1.75 2.00 2.50 3.00 4.00]
 +
  // The settings parser only detects boolean options which are used with
  // #ifdef; it doesn't look for #if defined or other settings usages (e.g in
