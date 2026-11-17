@@ -126,5 +126,42 @@ class PatchedPackConsistencyTest {
 		assertTrue(blockIds.get(10098).contains("quartz_block"));
 		assertTrue(blockIds.get(10104).contains("repeater:powered=false"));
 		assertFalse(blockIds.get(10058).contains("redstone_wire"), "redstone dust has no light");
+		assertEquals(List.of("chest", "trapped_chest"), blockIds.get(10105));
+		assertFalse(blockIds.get(10030).contains("chest"), "chests left transparent wood");
+	}
+
+	/**
+	 * Every option on the Wynn-Photon settings page must be defined in settings.glsl and named in the English lang
+	 * file, and its strengths must be sliders, or Iris shows a raw or broken entry.
+	 */
+	@Test
+	void wynnSettingsPageIsComplete() throws IOException {
+		String properties = Files.readString(shaders.resolve("shaders.properties"));
+		String settings = Files.readString(shaders.resolve("settings.glsl"));
+		String lang = Files.readString(shaders.resolve("lang/en_US.lang"));
+		Matcher screen = Pattern.compile("(?m)^screen\\s*=.*\\[wynn_photon\\]").matcher(properties);
+		assertTrue(screen.find(), "main screen links the Wynn-Photon page");
+		Matcher page = Pattern.compile("(?m)^screen\\.wynn_photon\\s*=(.*)$").matcher(properties);
+		assertTrue(page.find(), "screen.wynn_photon is defined");
+		Matcher sliders = Pattern.compile("(?m)^sliders\\s*=(.*)$").matcher(properties);
+		assertTrue(sliders.find());
+		List<String> sliderList = List.of(sliders.group(1).trim().split("\\s+"));
+		assertTrue(lang.contains("screen.wynn_photon "), "page title in en_US.lang");
+		List<String> problems = new ArrayList<>();
+		for (String option : page.group(1).trim().split("\\s+")) {
+			if (option.startsWith("<")) {
+				continue;
+			}
+			if (!Pattern.compile("(?m)^\\s*(//)?#define " + option + "\\b").matcher(settings).find()) {
+				problems.add(option + " not in settings.glsl");
+			}
+			if (!lang.contains("option." + option + " ")) {
+				problems.add(option + " not in en_US.lang");
+			}
+			if (option.endsWith("_I") && !sliderList.contains(option)) {
+				problems.add(option + " is not a slider");
+			}
+		}
+		assertTrue(problems.isEmpty(), String.join(", ", problems));
 	}
 }

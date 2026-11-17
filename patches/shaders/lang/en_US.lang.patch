@@ -1,0 +1,32 @@
+--- a/shaders/lang/en_US.lang
++++ b/shaders/lang/en_US.lang
+@@ -72,6 +72,8 @@
+ screen.nether_color                    = Static Color
+ 
+ screen.distance_view                   = Distance View
++screen.wynn_photon                     = §aWynn-Photon
++screen.wynn_photon.comment             = Wynn-Photon's settings for its Wynncraft block changes
+ 
+ option.INFO                            = Photon Shaders
+ value.INFO.0                           = §eby SixthSurge
+@@ -819,4 +821,20 @@
+ option.PHOTONICS_RESTIR_COMBINED_GI       = Include Skylight GI
+ option.PHOTONICS_RESTIR_COMBINED_GI.comment = Whether Gi should be ran through ReSTIR's denoiser instead of its usual path. \nResults in much sharper Gi, at the cost of performance.
+ 
++# Wynn-Photon settings
+ 
++option.WYNN_PHOTON_INFO                = Wynn-Photon
++value.WYNN_PHOTON_INFO.0               = §aWynncraft block tweaks
++option.WYNN_PHOTON_INFO.comment        = Wynn-Photon patches Photon for Wynncraft's resource pack. These settings tune its block changes. The strengths scale both the glow and the light the block casts, in Colored Lights and in Photonics
++option.WYNN_EMERALD_GLOW               = Emerald Glow
++option.WYNN_EMERALD_GLOW.comment       = Emerald blocks glow faintly green, and emerald ore glows in its green specks. Both cast a faint green light
++option.WYNN_EMERALD_GLOW_I             = Emerald Glow Strength
++option.WYNN_EMERALD_GLOW_I.comment     = Brightness of the emerald glow and its light
++option.WYNN_CHEST_GLOW                 = Chest Glow
++option.WYNN_CHEST_GLOW.comment         = Chests glow faintly, so they are easier to spot in dark caves. With Photonics they also cast a faint warm light. (Colored Lights can't see chests, because they are block entities)
++option.WYNN_CHEST_GLOW_I               = Chest Glow Strength
++option.WYNN_CHEST_GLOW_I.comment       = Brightness of the chest glow and its light
++option.WYNN_CANDLE_LIGHT_I             = Candle Light Strength
++option.WYNN_CANDLE_LIGHT_I.comment     = Brightness of Wynncraft's candle sconces and candelabras: their flames and their light. 0 turns them off
++option.WYNN_MAGMA_GLOW_I               = Magma Glow Strength
++option.WYNN_MAGMA_GLOW_I.comment       = Brightness of the glowing cracks in magma and molten rock, and their light. 0 turns them off

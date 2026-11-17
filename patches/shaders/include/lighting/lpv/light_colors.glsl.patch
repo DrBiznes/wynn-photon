@@ -25,24 +25,24 @@
 -    vec3(0.55, 0.55, 0.55) *  8.0, // 34 - Gray        (block 66)
 -    vec3(0.20, 0.20, 0.22) *  6.0, // 35 - Black       (block 67)
 +    vec3(0.55, 0.55, 0.55) *  8.0, // 34 - Gray        (block 66) (Wynn-Photon: black modded lights folded in here)
-+    vec3(1.00, 0.33, 0.10) *  7.0, // 35 - Wynn-Photon: magma block (block 67), redder than fire to match Wynncraft's dark red magma, and a little under its 9
++    vec3(1.00, 0.33, 0.10) *  7.0 * WYNN_MAGMA_GLOW_I, // 35 - Wynn-Photon: magma block (block 67), redder than fire to match Wynncraft's dark red magma, and a little under its 9
      vec3(0.55, 0.35, 0.20) *  8.0, // 36 - Brown       (block 68)
      vec3(1.00, 0.10, 0.10) * 10.0, // 37 - Red         (block 69)
      vec3(1.00, 0.45, 0.10) * 10.0, // 38 - Orange      (block 70)
      vec3(1.00, 0.95, 0.20) * 10.0, // 39 - Yellow      (block 71)
      vec3(0.55, 1.00, 0.20) * 10.0, // 40 - Lime        (block 72)
 -    vec3(0.15, 1.00, 0.20) * 10.0, // 41 - Green       (block 73)
-+    vec3(1.00, 0.45, 0.12) * 14.0, // 41 - Wynn-Photon: Wynncraft four-candle candelabra (block 73), the sconce colour at a lantern's strength
++    vec3(1.00, 0.45, 0.12) * 14.0 * WYNN_CANDLE_LIGHT_I, // 41 - Wynn-Photon: Wynncraft four-candle candelabra (block 73), the sconce colour at a lantern's strength
      vec3(0.15, 0.95, 1.00) * 10.0, // 42 - Cyan        (block 74)
 -    vec3(0.45, 0.75, 1.00) * 10.0, // 43 - Light Blue  (block 75)
 -    vec3(0.15, 0.30, 1.00) * 10.0, // 44 - Blue        (block 76)
 -    vec3(0.55, 0.15, 1.00) * 10.0, // 45 - Purple      (block 77)
-+    vec3(0.45, 1.00, 0.35) *  1.5, // 43 - Wynn-Photon: emerald ore (block 75), a very faint green
-+    vec3(0.45, 1.00, 0.35) *  4.0, // 44 - Wynn-Photon: emerald block (block 76), a faint green
-+    vec3(1.00, 0.30, 0.08) *  3.0, // 45 - Wynn-Photon: Wynncraft molten rock (block 77), a dull ember glow, a third of magma's 9
++    vec3(0.45, 1.00, 0.35) *  1.5 * WYNN_EMERALD_GLOW_I, // 43 - Wynn-Photon: emerald ore (block 75), a very faint green
++    vec3(0.45, 1.00, 0.35) *  4.0 * WYNN_EMERALD_GLOW_I, // 44 - Wynn-Photon: emerald block (block 76), a faint green
++    vec3(1.00, 0.30, 0.08) *  3.0 * WYNN_MAGMA_GLOW_I, // 45 - Wynn-Photon: Wynncraft molten rock (block 77), a dull ember glow, a third of magma's 9
      vec3(1.00, 0.20, 0.90) * 10.0, // 46 - Magenta     (block 78)
 -    vec3(1.00, 0.55, 0.85) * 10.0  // 47 - Pink        (block 79)
-+    vec3(1.00, 0.45, 0.12) * 12.0  // 47 - Wynn-Photon: redstone torch as Wynncraft candle sconce (block 79), warm fire orange, a little under the lantern's 14
++    vec3(1.00, 0.45, 0.12) * 12.0 * WYNN_CANDLE_LIGHT_I  // 47 - Wynn-Photon: redstone torch as Wynncraft candle sconce (block 79), warm fire orange, a little under the lantern's 14
  );
  
  const vec3[16] tint_color = vec3[16](

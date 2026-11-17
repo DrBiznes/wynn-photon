@@ -41,7 +41,7 @@ build += [
 ]
 
 # ---------------------------------------------------------------- dark hall
-CELLS = 15
+CELLS = 16
 X1 = 6 * CELLS - 1  # east outer wall
 build += [
     "# Floor at y -61, roof at y -55, air inside",
@@ -148,6 +148,11 @@ b(c + 2, G, 23, "glowstone")
 c = cell(14)
 hall.append(("Beacon", "pale teal", "light", "(was blue)"))
 b(c + 2, G, 23, "beacon")
+# 15: chests, a faint glow so they show in dark caves (Photonics only for their light: block entities)
+c = cell(15)
+hall.append(("Chests", "faint glow", "chest, trapped", ""))
+b(c + 1, G, 23, "chest[facing=south]")
+b(c + 3, G, 23, "trapped_chest[facing=south]")
 
 for i, lines in enumerate(hall):
     sign(lines, cell(i) + 2, G, 21, 8, labels)
@@ -275,6 +280,10 @@ b(91, G, Z, "stone")
 build.append(f"setblock 90 {G} {Z} lever[face=wall,facing=west,powered=true]")
 b(91, G + 1, Z, "redstone_torch[lit=false]")
 label(89, "Unlit candles", "iron metal,", "wax weak SSS")
+# chests: wood, with a faint glow
+b(93, G, Z, "chest[facing=south]")
+b(94, G, Z, "trapped_chest[facing=south]")
+label(93, "Chests", "wood +", "faint glow")
 
 build += [
     "",

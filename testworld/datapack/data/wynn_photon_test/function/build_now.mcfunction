@@ -7,7 +7,7 @@ fill -4 -61 -24 96 -61 30 grass_block
 
 # ---- Dark hall (z 16-26): light sources, one per cell, behind a baffle so no daylight gets in
 # Floor at y -61, roof at y -55, air inside
-fill -1 -61 16 89 -55 26 stone_bricks hollow
+fill -1 -61 16 95 -55 26 stone_bricks hollow
 fill 5 -60 21 5 -56 25 stone_bricks
 fill 11 -60 21 11 -56 25 stone_bricks
 fill 17 -60 21 17 -56 25 stone_bricks
@@ -22,6 +22,7 @@ fill 65 -60 21 65 -56 25 stone_bricks
 fill 71 -60 21 71 -56 25 stone_bricks
 fill 77 -60 21 77 -56 25 stone_bricks
 fill 83 -60 21 83 -56 25 stone_bricks
+fill 89 -60 21 89 -56 25 stone_bricks
 # Entrance in the middle of the front wall, with a baffle wall just inside it
 fill 29 -60 16 30 -59 16 air
 fill 27 -60 18 32 -57 18 stone_bricks
@@ -66,6 +67,8 @@ fill 73 -61 22 75 -61 24 magma_block
 setblock 74 -60 23 magma_block
 setblock 80 -60 23 glowstone
 setblock 86 -60 23 beacon
+setblock 91 -60 23 chest[facing=south]
+setblock 93 -60 23 trapped_chest[facing=south]
 
 # ---- Daylight row (z -12 to -6): materials, specular and SSS
 fill 0 -61 -9 2 -61 -7 nether_bricks
@@ -148,6 +151,8 @@ setblock 89 -60 -8 repeater[delay=4,facing=north,powered=false]
 setblock 91 -60 -8 stone
 setblock 90 -60 -8 lever[face=wall,facing=west,powered=true]
 setblock 91 -59 -8 redstone_torch[lit=false]
+setblock 93 -60 -8 chest[facing=south]
+setblock 94 -60 -8 trapped_chest[facing=south]
 
 # Signs, then the vine states last: any block placed next to a vine afterwards would strip its faces
 function wynn_photon_test:labels

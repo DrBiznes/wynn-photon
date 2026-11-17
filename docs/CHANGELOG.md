@@ -2,6 +2,37 @@
 
 All notable changes to Wynn-Photon are listed here. Each version names the Photon release its patches apply to.
 
+## 0.5.0 (2026-11-16), for Photon v1.4
+
+A Wynn-Photon settings page in the shader menu, like Euphoria Patches' page for Complementary, and faintly glowing
+chests. Not checked in game yet.
+
+### Settings page
+
+- **Wynn-Photon has its own page** in Photon's shader menu, next to Post-Processing. Its options are in a new
+  Wynn-Photon section of `settings.glsl`, with names and tooltips in `lang/en_US.lang`:
+  - Emerald Glow, on by default, and Emerald Glow Strength (0.25-3.00×).
+  - Chest Glow, on by default, and Chest Glow Strength (0.25-3.00×).
+  - Candle Light Strength (0-2×) for the sconces and candelabras.
+  - Magma Glow Strength (0-2×) for the magma block and molten rock.
+- Each strength scales the block's glow and the light it casts, in the colored-light volume (`light_colors.glsl`) and
+  in Photonics. Photonics lights are scaled in `photonics/modifiers/light_modifier.glsl` by the light's block ID, which
+  Photonics passes as `light.blockId`, so `ph_lights.json` keeps fixed values.
+
+### Shader changes
+
+- **Chests glow faintly**, so they are easier to spot in dark caves. `chest` and `trapped_chest` leave transparent wood
+  (`10030`) for a new Wynn-only ID, `10105`. They keep the wood material and get a faint glow, a little brighter on the
+  pale latch and trim. Photonics: a new `chest` light (`#ffd9a6`, 21). Chests are block entities, which Photon leaves
+  out of the colored-light volume, so without Photonics they glow but cast no light.
+
+### Tooling
+
+- **Test world.** The dark hall has a 16th cell with a chest and a trapped chest, and the daylight row ends with them
+  too.
+- Tests check the chest ID and that every option on the Wynn-Photon page is defined, named in `en_US.lang` and, for
+  strengths, a slider.
+
 ## 0.4.0 (2026-11-16), for Photon v1.4
 
 Roadmap step 5: fixes from the texture scan, which compared the server pack's block textures with Photon's hardcoded

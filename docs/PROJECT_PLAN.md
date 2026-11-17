@@ -38,6 +38,8 @@ that, one small labelled patch at a time.
   (step 9).
 - **0.4.0 (done):** roadmap step 5, the texture-scan fixes and the survey's optional leftovers. See
   [CHANGELOG.md](CHANGELOG.md). Not checked in game yet.
+- **0.5.0 (done):** a Wynn-Photon settings page in the shader menu (emerald and chest glow toggles and strengths,
+  candle and magma strengths) and faintly glowing chests. See [CHANGELOG.md](CHANGELOG.md). Not checked in game yet.
 - **Next:** check 0.4.0 in the test world, then roadmap step 6.
 
 ### Done so far

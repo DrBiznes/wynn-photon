@@ -1,0 +1,17 @@
+--- a/shaders/photonics/modifiers/light_modifier.glsl
++++ b/shaders/photonics/modifiers/light_modifier.glsl
+@@ -3,5 +3,14 @@
+         light.color *= HANDHELD_LIGHTING_INTENSITY;
+     } else {
+         light.color *= BLOCKLIGHT_I;
++
++        // Wynn-Photon: the Wynn-Photon settings scale these lights too.
++        // light.blockId is the light's block ID from block.properties
++        switch (light.blockId - 10000) {
++            case 75: case 76: light.color *= WYNN_EMERALD_GLOW_I; break; // Emerald ore and block
++            case 105: light.color *= WYNN_CHEST_GLOW_I; break; // Chests
++            case 73: case 79: light.color *= WYNN_CANDLE_LIGHT_I; break; // Candelabras and sconces
++            case 67: case 77: light.color *= WYNN_MAGMA_GLOW_I; break; // Magma and molten rock
++        }
+     }
+ }

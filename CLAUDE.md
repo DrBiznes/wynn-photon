@@ -54,7 +54,8 @@ cached in an instance's `downloads/`.
   purple was merged into `10078` too. `10075`/`10076` are emerald ore/block, and light blue and blue were merged
   into `10074`. `10073` (green, merged into `10072`) is the four-candle candelabra, and `10097` is murky water.
   `10067` (black, merged into `10066`) is the magma block, `10054` (the old enchanting table) is glowstone, `10098` is
-  quartz, `10099` is the iron block and `10104` is unlit candle props. A non-light Wynn ID that light should pass
+  quartz, `10099` is the iron block, `10104` is unlit candle props and
+  `10105` is chests. A non-light Wynn ID that light should pass
   through must also be listed in `is_transparent_block` in `voxelization.glsl`, as `10104` is.
   Before taking another ID, check `block.properties`, `item.properties`,
   `light_colors.glsl` and `ph_lights.json`.
@@ -67,6 +68,9 @@ cached in an instance's `downloads/`.
   `enchanting_table` by name. To remove one of those lights, also add the block to the `"disabled"` override in
   `ph_lights.json`.
 - `docs/research/wynn-rp-blocks.md` holds the survey and the ranked build list.
+- Wynn-Photon's own shader options live in the Wynn-Photon section of `settings.glsl` and on the `screen.wynn_photon`
+  page in `shaders.properties`, named in `lang/en_US.lang`; strengths (`_I`) go in `sliders` too. A strength that
+  scales a light also needs a `case` in `photonics/modifiers/light_modifier.glsl`, keyed by block ID.
 - Photon's license does not allow publishing derivatives on Modrinth or CurseForge without SixthSurge's written
   permission. Don't set up publishing to those platforms unless the user confirms permission was granted.
 
