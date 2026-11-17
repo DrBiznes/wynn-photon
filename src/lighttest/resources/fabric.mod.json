@@ -1,0 +1,13 @@
+{
+	"schemaVersion": 1,
+	"id": "wynn_photon_lighttest",
+	"version": "1.0.0",
+	"name": "Wynn-Photon light test",
+	"description": "Dev only, never shipped: photographs the lighting test spots for gradlew lightTest.",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"com.wynnphoton.lighttest.LightTestClient"
+		]
+	}
+}

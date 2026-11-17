@@ -157,6 +157,9 @@ setblock 91 -59 -8 redstone_torch[lit=false]
 setblock 93 -60 -8 chest[facing=south]
 setblock 94 -60 -8 trapped_chest[facing=south]
 
+# Light test spots, in their own function
+function wynn_photon_test:lighttest
+
 # Signs, then the vine states last: any block placed next to a vine afterwards would strip its faces
 function wynn_photon_test:labels
 function wynn_photon_test:vines

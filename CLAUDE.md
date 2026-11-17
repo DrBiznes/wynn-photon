@@ -36,6 +36,9 @@ world, with `work/` junction-linked as the selected shader pack, so edits show a
 `modLocalRuntime` from Modrinth's Maven; pin a Modrinth version ID when a version number is shared across Minecraft
 versions (Voxy, Mod Menu). Wynncraft's CDN refuses downloads outside the game, so the world copies the pack Minecraft
 cached in an instance's `downloads/`.
+`gradlew lightTest` photographs the test world's light test spots under the option sets in
+`testworld/light_test.txt`, unattended, and writes `build/light-test/report.html` with mean luminances (see "The
+lighting test" in `docs/DEVELOPMENT.md`). Its harness is the dev-only `lighttest` source set.
 `gradlew installTestWorld` also installs the "Wynn-Photon Test" gallery world and selects the dev pack in Iris (see
 `testworld/README.md`). Add an exhibit there for every new block change.
 
