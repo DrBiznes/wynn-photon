@@ -1,4 +1,6 @@
 # Publishes WynnPhoton to Modrinth and CurseForge (and attaches the jar to the GitHub release).
+# The GitHub release also gets the patched pack as a ready-to-use zip, for test setups that skip the patcher.
+# Photon's licence only allows the patcher on Modrinth and CurseForge, so the zip goes to GitHub alone.
 #
 # How to release:
 #   1. Bump mod_version in gradle.properties and commit.
@@ -49,7 +51,14 @@ jobs:
       - name: Build
         run: |
           chmod +x gradlew
-          ./gradlew build
+          ./gradlew build patchedPackZip
+
+      # GitHub only: mc-publish's files go to every platform, so the zip is uploaded on its own.
+      - name: Attach patched pack to GitHub release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.event.release.tag_name }}" build/distributions/*.zip --clobber
 
       - name: Publish
         id: publish

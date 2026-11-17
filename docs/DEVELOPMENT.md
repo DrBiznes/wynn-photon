@@ -97,6 +97,11 @@ build/light-test/*.png           the shots, named <spot>__<time>__<set>.png
   so the patches are applied by the same code in the build and in game.
 - `generatePatchBundle` packs `patches/` into the jar under `wynn_photon/`. It adds a manifest and the SHA-256 of
   every file in Photon's `shaders/` folder, which the mod uses to recognize the base pack.
+- `patchedPackZip` writes the patched pack as a ready-to-use shader pack zip,
+  `build/distributions/photon_v1.4_WynnPhoton_<version>.zip`, for test setups (such as other mods' dev clients) that
+  skip the patcher. It has no `wynn-photon.properties` marker, so the mod never treats it as one of its own packs. The
+  publish workflow attaches it to the GitHub release only: the Photon licence doesn't allow the patched pack on
+  Modrinth or CurseForge.
 - The mod runs from Fabric's `preLaunch` entrypoint. The pack and `iris.properties` are ready before Iris reads them,
   and no Minecraft classes are loaded.
 

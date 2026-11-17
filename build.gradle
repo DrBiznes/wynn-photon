@@ -1,4 +1,5 @@
 import wynnphoton.gradle.ApplyPatchesTask
+import wynnphoton.gradle.BuildPatchedPackTask
 import wynnphoton.gradle.DownloadFileTask
 import wynnphoton.gradle.GeneratePatchBundleTask
 import wynnphoton.gradle.InstallTestWorldTask
@@ -157,6 +158,27 @@ def generatePatchBundle = tasks.register('generatePatchBundle', GeneratePatchBun
 	baseName = project.photon_pack_name
 	baseDisplayName = project.photon_display_name
 	outputDir = layout.buildDirectory.dir('generated/patchBundle')
+}
+
+// patchedPackZip: the patched pack as a ready-to-use shader pack zip, for the GitHub release only (Photon's licence
+// doesn't allow it on Modrinth or CurseForge). Handy for test setups of other mods that skip the patcher. It has no
+// top-level folder, so shaders/ sits at the zip root the way Iris expects.
+def buildPatchedPack = tasks.register('buildPatchedPack', BuildPatchedPackTask) {
+	description = 'Writes base + patches into build/patchedPack.'
+	dependsOn extractPhoton
+	it.baseDir = baseDir
+	it.patchesDir = patchesDir
+	outputDir = layout.buildDirectory.dir('patchedPack')
+}
+
+tasks.register('patchedPackZip', Zip) {
+	group = 'wynn-photon'
+	description = "Zips the patched pack as build/distributions/${photon_pack_name}_${patch_name}_<version>.zip."
+	from buildPatchedPack
+	archiveFileName = "${photon_pack_name}_${patch_name}_${project.version}.zip"
+	destinationDirectory = layout.buildDirectory.dir('distributions')
+	preserveFileTimestamps = false
+	reproducibleFileOrder = true
 }
 
 // Where installDevPack copies work/ to. Set shaderpacksDir in local.properties (gitignored)
