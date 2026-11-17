@@ -182,6 +182,10 @@ so it already works at any height.
 Explore the fixed-exposure options in the dev client first, each on its own, then pick defaults. Turn on auto
 exposure only if none of these is enough.
 
+- [x] Minimum light (Wynn-Photon page, default 1.0): a small light on every surface that fades out where other
+  light is brighter. Built for dense cities at night and cave roofs. Not checked in game yet.
+- [x] Light-block fallback falloff defaults to Linear, so it reaches further.
+- [x] `SKYLIGHT_I` now scales Photon's own sky light too. Stock Photon reads it only under Photonics.
 - [x] Photonics sky fill: with Photonics, shade was lit only by Photonics' weak traced indirect light, so
   `SKYLIGHT_I` did little. Photon's sky light now fills in where the traced light is weaker (Photonics Sky Fill,
   default 1.0). Not checked in game yet.

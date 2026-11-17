@@ -31,7 +31,20 @@
      );
  #else
      lighting += mc_blocklight;
-@@ -311,6 +326,10 @@
+@@ -188,6 +203,12 @@
+ 
+     lighting += skylight * get_skylight_falloff(light_levels.y);
+ 
++#if defined WORLD_OVERWORLD
++    // Wynn-Photon: Photon only read SKYLIGHT_I in its Photonics code, so the
++    // option did nothing without Photonics. Scale Photon's own sky light too
++    lighting *= SKYLIGHT_I;
++#endif
++
+     return lighting;
+ }
+ 
+@@ -311,6 +332,10 @@
      // Skylight
  
  #if defined PHOTONICS_DIFFUSE
@@ -42,7 +55,7 @@
      if (is_lod) {
          lighting += get_sky_lighting(
              material,
-@@ -324,7 +343,8 @@
+@@ -324,7 +349,8 @@
  // When combined gi is enabled
  // Photonics includes gi in the result of sample_photonics_direct
  #ifndef PHOTONICS_RESTIR_COMBINED_GI
@@ -52,7 +65,7 @@
  #endif
      }
  
-@@ -352,7 +372,59 @@
+@@ -352,7 +378,59 @@
  #endif
  
          // BLOCKLIGHT_I is applied in /photonics/modifiers/modify_lights.glsl
@@ -113,3 +126,23 @@
      } else {
          lighting += get_block_lighting(
              scene_pos,
+@@ -381,6 +459,19 @@
+         * (1.0 - light_levels.y * light_levels.y)
+         * (1.0 - 0.7 * darknessFactor);
+     lighting += nightVision * night_vision_scale * directional_lighting * ao;
++
++    // Wynn-Photon: minimum light. Photon's cave light fades out where a block
++    // sees the sky, so sky-lit places at night (dense cities) and cave roofs
++    // far from any light went nearly black. Every surface gets a small
++    // neutral light, which fades away smoothly as the other light gets
++    // brighter than it, so daylight and lit rooms don't change. It keeps AO
++    // and face shading, so shapes stay readable
++    {
++        float min_light = 0.3 * WYNN_MIN_LIGHT_I * directional_lighting * ao
++            * (1.0 - 0.7 * darknessFactor);
++        float lit = dot(lighting, luminance_weights_rec2020);
++        lighting += min_light * min_light / max(lit + min_light, eps);
++    }
+ #endif
+ 
+     return max0(lighting) * material.albedo * rcp_pi

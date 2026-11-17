@@ -33,10 +33,21 @@ checked in game yet.
   light is very weak in shade, forests and under overhangs, so those were much darker than without Photonics, and
   `SKYLIGHT_I` barely changed them. The Photonics path in `diffuse_lighting.glsl` now adds Photon's own sky light
   back, only as far as the traced light falls short of it.
+- **Minimum light.** Photon's cave light fades out where a block sees the sky, so sky-lit places at night, such as
+  dense cities, and cave roofs far from any light went nearly black. Every surface now gets a small neutral light
+  (twice Photon's default cave light at 1×). It fades away smoothly as the other light gets brighter than it, so
+  daylight and lit rooms don't change, and it keeps ambient occlusion and face shading. It works the same with and
+  without Photonics.
+- **Light blocks reach further.** The vanilla lightmap's Contribution Falloff now defaults to Linear (Photon's
+  default is Squared), so the light-block fallback is softer at the source and reaches roofs and far walls.
+- **Sky Light Strength works without Photonics.** Photon v1.4 reads `SKYLIGHT_I` only in its Photonics code, so the
+  slider did nothing without Photonics. It now also scales Photon's own sky light in the Overworld, and with it the
+  Photonics sky fill.
 
 ### Settings page
 
 - **Light Block Strength** (0-3×, default 1×) scales the vanilla light fallback, with and without Photonics.
+- **Minimum Light** (0-4×, default 1×) scales the minimum light. 0 turns it off.
 - **Photonics Sky Fill** (0-2×, default 1×) scales the sky fill. 1× makes shade as bright as without Photonics, 0
   turns it off.
 
