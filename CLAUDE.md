@@ -13,7 +13,9 @@ unified diffs (`patches/`), never Photon itself. See README.md for the user-faci
   build and the game apply patches with the same code. Keep it free of Gradle, Minecraft and library dependencies.
 - `buildSrc/` holds the Gradle tasks `DownloadFileTask`, `ApplyPatchesTask`, `MakePatchesTask` and
   `GeneratePatchBundleTask`. It uses java-diff-utils to generate diffs.
-- `src/main/java/com/wynnphoton/` is the mod. It runs from the `preLaunch` entrypoint and loads no Minecraft classes.
+- `src/main/java/com/wynnphoton/` is the mod. The installer runs from the `preLaunch` entrypoint and loads no
+  Minecraft classes. Only `client/` (the `client` entrypoint and the install toasts) touches Minecraft; it gets
+  results through `Notices`. Iris is reached by reflection (`IrisReloader`), so the mod runs without it.
   `PhotonInstaller` finds the base pack by SHA-256 of its `shaders/` files, builds the patched pack, writes the
   `wynn-photon.properties` marker and updates `config/iris.properties`.
 - `docs/CHANGELOG.md` has one entry per version. `docs/PROJECT_PLAN.md` holds the roadmap and brainstorm; research write-ups go in `docs/research/`.
@@ -73,7 +75,9 @@ lighting test" in `docs/DEVELOPMENT.md`). Its harness is the dev-only `lighttest
   `ph_lights.json`.
 - `docs/research/wynn-rp-blocks.md` holds the survey and the ranked build list.
 - Wynn-Photon's own shader options live in the Wynn-Photon section of `settings.glsl` and on the `screen.wynn_photon`
-  page in `shaders.properties`, named in `lang/en_US.lang`; strengths (`_I`) go in `sliders` too. A strength that
+  page in `shaders.properties`, named in `lang/en_US.lang`; strengths (`_I`) go in `sliders` too. Renaming or
+  removing an option (ours or Photon's) needs a rule in `src/main/resources/wynn_photon/settings_conversions.txt`
+  so players keep their settings. A strength that
   scales a light also needs a `case` in `photonics/modifiers/light_modifier.glsl`, keyed by block ID.
 
 ## Local setup

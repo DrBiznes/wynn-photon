@@ -1,0 +1,14 @@
+# Wynn-Photon settings conversions.
+#
+# When Wynn-Photon builds a new pack, it copies the player's Iris settings file (shaderpacks/<pack>.txt) from the
+# pack Iris was using and runs these rules over it, top to bottom. Add a rule whenever a release renames or
+# removes a shader option (Wynn-Photon's own or Photon's), so players keep their settings.
+#
+#   OLD_NAME -> NEW_NAME              rename, keeping the value
+#   OLD_NAME=old -> NEW_NAME=new      rename only that value, to a new value
+#   OLD_NAME=old -> OLD_NAME=new      change only that value
+#   OLD_NAME ->                       remove the setting, so the new default applies
+#   OLD_NAME=old ->                   remove only that value
+#
+# Rules run in order, so a chain of renames across versions works: keep old rules, add new ones at the bottom.
+# If a setting already exists under the new name, it wins and the old one is dropped.

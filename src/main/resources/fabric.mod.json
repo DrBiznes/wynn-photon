@@ -13,6 +13,9 @@
 	"entrypoints": {
 		"preLaunch": [
 			"com.wynnphoton.WynnPhotonPreLaunch"
+		],
+		"client": [
+			"com.wynnphoton.client.WynnPhotonClient"
 		]
 	},
 	"depends": {

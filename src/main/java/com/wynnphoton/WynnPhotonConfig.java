@@ -8,8 +8,8 @@ import java.nio.file.Path;
 import java.util.Properties;
 
 /** config/wynn_photon.properties */
-public record WynnPhotonConfig(boolean selectPatchedPack, boolean deleteOldVersions) {
-	public static final WynnPhotonConfig DEFAULTS = new WynnPhotonConfig(true, true);
+public record WynnPhotonConfig(boolean selectPatchedPack, boolean deleteOldVersions, boolean showNotifications) {
+	public static final WynnPhotonConfig DEFAULTS = new WynnPhotonConfig(true, true, true);
 	private static final String FILE = "wynn_photon.properties";
 
 	public static WynnPhotonConfig load(Path configDir) {
@@ -26,6 +26,10 @@ public record WynnPhotonConfig(boolean selectPatchedPack, boolean deleteOldVersi
 
 						# After creating a new patched pack, delete older Wynn-Photon packs.
 						deleteOldVersions=true
+
+						# Show a toast in the top-right corner when the pack is installed or updated,
+						# or when it can't be built.
+						showNotifications=true
 						""", StandardCharsets.UTF_8);
 			} catch (IOException e) {
 				WynnPhotonPreLaunch.LOGGER.warn("Could not write {}: {}", file, e.toString());
@@ -39,9 +43,27 @@ public record WynnPhotonConfig(boolean selectPatchedPack, boolean deleteOldVersi
 			WynnPhotonPreLaunch.LOGGER.warn("Could not read {}, using defaults: {}", file, e.toString());
 			return DEFAULTS;
 		}
+		if (!properties.containsKey("showNotifications")) {
+			addSetting(file, """
+
+					# Show a toast in the top-right corner when the pack is installed or updated,
+					# or when it can't be built.
+					showNotifications=true
+					""");
+		}
 		return new WynnPhotonConfig(
 				flag(properties, "selectPatchedPack", DEFAULTS.selectPatchedPack),
-				flag(properties, "deleteOldVersions", DEFAULTS.deleteOldVersions));
+				flag(properties, "deleteOldVersions", DEFAULTS.deleteOldVersions),
+				flag(properties, "showNotifications", DEFAULTS.showNotifications));
+	}
+
+	/** Appends a setting added in a later version, so existing files show it too. */
+	private static void addSetting(Path file, String text) {
+		try {
+			Files.writeString(file, text, StandardCharsets.UTF_8, java.nio.file.StandardOpenOption.APPEND);
+		} catch (IOException e) {
+			WynnPhotonPreLaunch.LOGGER.warn("Could not update {}: {}", file, e.toString());
+		}
 	}
 
 	private static boolean flag(Properties properties, String key, boolean fallback) {

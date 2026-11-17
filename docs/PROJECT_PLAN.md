@@ -47,9 +47,12 @@ that, one small labelled patch at a time.
   sky light fills in under Photonics. Adds the lighting test (`gradlew lightTest`). From the audit: lava cauldron tubs
   stop glowing, pistons, TNT, purpur, cauldrons and the iron door shade as wood, emerald blocks glow less, and
   enchanting tables get a faint purple light.
+- **0.8.0 (in progress, the first public release):** install polish. Clear install errors, live install and
+  settings migration. See [CHANGELOG.md](CHANGELOG.md).
 - **Block work is done.** Steps 1-7 and 9 are closed.
 - **Next: release polish (step 10).** The installer and updater get Euphoria Patcher-level polish before the first
-  public release. Region atmosphere (step 8) moves to after the release.
+  public release. Region atmosphere (step 8) and the update check (it needs a published Modrinth version) move to
+  after the release.
 
 ### Done so far
 
@@ -82,6 +85,7 @@ that, one small labelled patch at a time.
   light (0.7.0)
 - [ ] Mod and project polish (step 10), the release blocker
 - [ ] Region atmosphere (step 8), after the release
+- [ ] Update check (step 10), after the release
 
 ## Roadmap
 
@@ -267,32 +271,36 @@ Result: "Full texture audit" in [research/wynn-rp-blocks.md](research/wynn-rp-bl
 Goal: install and update as smoothly as Euphoria Patcher (`EuphoriaPatches/EuphoriaPatcher`, studied 2026-11-17).
 
 **Licence: MIT (decided 2026-11-17).** Wynn-Photon writes its own code, so it doesn't inherit Euphoria Patcher's
-MPL-2.0 and copies none of its files, its error-shader assets included. Euphoria is a reference for features only.
+MPL-2.0 and copies none of its files. Euphoria is a reference for features only.
 The MIT licence covers our code, not the portions of Photon in `patches/`.
 
 **What Euphoria does that we don't, in build order:**
 
-- [ ] **Clear install errors.** One message per case, with what was found, what is needed, the fix and the download
-  link: base pack missing, wrong Photon version (newer or older), edited Photon, half-downloaded zip, output name
-  taken. Also written to `shaderpacks/_0WYNN_PHOTON_ERRORS.txt`, deleted after a good install.
-- [ ] **Error shader pack.** On a failed install, write a tiny `_0Wynn-Photon_Error` pack that draws the error
-  text on screen (our own bitmap-font shader), so a player who picks it in Iris sees what went wrong. Deleted after a good install. No mixins.
-- [ ] **Update check.** Modrinth `GET /v2/project/<id>/version`, on a background thread with a short timeout and a
-  config switch (`updateCheck = important|all|none`). Report it without mixins first: the pack's info line in the
-  shader menu and a log line. Also `modmenu.update_checker` in `fabric.mod.json`.
-- [ ] **Live install.** When an install fails, watch `shaderpacks/`; when the right Photon zip appears, patch it
-  and reload Iris (reflection, on the client thread), so no restart is needed.
-- [ ] **Settings migration.** We already copy the `.txt`. Add a conversions file for renamed or removed Wynn-Photon
-  options, applied on copy.
+- [x] **Clear install errors.** One message per case, with what was found, what is needed, the fix and the download
+  link: base pack missing, wrong Photon version (newer or older), edited Photon, half-downloaded zip, Photon
+  unzipped into an extra folder, output name taken. Also written to `shaderpacks/_0WYNN_PHOTON_ERRORS.txt`, deleted
+  after a good install (0.8.0).
+- [x] **Settings migration.** The `.txt` copy runs through `src/main/resources/wynn_photon/settings_conversions.txt`
+  (rename, change or remove options). Settings also carry over from the newest older Wynn-Photon pack when Iris
+  used another pack (0.8.0).
+- [x] **Live install.** When an install fails, `ShaderpacksWatcher` polls `shaderpacks/` every 2 s; once the
+  packs change and settle, it reruns the installer, then `Iris.reload()` runs on the client thread by reflection
+  (0.8.0). Not checked in game yet.
+- [x] **Install toasts.** Our own vanilla-style toast (top right) says when the pack was installed or updated, or
+  why it couldn't be built. Built on Minecraft's toast system from a small `client` entrypoint, no Sodium and no
+  mixins; `showNotifications` turns it off (0.8.0). Not checked in game yet.
+- [ ] **Update check (after the release).** It needs a published Modrinth version to check against. Modrinth `GET /v2/project/wynnphoton/version`, on a background thread with a short timeout
+  and a config switch (`updateCheck = important|all|none`). Report it without mixins first: the pack's info line
+  in the shader menu and a log line. Also `modmenu.update_checker` in `fabric.mod.json`.
 - [ ] **Old jar cleanup.** Warn (or remove) older Wynn-Photon jars left in `mods/`.
-- [ ] **Later, needs mixins:** an "Update Wynn-Photon" button in Iris's shader-options header and Sodium console
-  popups for errors. Both hook Iris or Sodium internals, so they cost more on every update.
-- **Skipped:** donation prompt, screenshot-embedded settings, extra pack names, multiloader.
+- [ ] **Later, needs mixins:** an "Update Wynn-Photon" button in Iris's shader-options header. It hooks Iris
+  internals, so it costs more on every update.
+- **Skipped:** error shader pack (the log, the error file and the toasts are enough), Sodium console popups (our own toasts instead), donation prompt, screenshot-embedded settings, extra pack names, multiloader.
 
 **Other polish:**
 
-- [ ] Show an in-game notice when Photon is missing, not just a log line (the error shader pack above).
-- [ ] A Mod Menu screen for the two config options.
+- [x] An in-game notice when Photon is missing: the error toast (0.8.0).
+- [ ] A Mod Menu screen for the three config options.
 - [x] A GitHub repo (`DrBiznes/wynn-photon`).
 - [ ] CI that runs `gradlew build` on every push and pull request.
 - [x] Publishing workflow: `.github/workflows/publish.yml` publishes to Modrinth and CurseForge on a GitHub release.

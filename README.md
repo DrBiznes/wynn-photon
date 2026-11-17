@@ -24,17 +24,17 @@ WynnPhoton patches the [Photon](https://modrinth.com/shader/photon-shader) shade
 
 ## Installation
 
-1. Install Fabric Loader and WynnIris
+1. Install Fabric Loader and [WynnIris](https://modrinth.com/mod/wynniris)
 2. Put `photon_v1.4.zip` from [Modrinth](https://modrinth.com/shader/photon-shader/versions) in your `shaderpacks` folder, still zipped and unedited
-3. Put the Wynn-Photon jar from the releases page in your `mods` folder
+3. Put the Wynn-Photon jar from [Modrinth](https://modrinth.com/mod/wynnphoton/versions) in your `mods` folder
 4. Start the game, it makes `photon_v1.4 + WynnPhoton_<version>` and selects it
 
 ## Go Ham
 
 - Feel free to use this in your modpack
-- How it's built and tested is in the [development docs](docs/DEVELOPMENT.md)
+- How it's built and tested is in the [development docs](https://github.com/DrBiznes/wynn-photon/blob/main/docs/DEVELOPMENT.md)
 - Photon is © SixthSurge under the [Photon Shaders License Agreement](https://github.com/sixthsurge/photon/blob/main/LICENSE)
-- Wynn-Photon's own code is [MIT](LICENSE)
+- Wynn-Photon's own code is [MIT](https://github.com/DrBiznes/wynn-photon/blob/main/LICENSE)
 
 ## Acknowledgments
 
@@ -42,7 +42,7 @@ WynnPhoton patches the [Photon](https://modrinth.com/shader/photon-shader) shade
 - Thanks to the Wynncraft team for creating an awesome MMORPG experience in Minecraft
 
 ## Support and My Mods
-Please report any bugs or feature suggestions on the Github Issues page! You can also [join my discord](https://discord.gg/jqFF64rXZZ) if you need direct support, or want to stay updated with all of my mods.
+Please report any bugs or feature suggestions on the [GitHub Issues page](https://github.com/DrBiznes/wynn-photon/issues)! You can also [join my discord](https://discord.gg/jqFF64rXZZ) if you need direct support, or want to stay updated with all of my mods.
 ### Check out all my projects!
 >   [World of Wynncraft Modpack](https://modrinth.com/modpack/world-of-wynncraft)
 
