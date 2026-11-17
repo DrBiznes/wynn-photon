@@ -15,6 +15,7 @@ setblock 74 -60 21 oak_sign[rotation=8]{front_text:{messages:["Magma block","own
 setblock 80 -60 21 oak_sign[rotation=8]{front_text:{messages:["Glowstone","own ID,","pale yellow","light"]},is_waxed:1b}
 setblock 86 -60 21 oak_sign[rotation=8]{front_text:{messages:["Beacon","pale teal","light","(was blue)"]},is_waxed:1b}
 setblock 92 -60 21 oak_sign[rotation=8]{front_text:{messages:["Chests","faint glow","chest, trapped",""]},is_waxed:1b}
+setblock 98 -60 21 oak_sign[rotation=8]{front_text:{messages:["Light blocks","invisible,","levels 15, 10","vanilla fallback"]},is_waxed:1b}
 setblock 1 -60 -6 oak_sign[rotation=0]{front_text:{messages:["Nether bricks","matte now","(was glossy)",""]},is_waxed:1b}
 setblock 5 -60 -6 oak_sign[rotation=0]{front_text:{messages:["Obsidian","faint sheen","(was glossy)",""]},is_waxed:1b}
 setblock 9 -60 -6 oak_sign[rotation=0]{front_text:{messages:["Emeralds","gem shine +","faint glow",""]},is_waxed:1b}

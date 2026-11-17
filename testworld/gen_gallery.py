@@ -32,16 +32,16 @@ def vs(e, n, s, w, up):
 # ---------------------------------------------------------------- clear and floor
 build += [
     "# Clear the gallery area (three fills, each under the 32768-block command limit) and reset the floor",
-    "fill -4 -60 -24 96 -50 -1 air",
-    "fill -4 -60 0 96 -50 15 air",
-    "fill -4 -60 16 96 -50 30 air",
-    "fill -4 -61 -24 96 -61 30 grass_block",
+    "fill -4 -60 -24 102 -50 -1 air",
+    "fill -4 -60 0 102 -50 15 air",
+    "fill -4 -60 16 102 -50 30 air",
+    "fill -4 -61 -24 102 -61 30 grass_block",
     "",
     "# ---- Dark hall (z 16-26): light sources, one per cell, behind a baffle so no daylight gets in",
 ]
 
 # ---------------------------------------------------------------- dark hall
-CELLS = 16
+CELLS = 17
 X1 = 6 * CELLS - 1  # east outer wall
 build += [
     "# Floor at y -61, roof at y -55, air inside",
@@ -153,6 +153,12 @@ c = cell(15)
 hall.append(("Chests", "faint glow", "chest, trapped", ""))
 b(c + 1, G, 23, "chest[facing=south]")
 b(c + 3, G, 23, "trapped_chest[facing=south]")
+# 16: invisible light blocks, as Wynncraft lights its caves. No light system sees them, so they light only through
+# the vanilla light fallback (Vanilla Light Strength). Without it, Photonics left this cell black
+c = cell(16)
+hall.append(("Light blocks", "invisible,", "levels 15, 10", "vanilla fallback"))
+b(c + 1, G + 2, 23, "light[level=15]")
+b(c + 3, G, 25, "light[level=10]")
 
 for i, lines in enumerate(hall):
     sign(lines, cell(i) + 2, G, 21, 8, labels)

@@ -2,6 +2,38 @@
 
 All notable changes to Wynn-Photon are listed here. Each version names the Photon release its patches apply to.
 
+## 0.6.0 (unreleased), for Photon v1.4
+
+Wynncraft's sea level and the light from invisible light blocks: the first half of roadmap steps 6 and 7. Not
+checked in game yet.
+
+### Shader changes
+
+- **Sea level is Y 33.** Wynncraft's sea is at Y 33, but Photon's `SEA_LEVEL` defaults to 63. The air fog volume
+  starts at `SEA_LEVEL - 24`, so Wynn's coast sat below it. The block-light fog switched to its underground look
+  between Y 63 and 43, which covered most of the surface. Clouds and cloud shadows also measure height from
+  `SEA_LEVEL`. The default is now 33.0, and 33.0 is added to the option list. The cave check (`biome_cave` in
+  `shaders.properties`) still uses its own hardcoded 63 and is left for step 6.
+- **Vanilla light fallback under Photonics.** With Photonics on, Photon dropped vanilla block light completely and
+  lit blocks only with the lights Photonics traces. Wynncraft lights many caves and rooms with invisible
+  `minecraft:light` blocks, which Photonics can't see, so those places were black even at block light 10. The
+  Photonics path in `diffuse_lighting.glsl` now mixes the vanilla lightmap back in where Photonics' light is weak.
+  It uses the same formula as the colored-light volume (`lpv/blocklight.glsl`), and it follows the same Vanilla
+  Lightmap Contribution toggle and falloff option.
+- **The fallback fades out in open daylight.** Every Wynncraft path is lined with light blocks, which vanilla barely
+  shows during the day, and the fallback drew bright pools on them at noon. On blocks with skylight above about 6
+  of 15 it now fades out during the day (`1 - time_midnight`), fully above about 12 of 15. Caves keep it all day and
+  everything keeps it at night. The fade applies with and without Photonics.
+
+### Settings page
+
+- **Vanilla Light Strength** (0-3×, default 1×) scales the vanilla light fallback, with and without Photonics.
+
+### Tooling
+
+- **Test world.** The dark hall has a 17th cell with two invisible light blocks (levels 15 and 10).
+- `mod_version` is 0.6.0.
+
 ## 0.5.0 (2026-11-16), for Photon v1.4
 
 A Wynn-Photon settings page in the shader menu, like Euphoria Patches' page for Complementary, and faintly glowing

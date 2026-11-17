@@ -9,7 +9,17 @@
  
  option.INFO                            = Photon Shaders
  value.INFO.0                           = §eby SixthSurge
-@@ -819,4 +821,20 @@
+@@ -90,7 +92,8 @@
+ option.RAIN_OPACITY                    = Rain Opacity
+ option.RAIN_OPACITY.comment            = Adjust the opacity of rain particles
+ option.SEA_LEVEL                       = Sea Level
+-option.SEA_LEVEL.comment               = The y coordinate of the sea/ground.\n\n-60.0: Superflat post-1.18.\n4.0: Superflat pre-1.18.\n63.0: Normal.
++option.SEA_LEVEL.comment               = The y coordinate of the sea/ground.\n\n-60.0: Superflat post-1.18.\n4.0: Superflat pre-1.18.\n33.0: Wynncraft.
++63.0: Normal.
+ option.SNOW_OPACITY                    = Snow Opacity
+ option.SNOW_OPACITY.comment            = Adjust the opacity of snow particles
+ option.EDGE_HIGHLIGHT                  = Edge Highlight
+@@ -819,4 +822,22 @@
  option.PHOTONICS_RESTIR_COMBINED_GI       = Include Skylight GI
  option.PHOTONICS_RESTIR_COMBINED_GI.comment = Whether Gi should be ran through ReSTIR's denoiser instead of its usual path. \nResults in much sharper Gi, at the cost of performance.
  
@@ -30,3 +40,5 @@
 +option.WYNN_CANDLE_LIGHT_I.comment     = Brightness of Wynncraft's candle sconces and candelabras: their flames and their light. 0 turns them off
 +option.WYNN_MAGMA_GLOW_I               = Magma Glow Strength
 +option.WYNN_MAGMA_GLOW_I.comment       = Brightness of the glowing cracks in magma and molten rock, and their light. 0 turns them off
++option.WYNN_VANILLA_LIGHT_I             = Vanilla Light Strength
++option.WYNN_VANILLA_LIGHT_I.comment     = Lights blocks from the vanilla lightmap where Colored Lights and Photonics see no light source. Wynncraft lights many caves and rooms with invisible light blocks, which neither light system can see. It fades out on open, sky-lit ground during the day, as in vanilla, but stays in caves. 0 turns it off

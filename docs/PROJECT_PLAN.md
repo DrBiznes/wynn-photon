@@ -40,7 +40,11 @@ that, one small labelled patch at a time.
   [CHANGELOG.md](CHANGELOG.md). Not checked in game yet.
 - **0.5.0 (done):** a Wynn-Photon settings page in the shader menu (emerald and chest glow toggles and strengths,
   candle and magma strengths) and faintly glowing chests. See [CHANGELOG.md](CHANGELOG.md). Not checked in game yet.
-- **Next:** check 0.4.0 in the test world, then roadmap step 6.
+- **0.6.0 (in progress):** sea level 33, and a vanilla light fallback so Wynncraft's invisible light blocks light
+  caves under Photonics, faded out on open ground by day (steps 6 and 7, first half). Sea level is checked on
+  Wynncraft: the coast's fog and haze look much better. The fallback is installed for testing.
+- **Next:** finish checking 0.6.0, then the skylight-only cave check and brightness defaults (step 6, "Still to
+  do"). Auto exposure is the last resort for brightness.
 
 ### Done so far
 
@@ -63,6 +67,10 @@ that, one small labelled patch at a time.
 - [x] Redstone dust off; magma, glowstone and beacon lights retuned; quartz and iron block less reflective (0.4.0)
 - [x] Survey leftovers: crate, cauldron and book stacks to wood; unlit candle props metal and wax (0.4.0)
 - [ ] In-game check of the 0.4.0 changes
+- [x] Wynn-Photon settings page; chests glow faintly (0.5.0)
+- [x] Sea level Y 33 (0.6.0, checked on Wynncraft)
+- [x] Vanilla light fallback under Photonics, with Vanilla Light Strength and a daytime fade on open ground (0.6.0)
+- [ ] In-game check of the light fallback: caves, paths by day and night, cave mouths
 
 ## Roadmap
 
@@ -142,31 +150,71 @@ and each block gets a test-world exhibit.
   IDs: magma `10067` (black modded lights merged into gray), glowstone `10054` (the enchanting table's slot), quartz
   `10098`, iron block `10099`.
 
-### 6. Cave detection
+### 6. Sea level, caves and brightness
 
-Wynncraft's ground level differs from vanilla. Photon decides "in a cave" from altitude and skylight
-(`shaders.properties`: `biome_cave` uses `eyeAltitude` below 63, fading out by 50, times missing skylight), and
-`SEA_LEVEL` defaults to 63.
+Wynncraft's sea is at Y 33 everywhere, but Photon assumes 63. Caves sit far above it (Sky Islands, Canyon of the
+Lost) and far below it (the jungles, Fruma), so no single height can mean "cave". Photon is also darker overall than
+Wynncraft is meant to look.
 
-- [ ] Find Wynncraft's real sea and ground levels, per province if they differ. Sky Islands and the Silent Expanse
-  are likely special cases.
-- [ ] List everything that reads `biome_cave`, `SEA_LEVEL` or `eyeAltitude` (cave fog, cave lighting, water, clouds).
-- [ ] Patch the thresholds, or drop the altitude term and rely on skylight alone if no single height fits.
-- [ ] Check in a surface town, an open low area, a real cave and a dungeon.
+**Done (0.6.0):**
+
+- [x] Sea level measured: Y 33.
+- [x] Listed what reads `SEA_LEVEL`: the air fog volume (it starts at `SEA_LEVEL - 24`), the block-light fog's
+  underground switch (`lpv_fog.glsl`, from `SEA_LEVEL` down 20 blocks), and clouds and cloud shadows.
+- [x] `SEA_LEVEL` defaults to 33. Checked on Wynncraft: the coast's fog and haze are much better.
+
+**How Photon decides "cave" today:** `biome_cave` (`shaders.properties`) is `(63 - eyeAltitude) / 13`, clamped,
+times missing skylight at the eye. It drives cave fog (`simple_fog.glsl`), extra vignette (`c19_color_grading.fsh`),
+a darker horizon and border fog (`d4_deferred_shading.fsh`, `sky.glsl`) and the clouds. On Wynn the height part is
+always at its maximum near the sea, so shade from a roof or tree counts partly as cave, and caves above Y 63 never
+count. Cave *lighting* (`CAVE_LIGHTING_I`, `diffuse_lighting.glsl`) is separate: it uses each block's skylight only,
+so it already works at any height.
+
+**Still to do: cave check**
+
+- [ ] Drop the height part of `biome_cave` and use eye skylight alone, through a threshold (about 5 of 15) so roofs
+  and trees don't count. Keep Photon's smoothing.
+- [ ] Check in a surface town, under a big tree, at a cave mouth, in a deep cave (Fruma or the jungle) and in a high
+  cave (Sky Islands or Canyon of the Lost).
+
+**Still to do: overall brightness, without auto exposure**
+
+Explore the fixed-exposure options in the dev client first, each on its own, then pick defaults. Turn on auto
+exposure only if none of these is enough.
+
+- [ ] `CAVE_LIGHTING_I` (default 1.0): the ambient light in places with little skylight. Lifts caves and interiors,
+  leaves daylight alone. Try 1.5-3.0.
+- [ ] `SKYLIGHT_I` (default 1.0): the sky's ambient light, so shade, forests and overhangs get brighter by day.
+- [ ] `BLOCKLIGHT_I` (default 1.0): every torch, lantern and Wynn candle, in both light systems.
+- [ ] Vanilla Light Strength (Wynn-Photon page, default 1.0): only the light-block fallback. Pairs with the
+  Linear/Squared falloff option; Linear reaches further from each light block.
+- [ ] `MANUAL_EXPOSURE_VALUE` (default 0): brightens everything, sky included. Its steps are whole EV (each one
+  doubles the brightness), so add steps like -0.25 and -0.5 if it's the right lever.
+- [ ] `GRADE_BRIGHTNESS` (default 1.0): a brightness step after tonemapping. It's simple, but it can flatten
+  contrast.
+- [ ] Night: `MOON_I` and the night sky, if nights read too dark on Wynncraft.
+- [ ] Last resort: auto exposure "Simple" with a narrow range (`AUTO_EXPOSURE_MIN`/`MAX`), so it only lifts dark
+  places a little.
+- [ ] Ship the chosen values as patched defaults, like `CLOUDS_SCALE` 9.0, and note them in the changelog.
 
 ### 7. Invisible light blocks
 
 Builders use `minecraft:light` all over the map. It has no geometry, so the colored-light volume's voxelisation
 never sees it. Today it only lights through the vanilla lightmap.
 
-- [ ] Research: what Photon does with vanilla blocklight that has no voxel emitter
-  (`COLORED_LIGHTS_VANILLA_LIGHTMAP_CONTRIBUTION`), and whether those areas look right or flat and uncoloured.
-- [ ] Research: whether Photonics lists `minecraft:light` in its defaults, and whether it can ray-trace a block
+- [x] Research: what Photon does with vanilla blocklight that has no voxel emitter. Without Photonics,
+  `COLORED_LIGHTS_VANILLA_LIGHTMAP_CONTRIBUTION` mixes it in where the colored light is weak. With Photonics it was
+  dropped completely, so light-block caves were black. 0.6.0 adds the same fallback to the Photonics path, plus a
+  Vanilla Light Strength setting for both.
+- [x] Paths: every Wynncraft path is lined with light blocks, and the fallback lit them in bright pools at noon. On
+  sky-lit blocks it now fades out by day (fading in from skylight 6, gone by 12) and stays in caves and at night (0.6.0).
+- [x] Colour and "both halves": the fallback uses Photon's warm block-light colour, and it covers both light systems,
+  so light blocks need no Photonics entry.
+- [ ] Check in game whether the fallback is bright enough, or whether light blocks need their own falloff, and
+  whether the day fade's skylight window (6-12 of 15) suits cave mouths.
+- [ ] Optional research: whether Photonics lists `minecraft:light` in its defaults, and whether it can ray-trace a block
   with no model. If so, add `light[level=N]` entries to `ph_lights.json`, scaled by level.
-- [ ] Decide the colour. A light block has none; a neutral warm white is the safe default.
-- [ ] Decide how to handle the "both halves" principle if only one light system can see the block. A lightmap-side
-  fix in the LPV path may be the other half.
-- [ ] If neither system can see it, write it up as a WynnIris or Photonics request.
+- [ ] Optional: if Photonics can trace light blocks, compare its shadowed light with the fallback.
 
 ### 8. Region atmosphere
 
@@ -259,8 +307,8 @@ packs. Check what it covers so the two don't duplicate or fight each other.
   change.)
 - ~~Can Iris target custom item models at all?~~ Only by `item_model`, not `custom_model_data`, and Wynn props use
   the latter. A WynnIris request if ever needed.
-- What are Wynncraft's sea and ground levels, and do they differ by province? (Step 6.)
-- Can either light system see `minecraft:light`, and what colour should it cast? (Step 7.)
+- ~~What are Wynncraft's sea and ground levels?~~ Y 33 everywhere.
+- ~~Can either light system see `minecraft:light`?~~ No. The vanilla light fallback covers it in both (0.6.0).
 - Which vanilla biome does the server assign to each region? (Step 8.)
 - Does Photonics' default `redstone` group override Photon's `ph_lights.json` group for `repeater[powered=true]`?
   Check in game with the candelabra change.

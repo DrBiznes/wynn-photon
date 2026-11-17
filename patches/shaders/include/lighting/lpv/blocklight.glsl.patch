@@ -1,0 +1,26 @@
+--- a/shaders/include/lighting/lpv/blocklight.glsl
++++ b/shaders/include/lighting/lpv/blocklight.glsl
+@@ -23,7 +23,8 @@
+     vec3 scene_pos,
+     vec3 normal,
+     vec3 mc_blocklight,
+-    float ao
++    float ao,
++    float vanilla_light_scale // Wynn-Photon: see wynn_vanilla_light_scale()
+ ) {
+     vec3 voxel_pos = scene_to_voxel_space(scene_pos);
+ 
+@@ -48,9 +49,11 @@
+             += mix(vec3(dot(mc_blocklight, luminance_weights_rec2020)),
+                    mc_blocklight,
+                    0.5)
+-            * mc_blocklight * 0.5 * vanilla_lightmap_contribution;
++            * mc_blocklight * 0.5 * vanilla_lightmap_contribution
++            * vanilla_light_scale; // Wynn-Photon: vanilla light strength
+ #else
+-        lpv_blocklight += mc_blocklight * vanilla_lightmap_contribution;
++        lpv_blocklight += mc_blocklight * vanilla_lightmap_contribution
++            * vanilla_light_scale; // Wynn-Photon: vanilla light strength
+ #endif
+ #endif
+ 
