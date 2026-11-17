@@ -69,7 +69,7 @@ that, one small labelled patch at a time.
 - [ ] In-game check of the 0.4.0 changes
 - [x] Wynn-Photon settings page; chests glow faintly (0.5.0)
 - [x] Sea level Y 33 (0.6.0, checked on Wynncraft)
-- [x] Vanilla light fallback under Photonics, with Vanilla Light Strength and a daytime fade on open ground (0.6.0)
+- [x] Vanilla light fallback under Photonics, with Light Block Strength and a daytime fade on open ground (0.6.0)
 - [ ] In-game check of the light fallback: caves, paths by day and night, cave mouths
 
 ## Roadmap
@@ -172,8 +172,8 @@ so it already works at any height.
 
 **Still to do: cave check**
 
-- [ ] Drop the height part of `biome_cave` and use eye skylight alone, through a threshold (about 5 of 15) so roofs
-  and trees don't count. Keep Photon's smoothing.
+- [x] Drop the height part of `biome_cave` and use eye skylight alone (full cave at skylight 2 of 15 or less, none
+  from 6 up) so roofs and trees don't count. Photon's smoothing is kept.
 - [ ] Check in a surface town, under a big tree, at a cave mouth, in a deep cave (Fruma or the jungle) and in a high
   cave (Sky Islands or Canyon of the Lost).
 
@@ -182,11 +182,15 @@ so it already works at any height.
 Explore the fixed-exposure options in the dev client first, each on its own, then pick defaults. Turn on auto
 exposure only if none of these is enough.
 
+- [x] Photonics sky fill: with Photonics, shade was lit only by Photonics' weak traced indirect light, so
+  `SKYLIGHT_I` did little. Photon's sky light now fills in where the traced light is weaker (Photonics Sky Fill,
+  default 1.0). Not checked in game yet.
+
 - [ ] `CAVE_LIGHTING_I` (default 1.0): the ambient light in places with little skylight. Lifts caves and interiors,
   leaves daylight alone. Try 1.5-3.0.
 - [ ] `SKYLIGHT_I` (default 1.0): the sky's ambient light, so shade, forests and overhangs get brighter by day.
 - [ ] `BLOCKLIGHT_I` (default 1.0): every torch, lantern and Wynn candle, in both light systems.
-- [ ] Vanilla Light Strength (Wynn-Photon page, default 1.0): only the light-block fallback. Pairs with the
+- [ ] Light Block Strength (Wynn-Photon page, default 1.0): only the light-block fallback. Pairs with the
   Linear/Squared falloff option; Linear reaches further from each light block.
 - [ ] `MANUAL_EXPOSURE_VALUE` (default 0): brightens everything, sky included. Its steps are whole EV (each one
   doubles the brightness), so add steps like -0.25 and -0.5 if it's the right lever.
@@ -205,7 +209,7 @@ never sees it. Today it only lights through the vanilla lightmap.
 - [x] Research: what Photon does with vanilla blocklight that has no voxel emitter. Without Photonics,
   `COLORED_LIGHTS_VANILLA_LIGHTMAP_CONTRIBUTION` mixes it in where the colored light is weak. With Photonics it was
   dropped completely, so light-block caves were black. 0.6.0 adds the same fallback to the Photonics path, plus a
-  Vanilla Light Strength setting for both.
+  Light Block Strength setting for both.
 - [x] Paths: every Wynncraft path is lined with light blocks, and the fallback lit them in bright pools at noon. On
   sky-lit blocks it now fades out by day (fading in from skylight 6, gone by 12) and stays in caves and at night (0.6.0).
 - [x] Colour and "both halves": the fallback uses Photon's warm block-light colour, and it covers both light systems,

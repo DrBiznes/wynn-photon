@@ -31,12 +31,58 @@
      );
  #else
      lighting += mc_blocklight;
-@@ -352,7 +367,34 @@
+@@ -311,6 +326,10 @@
+     // Skylight
+ 
+ #if defined PHOTONICS_DIFFUSE
++    // Wynn-Photon: Photonics' traced indirect light, kept for the sky fill
++    // below
++    vec3 wynn_photonics_gi = vec3(0.0);
++
+     if (is_lod) {
+         lighting += get_sky_lighting(
+             material,
+@@ -324,7 +343,8 @@
+ // When combined gi is enabled
+ // Photonics includes gi in the result of sample_photonics_direct
+ #ifndef PHOTONICS_RESTIR_COMBINED_GI
+-        lighting += texture2D(radiosity_indirect, uv).xyz * SKYLIGHT_I;
++        wynn_photonics_gi = texture2D(radiosity_indirect, uv).xyz * SKYLIGHT_I;
++        lighting += wynn_photonics_gi;
+ #endif
+     }
+ 
+@@ -352,7 +372,59 @@
  #endif
  
          // BLOCKLIGHT_I is applied in /photonics/modifiers/modify_lights.glsl
 -        lighting += blocklight * blocklight_scale;
 +        blocklight *= blocklight_scale;
++
++        // Wynn-Photon: Photonics sky fill. With Photonics, Photon swaps its
++        // sky light for Photonics' traced indirect light, which is very weak
++        // in shade, forests and overhangs, so those were much darker than
++        // without Photonics and SKYLIGHT_I barely changed them. Add Photon's
++        // own sky light back in, only as far as the traced light falls short
++        // of it
++        {
++#ifdef PHOTONICS_RESTIR_COMBINED_GI
++            // Combined GI arrives inside sample_photonics_direct
++            wynn_photonics_gi = blocklight;
++#endif
++            vec3 sky_fill = WYNN_PHOTONICS_SKY_FILL_I
++                * get_sky_lighting(
++                    material,
++                    bent_normal,
++                    light_levels,
++                    ao,
++                    ambient_sss,
++                    directional_lighting
++                );
++            float fill_lum = dot(sky_fill, luminance_weights_rec2020);
++            float gi_lum = dot(wynn_photonics_gi, luminance_weights_rec2020);
++            lighting += sky_fill * clamp01(1.0 - gi_lum / max(fill_lum, eps));
++        }
 +
 +#ifdef COLORED_LIGHTS_VANILLA_LIGHTMAP_CONTRIBUTION
 +        // Wynn-Photon: vanilla light fallback. Photonics only traces the
