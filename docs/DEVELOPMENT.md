@@ -107,4 +107,5 @@ It allows modifying Photon and redistributing modified portions. It does not all
 platforms that pay creators (such as Modrinth or CurseForge) without SixthSurge's written permission. The patches
 in this repository contain portions of Photon. Ask before publishing this mod on those platforms.
 
-The license for this mod's own code has not been chosen yet.
+Wynn-Photon's own code is under the [MIT License](../LICENSE). That does not cover the portions of Photon in the
+patches.

@@ -328,6 +328,12 @@ tasks.register('dev') {
 	dependsOn 'runDev'
 }
 
+jar {
+	from('LICENSE') {
+		rename { "LICENSE_wynn-photon.txt" }
+	}
+}
+
 processResources {
 	def version = project.version
 	inputs.property 'version', version

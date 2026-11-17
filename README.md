@@ -35,6 +35,7 @@ WynnPhoton patches the [Photon](https://modrinth.com/shader/photon-shader) shade
 - Feel free to use this in your modpack
 - How it's built and tested is in the [development docs](docs/DEVELOPMENT.md)
 - Photon is © SixthSurge under the [Photon Shaders License Agreement](https://github.com/sixthsurge/photon/blob/main/LICENSE)
+- Wynn-Photon's own code is [MIT](LICENSE)
 
 ## Acknowledgments
 

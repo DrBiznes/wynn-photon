@@ -7,7 +7,7 @@
 	"authors": [
 		"Wynn-Photon contributors"
 	],
-	"license": "LicenseRef-Unspecified",
+	"license": "MIT",
 	"icon": "assets/wynn_photon/icon.png",
 	"environment": "client",
 	"entrypoints": {

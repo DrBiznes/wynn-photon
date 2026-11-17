@@ -48,7 +48,8 @@ that, one small labelled patch at a time.
   stop glowing, pistons, TNT, purpur, cauldrons and the iron door shade as wood, emerald blocks glow less, and
   enchanting tables get a faint purple light.
 - **Block work is done.** Steps 1-7 and 9 are closed.
-- **Next:** region atmosphere (step 8) and mod and project polish (step 10). Nothing else is open.
+- **Next: release polish (step 10).** The installer and updater get Euphoria Patcher-level polish before the first
+  public release. Region atmosphere (step 8) moves to after the release.
 
 ### Done so far
 
@@ -79,8 +80,8 @@ that, one small labelled patch at a time.
 - [x] Lighting screenshot test, `gradlew lightTest` (0.7.0)
 - [x] Full texture audit (step 9) and its fixes: lava cauldron, more wood, iron door, emerald glow, enchanting table
   light (0.7.0)
-- [ ] Region atmosphere (step 8)
-- [ ] Mod and project polish (step 10)
+- [ ] Mod and project polish (step 10), the release blocker
+- [ ] Region atmosphere (step 8), after the release
 
 ## Roadmap
 
@@ -217,7 +218,10 @@ never sees it. Today it only lights through the vanilla lightmap.
   (6-12 of 15).
 - **Dropped (optional):** tracing light blocks in Photonics. The fallback covers them in both light systems.
 
-### 8. Region atmosphere
+### 8. Region atmosphere (after the release)
+
+Moved past the first public release on 2026-11-17, so polish (step 10) ships first.
+
 
 Photon picks fog density and colour from the vanilla biome category (arid, snowy, taiga, jungle, swamp, temperate)
 and from biome temperature and humidity. Wynncraft's regions don't have to match the biome the server assigns them.
@@ -258,9 +262,36 @@ Result: "Full texture audit" in [research/wynn-rp-blocks.md](research/wynn-rp-bl
   on `10068` (0.7.0). This settles shortlist item 10.
 - [x] Closed without changes: farmland, glowstone brightness, the sponge and diorite gloss stay as Photon draws them.
 
-### 10. Mod and project polish
+### 10. Mod and project polish (release blocker)
 
-- [ ] Show an in-game notice when Photon is missing, not just a log line.
+Goal: install and update as smoothly as Euphoria Patcher (`EuphoriaPatches/EuphoriaPatcher`, studied 2026-11-17).
+
+**Licence: MIT (decided 2026-11-17).** Wynn-Photon writes its own code, so it doesn't inherit Euphoria Patcher's
+MPL-2.0 and copies none of its files, its error-shader assets included. Euphoria is a reference for features only.
+The MIT licence covers our code, not the portions of Photon in `patches/`.
+
+**What Euphoria does that we don't, in build order:**
+
+- [ ] **Clear install errors.** One message per case, with what was found, what is needed, the fix and the download
+  link: base pack missing, wrong Photon version (newer or older), edited Photon, half-downloaded zip, output name
+  taken. Also written to `shaderpacks/_0WYNN_PHOTON_ERRORS.txt`, deleted after a good install.
+- [ ] **Error shader pack.** On a failed install, write a tiny `_0Wynn-Photon_Error` pack that draws the error
+  text on screen (our own bitmap-font shader), so a player who picks it in Iris sees what went wrong. Deleted after a good install. No mixins.
+- [ ] **Update check.** Modrinth `GET /v2/project/<id>/version`, on a background thread with a short timeout and a
+  config switch (`updateCheck = important|all|none`). Report it without mixins first: the pack's info line in the
+  shader menu and a log line. Also `modmenu.update_checker` in `fabric.mod.json`.
+- [ ] **Live install.** When an install fails, watch `shaderpacks/`; when the right Photon zip appears, patch it
+  and reload Iris (reflection, on the client thread), so no restart is needed.
+- [ ] **Settings migration.** We already copy the `.txt`. Add a conversions file for renamed or removed Wynn-Photon
+  options, applied on copy.
+- [ ] **Old jar cleanup.** Warn (or remove) older Wynn-Photon jars left in `mods/`.
+- [ ] **Later, needs mixins:** an "Update Wynn-Photon" button in Iris's shader-options header and Sodium console
+  popups for errors. Both hook Iris or Sodium internals, so they cost more on every update.
+- **Skipped:** donation prompt, screenshot-embedded settings, extra pack names, multiloader.
+
+**Other polish:**
+
+- [ ] Show an in-game notice when Photon is missing, not just a log line (the error shader pack above).
 - [ ] A Mod Menu screen for the two config options.
 - [x] A GitHub repo (`DrBiznes/wynn-photon`).
 - [ ] CI that runs `gradlew build` on every push and pull request.
@@ -323,6 +354,6 @@ packs. Check what it covers so the two don't duplicate or fight each other.
   the latter. A WynnIris request if ever needed.
 - ~~What are Wynncraft's sea and ground levels?~~ Y 33 everywhere.
 - ~~Can either light system see `minecraft:light`?~~ No. The vanilla light fallback covers it in both (0.6.0).
-- Which vanilla biome does the server assign to each region? (Step 8.)
+- Which vanilla biome does the server assign to each region? (Step 8, after the release.)
 - ~~Does Photonics' default `redstone` group override Photon's `ph_lights.json` group for `repeater[powered=true]`?~~
   No: candelabras light as candles in game.
