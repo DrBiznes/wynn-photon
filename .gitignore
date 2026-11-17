@@ -32,3 +32,8 @@ Thumbs.db
 
 # Logs written by tests
 logs/
+
+# Marketing: only the final images are committed
+marketing/*
+!marketing/banner.png
+!marketing/icon.png

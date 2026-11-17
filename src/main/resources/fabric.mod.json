@@ -8,6 +8,7 @@
 		"Wynn-Photon contributors"
 	],
 	"license": "LicenseRef-Unspecified",
+	"icon": "assets/wynn_photon/icon.png",
 	"environment": "client",
 	"entrypoints": {
 		"preLaunch": [

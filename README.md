@@ -1,5 +1,7 @@
 # Wynn-Photon
 
+<img width="468" height="200" alt="banner" src="marketing/banner.png" />
+
 A Fabric mod for Minecraft 1.21.11 that patches the [Photon](https://modrinth.com/shader/photon-shader) shader pack
 with tweaks for Wynncraft. It works like [Euphoria Patcher](https://github.com/EuphoriaPatches/EuphoriaPatcher):
 the mod ships only *patches*, never Photon itself. When the game starts, it finds an unmodified copy of Photon in
