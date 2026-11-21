@@ -1,0 +1,151 @@
+--- a/shaders/program/d2_clouds_upscaling.fsh
++++ b/shaders/program/d2_clouds_upscaling.fsh
+@@ -13,7 +13,7 @@
+ #include "/include/global.glsl"
+ 
+ layout(location = 0) out vec4 clouds_history;
+-layout(location = 1) out vec3 clouds_data;
++layout(location = 1) out vec4 clouds_data; // Wynn-Photon: a fourth component, see effect_distance below
+ 
+ /* RENDERTARGETS: 11,12 */
+ 
+@@ -132,6 +132,52 @@
+     );
+ }
+ 
++// Wynn-Photon: the distance to the cloud for world effects.
++//
++// WynnVista draws its world effects (the Mount Wynn smoke plume and others) over the finished image, and reads the
++// clouds history to put them behind the clouds. The apparent distance Photon keeps in clouds_data.x does not serve
++// for that along a cloud's edge or beside terrain: "no cloud" is a huge distance that the filtering over space and
++// time mixes in, and over terrain it is the distance to only the part of the cloud in front of the terrain, which
++// the history carries into the sky pixels beside it. An effect behind such a pixel flickered in and out of the
++// cloud. Photon's own use of clouds_data.x is not affected by either, so that component is left as it is and a
++// distance of its own is kept for the effects in clouds_data.w:
++//  - 0 where there is no cloud, and on terrain
++//  - a sky pixel's distance changes only in the frames in which that very pixel is marched, and not by a march
++//    that terrain beside the pixel cut short: a march that finds a cloud is blended into the distance kept, or
++//    taken as it is when none is kept or the two are far apart (another cloud); after a march that finds none,
++//    the distance is dropped once the clouds image kept for the pixel has let go of the cloud as well
++const float clouds_no_distance = 1e5; // an apparent distance beyond this means "no cloud"
++
++// The history's distance for effects between four texels, like texture(), without the texels that hold none
++float texture_effect_distance(sampler2D s, vec2 coord) {
++    vec2 f = fract(coord * vec2(textureSize(s, 0)) - 0.5);
++    vec4 distances = textureGather(s, coord, 3);
++    vec4 weights = vec4(
++        (1.0 - f.x) * f.y,
++        f.x * f.y,
++        f.x * (1.0 - f.y),
++        (1.0 - f.x) * (1.0 - f.y)
++    ) * step(0.5, distances);
++    float weight_sum = weights.x + weights.y + weights.z + weights.w;
++
++    // None where most of what is filtered holds none: otherwise the distances would spread into the clear sky
++    // around a cloud, a texel further each frame
++    return weight_sum > 0.5 ? dot(weights, distances) / weight_sum : 0.0;
++}
++
++// The furthest depth in the area that d1_clouds looks at for the march at march_uv (its depth_max_4x4)
++float march_depth_max(sampler2D depth_sampler, vec2 march_uv, float scale) {
++    vec2 coord = march_uv * scale;
++    vec2 offset = 2.0 * view_pixel_size;
++
++    return max(
++        max(max_of(textureGather(depth_sampler, coord + offset)),
++            max_of(textureGather(depth_sampler, coord + vec2(-offset.x, offset.y)))),
++        max(max_of(textureGather(depth_sampler, coord + vec2(offset.x, -offset.y))),
++            max_of(textureGather(depth_sampler, coord - offset)))
++    );
++}
++
+ vec3 reproject_clouds(vec2 uv, float distance_to_cloud) {
+     const float planet_radius = 6371e3;
+     const float clouds_cumulus_radius = planet_radius + CLOUDS_CUMULUS_ALTITUDE;
+@@ -271,6 +317,7 @@
+             clouds_data.x = 1e6; // apparent distance
+             clouds_data.y = 0.0; // pixel age
+             clouds_data.z = 0.0; // ambient scattering
++            clouds_data.w = 0.0; // Wynn-Photon: no distance for effects on terrain
+             return;
+         }
+     }
+@@ -358,6 +405,17 @@
+             = mix(history, clamp(history, aabb_min, aabb_max), velocity_factor);
+     }
+ 
++    // Wynn-Photon: the history's distance for effects. Terrain holds none, so being near terrain does not make it
++    // unusable as it does the rest of the history.
++    bool effect_history_lost = clamp01(previous_uv) != previous_uv
++        || any(isnan(history)) || world_age_changed;
++    float effect_distance_history = effect_history_lost
++        ? 0.0
++        : texture_effect_distance(
++              colortex12,
++              previous_uv_clamped * taau_render_scale
++          );
++
+     // Get previous pixel age and apparent distance
+     float apparent_distance_history = history_data.x;
+     apparent_distance_history
+@@ -367,6 +425,11 @@
+     ivec2 offset_0 = dst_texel % CLOUDS_TEMPORAL_UPSCALING;
+     ivec2 offset_1
+         = clouds_checkerboard_offsets[frameCounter % checkerboard_area];
++    // Wynn-Photon: what this frame's march found, before the history takes its place (see effect_distance below)
++    bool marched_here = offset_0 == offset_1 || effect_history_lost;
++    float marched_distance = apparent_distance;
++    float marched_transmittance = current.a;
++
+     if (offset_0 != offset_1 && !disocclusion) {
+         current = history;
+         apparent_distance = min(apparent_distance, apparent_distance_history);
+@@ -392,4 +455,48 @@
+         = mix(apparent_distance, apparent_distance_history, history_weight);
+     clouds_data.y = min(++pixel_age, CLOUDS_ACCUMULATION_LIMIT);
+     clouds_data.z = mix(ambient_scattering, history_data.z, history_weight);
++
++    // Wynn-Photon: the distance to the cloud for world effects, see texture_effect_distance
++    bool marched_cloud = marched_distance < clouds_no_distance;
++    float effect_distance = effect_distance_history;
++
++    // Whether d1_clouds ended this pixel's march at terrain it found beside the pixel
++    vec2 march_uv = (vec2(src_texel) + 0.5)
++        / (vec2(textureSize(colortex9, 0).xy) * taau_render_scale);
++    float march_depth = march_depth_max(depthtex1, march_uv, taau_render_scale);
++#ifdef LOD_MOD_ACTIVE
++    bool march_cut_short = march_depth != 1.0
++        || is_lod_terrain(
++            march_depth,
++            march_depth_max(
++                lod_depth_tex_shading,
++                march_uv,
++                lod_depth_tex_scale
++            )
++        );
++#else
++    bool march_cut_short = march_depth != 1.0;
++#endif
++
++    if (depth != 1.0 || is_lod) {
++        // Terrain: what was marched is only the part of the cloud in front of it
++        effect_distance = 0.0;
++    } else if (marched_here && !march_cut_short) {
++        // Only the march of this very pixel counts: a march beside it can be of another cloud, much nearer
++        // or further, and the distance would jump with whichever pixel was marched
++        if (!marched_cloud) {
++            // The image lets through as much as a march without a cloud did: all but the crepuscular rays
++            if (clouds_history.a > 0.99 * marched_transmittance) {
++                effect_distance = 0.0;
++            }
++        } else if (effect_distance_history < 0.5
++            || max(marched_distance, effect_distance_history)
++                > 1.5 * min(marched_distance, effect_distance_history)) {
++            effect_distance = marched_distance;
++        } else {
++            effect_distance
++                = mix(marched_distance, effect_distance_history, 0.75);
++        }
++    }
++    clouds_data.w = min(effect_distance, 6e4); // within what the buffer's format holds
+ }

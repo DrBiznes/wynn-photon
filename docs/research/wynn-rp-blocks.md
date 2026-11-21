@@ -74,7 +74,9 @@ programs as Iris compiles them. I read its source at commit `5bd60bc` ("release:
    (`EntityPatcher` "anchors", with a fallback when none are found). Edits there can break WynnIris silently, so they
    need a test with WynnIris running.
 4. **Don't repurpose colortex11, 12 or 13.** WynnIris writes Photon's VFX translucency into colortex13 and clears the
-   cloud history in colortex11/12.
+   cloud history in colortex11/12. Since 0.10.0 colortex12 has an alpha channel that holds the cloud distance for
+   WynnVista's world effects (0 for none, which is also what a cleared history holds); its other three components
+   are Photon's, unchanged.
 5. **Keep "photon" in the patched pack's name** (`photon_v1.4 + WynnPhoton_<version>`). WynnIris only turns on its
    Photon fixes when the name contains it.
 6. **Gaps belong upstream.** WynnIris's emissive lifts albedo only, so the pixel is still lit by Photon's lighting

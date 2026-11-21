@@ -81,7 +81,10 @@ lighting test" in `docs/DEVELOPMENT.md`). Its harness is the dev-only `lighttest
   pixels, skyboxes, fog. Don't edit Photon's entity, hand or text programs, don't reuse colortex11-13, and keep
   "photon" in the pack name. See "Scope" in `docs/research/wynn-rp-blocks.md`. One deliberate exception: the
   defaults of Photon's own sky options `VANILLA_SUN`, `VANILLA_MOON` and `GALAXY` are on, because Wynncraft's pack
-  ships no sun or moon texture and so uses the vanilla ones. No sky code is changed.
+  ships no sun or moon texture and so uses the vanilla ones. No sky code is changed. A second exception, for
+  WynnVista: `d2_clouds_upscaling.fsh` keeps a cloud distance for WynnVista's world effects in `colortex12.a`, and
+  `colortex12` is RGBA16F for it. Nothing Photon reads is changed. WynnVista uses that channel whenever the buffer
+  has one, so keep its meaning: blocks to the cloud, 0 for none and on terrain.
 - Every light change updates both the colored-light volume (`block.properties` + `light_colors.glsl`) and Photonics
   (`ph_lights.json`). Photonics' built-in defaults list `repeater`, `comparator`, `redstone_torch` and
   `enchanting_table` by name. To remove one of those lights, also add the block to the `"disabled"` override in

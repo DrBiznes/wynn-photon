@@ -91,6 +91,35 @@ build/light-test/*.png           the shots, named <spot>__<time>__<set>.png
    patch to the new base by hand is easiest.
 3. `gradlew makePatches`, then bump `mod_version`.
 
+### The cloud distance for WynnVista
+
+[WynnVista](https://modrinth.com/mod/wynnvista) draws its world effects, such as the Mount Wynn smoke plume, over the
+finished image and reads Photon's clouds history to put them behind the clouds. Photon's own apparent distance
+(`colortex12.x`) does not serve for that: along a cloud's edge the filtering mixes in the huge distance stored for
+"no cloud", and over terrain it is the distance to only the part of the cloud in front of the terrain, which the
+history carries into the sky pixels beside it. An effect standing there was taken to be behind a cloud that was not in
+front of it, differently each frame.
+
+`program/d2_clouds_upscaling.fsh` therefore keeps a second distance for effects in `colortex12.a`, and
+`include/buffers.glsl` makes that buffer RGBA16F. It is the only change to Photon's cloud programs, and nothing
+Photon reads is changed, so the pack's own picture is the same.
+
+- The contract with WynnVista (2.2.4 and later): the alpha is the distance to the cloud in blocks, 0 where there is
+  none and on terrain. WynnVista uses it whenever the buffer has an alpha channel, so don't give that channel another
+  meaning.
+- A sky pixel's distance changes only in the frames in which that very pixel is marched, and not by a march that
+  `d1_clouds` cut short at terrain beside the pixel. A march that finds a cloud is blended into the distance kept, or
+  taken as it is when none is kept or the two are more than 1.5 times apart (another cloud). After a march that finds
+  none, the distance is dropped once the clouds image kept for the pixel has let go of the cloud as well.
+- Cost: one read of four texels of the history and eight of the depth buffers a pixel, in a pass that already runs
+  over the whole view. In WynnVista's fixture client (1920x1080, Voxy, RTX 4070, 2026-11-21) the GPU time of the
+  frame before WynnVista's effects was 4.05 and 4.08 ms with the change and 4.01 and 4.22 ms without, two runs each:
+  no difference beyond what one run differs from the next by, about 0.1 ms. `colortex12` holds one component more:
+  at most 8 MB at 1920x1080 for its two textures.
+- To test it, use WynnVista's fixture client with `work/` copied in as the shader pack: `lod_fixture.py run --iris
+  --shaderpack ... --burst ... --dump-clouds ...` saves consecutive frames and this buffer with them (see "Shader pack
+  clouds" in WynnVista's `docs/WORLD_EFFECTS.md`).
+
 ## How it works
 
 - `patches/` holds unified diffs, which only the build reads. Their parser and applier are the
