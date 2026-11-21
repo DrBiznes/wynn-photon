@@ -5,16 +5,16 @@ Every version so far patches Photon v1.4.
 ## 0.10.0
 
 **Added**
-- WynnVista: the pack now keeps the distance to its clouds in a form made for WynnVista's world effects, such as the Mount Wynn smoke plume. Where a cloud is in front of an effect, its edge no longer jitters, and a patch of cloud no longer flashes over the effect beside a mountain while you move, and small specks of the effect no longer show through a cloud's edge. This needs WynnVista 2.2.4 or later. Photon's own picture is unchanged.
-
-**Fixed**
-- A Photon zip dropped into the shaderpacks folder right after a failed install could go unnoticed until the next change to the folder.
+- WynnVista support: clouds now sit properly in front of WynnVista's world effects, like the Mount Wynn smoke plume, without flickering or specks. Needs WynnVista 2.2.4 or later.
 
 **Changed**
-- The enchanting table's faint light is now blue instead of purple, to match the blue cloth on its texture. It stays about as faint as before.
-- Vanilla Sun, Vanilla Moon and Galaxy are now on by default. Wynncraft keeps Minecraft's square sun and moon, and they suit its look better than Photon's round ones. All three can be turned off again on the Sky page.
-- The patched pack is now built by [ShaderPatcher](https://github.com/EuphoriaPatches/ShaderPatcher), the library behind Euphoria Patcher, which is bundled in the mod. It checks the finished pack before it appears in the shaderpacks folder, and retries when another program briefly locks a file.
-- The Photon copy must be unmodified as a whole. A copy with files added, changed or removed outside its `shaders` folder is no longer used, and the error file says so. The zip from Modrinth is not affected.
+- Enchanting tables now glow blue instead of purple, to match their texture.
+- Vanilla Sun, Vanilla Moon and Galaxy are now on by default, which suits Wynncraft's look. You can turn them off on the Sky page.
+- The pack is now built with [ShaderPatcher](https://github.com/EuphoriaPatches/ShaderPatcher), the library behind Euphoria Patcher, so installs are more reliable.
+- Wynn-Photon now needs an unmodified copy of Photon. The zip from Modrinth works as is.
+
+**Fixed**
+- A Photon zip added right after a failed install is now always picked up.
 
 ## 0.9.0
 
