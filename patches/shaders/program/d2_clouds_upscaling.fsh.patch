@@ -9,7 +9,7 @@
  
  /* RENDERTARGETS: 11,12 */
  
-@@ -132,6 +132,52 @@
+@@ -132,6 +132,54 @@
      );
  }
  
@@ -27,6 +27,8 @@
 +//    that terrain beside the pixel cut short: a march that finds a cloud is blended into the distance kept, or
 +//    taken as it is when none is kept or the two are far apart (another cloud); after a march that finds none,
 +//    the distance is dropped once the clouds image kept for the pixel has let go of the cloud as well
++//  - a sky pixel that holds no distance, while the clouds image kept for it has a cloud, takes that of the march
++//    beside it until its own comes (the pixels are marched in turn, each once in 16 frames)
 +const float clouds_no_distance = 1e5; // an apparent distance beyond this means "no cloud"
 +
 +// The history's distance for effects between four texels, like texture(), without the texels that hold none
@@ -62,7 +64,7 @@
  vec3 reproject_clouds(vec2 uv, float distance_to_cloud) {
      const float planet_radius = 6371e3;
      const float clouds_cumulus_radius = planet_radius + CLOUDS_CUMULUS_ALTITUDE;
-@@ -271,6 +317,7 @@
+@@ -271,6 +319,7 @@
              clouds_data.x = 1e6; // apparent distance
              clouds_data.y = 0.0; // pixel age
              clouds_data.z = 0.0; // ambient scattering
@@ -70,7 +72,7 @@
              return;
          }
      }
-@@ -358,6 +405,17 @@
+@@ -358,6 +407,17 @@
              = mix(history, clamp(history, aabb_min, aabb_max), velocity_factor);
      }
  
@@ -88,7 +90,7 @@
      // Get previous pixel age and apparent distance
      float apparent_distance_history = history_data.x;
      apparent_distance_history
-@@ -367,6 +425,11 @@
+@@ -367,6 +427,11 @@
      ivec2 offset_0 = dst_texel % CLOUDS_TEMPORAL_UPSCALING;
      ivec2 offset_1
          = clouds_checkerboard_offsets[frameCounter % checkerboard_area];
@@ -100,7 +102,7 @@
      if (offset_0 != offset_1 && !disocclusion) {
          current = history;
          apparent_distance = min(apparent_distance, apparent_distance_history);
-@@ -392,4 +455,48 @@
+@@ -392,4 +457,54 @@
          = mix(apparent_distance, apparent_distance_history, history_weight);
      clouds_data.y = min(++pixel_age, CLOUDS_ACCUMULATION_LIMIT);
      clouds_data.z = mix(ambient_scattering, history_data.z, history_weight);
@@ -146,6 +148,12 @@
 +            effect_distance
 +                = mix(marched_distance, effect_distance_history, 0.75);
 +        }
++    } else if (effect_distance_history < 0.5 && marched_cloud
++        && !march_cut_short && clouds_history.a < 0.9) {
++        // A cloud is in the image kept for this pixel, which holds no distance for it yet: its own march can be
++        // 16 frames away, and an effect would show through the cloud until then. The march beside it stands in.
++        // It cannot make a distance jump, since there is none to change
++        effect_distance = marched_distance;
 +    }
 +    clouds_data.w = min(effect_distance, 6e4); // within what the buffer's format holds
  }

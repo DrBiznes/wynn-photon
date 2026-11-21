@@ -111,6 +111,12 @@ Photon reads is changed, so the pack's own picture is the same.
   `d1_clouds` cut short at terrain beside the pixel. A march that finds a cloud is blended into the distance kept, or
   taken as it is when none is kept or the two are more than 1.5 times apart (another cloud). After a march that finds
   none, the distance is dropped once the clouds image kept for the pixel has let go of the cloud as well.
+- A sky pixel that holds no distance, while the clouds image kept for it has a cloud (lets less than 0.9 through),
+  takes the distance of the march beside it, unless terrain cut that march short. The pixels are marched in turn,
+  each once in 16 frames, and until a pixel's own turn WynnVista left the cloud out there, so the effect showed
+  through it in specks. It cannot make a distance jump, since there is none to change. In WynnVista's fixture
+  (2026-11-21) this took the cloud pixels WynnVista's reader of the time left out from 69 to 38 a frame; WynnVista
+  now also looks further out for a distance, which takes them to 0.
 - Cost: one read of four texels of the history and eight of the depth buffers a pixel, in a pass that already runs
   over the whole view. In WynnVista's fixture client (1920x1080, Voxy, RTX 4070, 2026-11-21) the GPU time of the
   frame before WynnVista's effects was 4.05 and 4.08 ms with the change and 4.01 and 4.22 ms without, two runs each:

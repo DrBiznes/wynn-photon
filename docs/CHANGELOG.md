@@ -5,7 +5,7 @@ Every version so far patches Photon v1.4.
 ## 0.10.0
 
 **Added**
-- WynnVista: the pack now keeps the distance to its clouds in a form made for WynnVista's world effects, such as the Mount Wynn smoke plume. Where a cloud is in front of an effect, its edge no longer jitters, and a patch of cloud no longer flashes over the effect beside a mountain while you move. This needs WynnVista 2.2.4 or later. Photon's own picture is unchanged.
+- WynnVista: the pack now keeps the distance to its clouds in a form made for WynnVista's world effects, such as the Mount Wynn smoke plume. Where a cloud is in front of an effect, its edge no longer jitters, and a patch of cloud no longer flashes over the effect beside a mountain while you move, and small specks of the effect no longer show through a cloud's edge. This needs WynnVista 2.2.4 or later. Photon's own picture is unchanged.
 
 **Fixed**
 - A Photon zip dropped into the shaderpacks folder right after a failed install could go unnoticed until the next change to the folder.
