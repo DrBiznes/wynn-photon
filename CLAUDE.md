@@ -79,7 +79,9 @@ lighting test" in `docs/DEVELOPMENT.md`). Its harness is the dev-only `lighttest
 - Wynn-Photon changes terrain only: blocks, block lights, block materials and Voxy. WynnIris (an Iris fork) already
   handles Wynncraft's entity, item, text and sky effects: glints, translucency, alpha-254/251 emissive and shadeless
   pixels, skyboxes, fog. Don't edit Photon's entity, hand or text programs, don't reuse colortex11-13, and keep
-  "photon" in the pack name. See "Scope" in `docs/research/wynn-rp-blocks.md`.
+  "photon" in the pack name. See "Scope" in `docs/research/wynn-rp-blocks.md`. One deliberate exception: the
+  defaults of Photon's own sky options `VANILLA_SUN`, `VANILLA_MOON` and `GALAXY` are on, because Wynncraft's pack
+  ships no sun or moon texture and so uses the vanilla ones. No sky code is changed.
 - Every light change updates both the colored-light volume (`block.properties` + `light_colors.glsl`) and Photonics
   (`ph_lights.json`). Photonics' built-in defaults list `repeater`, `comparator`, `redstone_torch` and
   `enchanting_table` by name. To remove one of those lights, also add the block to the `"disabled"` override in

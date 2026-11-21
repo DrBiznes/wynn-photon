@@ -8,6 +8,7 @@ Every version so far patches Photon v1.4.
 - A Photon zip dropped into the shaderpacks folder right after a failed install could go unnoticed until the next change to the folder.
 
 **Changed**
+- Vanilla Sun, Vanilla Moon and Galaxy are now on by default. Wynncraft keeps Minecraft's square sun and moon, and they suit its look better than Photon's round ones. All three can be turned off again on the Sky page.
 - The patched pack is now built by [ShaderPatcher](https://github.com/EuphoriaPatches/ShaderPatcher), the library behind Euphoria Patcher, which is bundled in the mod. It checks the finished pack before it appears in the shaderpacks folder, and retries when another program briefly locks a file.
 - The Photon copy must be unmodified as a whole. A copy with files added, changed or removed outside its `shaders` folder is no longer used, and the error file says so. The zip from Modrinth is not affected.
 
