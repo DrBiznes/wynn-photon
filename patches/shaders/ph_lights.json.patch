@@ -24,8 +24,12 @@
  
  
  {
-@@ -63,7 +71,7 @@
-       "enchanting_table": "#9919ff",
+@@ -60,10 +68,10 @@
+       "amethyst_cluster": "#bf70ff",
+       "calibrated_sculk_sensor": "#bf70ff",
+       "pink_glow": "#9919ff",
+-      "enchanting_table": "#9919ff",
++      "enchanting_table": "#598cff",
        "nether_portal": "#9919ff",
        "soul_lights": "#72baff",
 -      "beacon": "#72baff"
@@ -33,6 +37,15 @@
      },
      "intensities": {
        "strong_white_light": 257,
+@@ -92,7 +100,7 @@
+       "amethyst_cluster": 86,
+       "calibrated_sculk_sensor": 86,
+       "pink_glow": 53,
+-      "enchanting_table": 43,
++      "enchanting_table": 30,
+       "nether_portal": 257,
+       "soul_lights": 128,
+       "beacon": 300
 @@ -198,7 +206,8 @@
            "color": "*beacon",
            "intensity": "*beacon",

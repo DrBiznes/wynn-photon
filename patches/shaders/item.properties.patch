@@ -44,7 +44,7 @@
  
 -# Black
 -item.10067 = simplylight:illuminant_black_block_on luminax:black_luminax_block
-+# Wynn-Photon: enchanting table, a faint purple light in hand (brown modded lights folded into item.10070)
++# Wynn-Photon: enchanting table, a faint blue light in hand (brown modded lights folded into item.10070)
 +item.10068 = enchanting_table
  
 -# Brown

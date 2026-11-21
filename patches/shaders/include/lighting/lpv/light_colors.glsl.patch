@@ -27,7 +27,7 @@
 -    vec3(0.55, 0.35, 0.20) *  8.0, // 36 - Brown       (block 68)
 +    vec3(0.55, 0.55, 0.55) *  8.0, // 34 - Gray        (block 66) (Wynn-Photon: black modded lights folded in here)
 +    vec3(1.00, 0.33, 0.10) *  7.0 * WYNN_MAGMA_GLOW_I, // 35 - Wynn-Photon: magma block (block 67), redder than fire to match Wynncraft's dark red magma, and a little under its 9
-+    vec3(0.60, 0.10, 1.00) *  2.0 * WYNN_ENCHANTING_GLOW_I, // 36 - Wynn-Photon: enchanting table (block 68), Photon's own faint purple; brown modded lights folded into orange
++    vec3(0.35, 0.55, 1.00) *  1.0 * WYNN_ENCHANTING_GLOW_I, // 36 - Wynn-Photon: enchanting table (block 68), a faint blue to match the cloth on its texture (#344d73); brown modded lights folded into orange
      vec3(1.00, 0.10, 0.10) * 10.0, // 37 - Red         (block 69)
      vec3(1.00, 0.45, 0.10) * 10.0, // 38 - Orange      (block 70)
      vec3(1.00, 0.95, 0.20) * 10.0, // 39 - Yellow      (block 71)

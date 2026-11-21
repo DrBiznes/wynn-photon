@@ -41,7 +41,7 @@
 +option.WYNN_MAGMA_GLOW_I               = Magma Glow Strength
 +option.WYNN_MAGMA_GLOW_I.comment       = Brightness of the glowing cracks in magma and molten rock, and their light. 0 turns them off
 +option.WYNN_ENCHANTING_GLOW_I          = Enchanting Table Glow Strength
-+option.WYNN_ENCHANTING_GLOW_I.comment  = Brightness of the enchanting table's faint purple light and its softly glowing blue inlay. Wynncraft places them next to item identifiers. 0 turns them off
++option.WYNN_ENCHANTING_GLOW_I.comment  = Brightness of the enchanting table's faint blue light and its softly glowing blue inlay. Wynncraft places them next to item identifiers. 0 turns them off
 +option.WYNN_VANILLA_LIGHT_I             = Light Block Strength
 +option.WYNN_VANILLA_LIGHT_I.comment     = Lights blocks from the vanilla lightmap where Colored Lights and Photonics see no light source. Wynncraft lights many caves and rooms with invisible light blocks, which neither light system can see. It fades out on open, sky-lit ground during the day, as in vanilla, but stays in caves. 0 turns it off
 +option.WYNN_PHOTONICS_SKY_FILL_I        = Photonics Sky Fill

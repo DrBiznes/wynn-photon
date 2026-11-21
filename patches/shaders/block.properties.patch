@@ -163,7 +163,7 @@
 -# Brown
 -block.10068 = simplylight:illuminant_brown_block_on luminax:brown_luminax_block
 +# Wynn-Photon: enchanting table (moved back in from no category). Wynncraft draws it as a dark stone table with a
-+# blue inlay; it sits next to the item identifiers, so it gets a faint purple light and the inlay glows softly
++# blue inlay; it sits next to the item identifiers, so it gets a faint blue light and the inlay glows softly
 +# (brown modded lights folded into orange, block.10070, their slot is reused)
 +block.10068 = enchanting_table
  
