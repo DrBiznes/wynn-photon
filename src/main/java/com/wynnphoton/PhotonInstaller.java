@@ -1,10 +1,12 @@
 package com.wynnphoton;
 
+import com.euphoriapatches.shaderpatcher.exception.BaseMismatchException;
+import com.euphoriapatches.shaderpatcher.exception.InvalidPackException;
+import com.euphoriapatches.shaderpatcher.exception.ShaderPatcherException;
 import com.wynnphoton.core.BundleFormat;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -29,13 +31,15 @@ import static com.wynnphoton.WynnPhotonPreLaunch.LOGGER;
 
 /**
  * Finds an untouched copy of the base Photon pack in the shaderpacks folder (zip or folder, any
- * name), copies it, applies the bundled patches and saves the result as
+ * name) and has the ShaderPatcher library verify it, apply the bundled patch and save the result as
  * "&lt;base&gt; + WynnPhoton_&lt;version&gt;". Packs it creates carry a marker file so later launches
  * can tell they are up to date, and replace them when the patches change.
  */
 public final class PhotonInstaller {
-	public static final String MARKER_FILE = "wynn-photon.properties";
+	public static final String MARKER_FILE = BundleFormat.MARKER_FILE;
 	private static final String TEMP_PREFIX = ".wynn-photon-tmp-";
+	/** ShaderPatcher builds the pack in a folder with this prefix, next to its final place. */
+	private static final String PATCHER_TEMP_PREFIX = ".shaderpatcher-";
 	private static final Pattern VERSION = Pattern.compile("v?(\\d+(?:\\.\\d+)+)");
 
 	public enum Status {
@@ -58,7 +62,9 @@ public final class PhotonInstaller {
 		NEWER_VERSION,
 		OLDER_VERSION,
 		/** Same version (or no version in its name), but its files differ. */
-		EDITED
+		EDITED,
+		/** Its shaders/ files are the base pack's, but files outside shaders/ were added, changed or removed. */
+		EDITED_OUTSIDE_SHADERS
 	}
 
 	record Rejected(String name, Rejection reason, String version) {
@@ -123,12 +129,17 @@ public final class PhotonInstaller {
 			updatedFrom = marker.getProperty("modVersion", bundle.modVersion());
 		}
 
-		Path base = findBasePack();
+		Path base = null;
+		for (Path candidate : findBasePacks()) {
+			if (build(candidate, output)) {
+				base = candidate;
+				break;
+			}
+		}
 		if (base == null) {
 			return fail(Status.BASE_NOT_FOUND, baseNotFoundReport());
 		}
 
-		build(base, output);
 		afterInstall(output, base.getFileName().toString());
 		clearReportFile();
 		postInstalledNotice();
@@ -215,6 +226,8 @@ public final class PhotonInstaller {
 				case NEWER_VERSION -> "Photon " + r.version() + ", newer than this Wynn-Photon supports";
 				case OLDER_VERSION -> "Photon " + r.version() + ", an older version";
 				case EDITED -> "an edited or different copy of Photon";
+				case EDITED_OUTSIDE_SHADERS -> bundle.baseDisplayName()
+						+ " with files added, changed or removed outside its shaders folder";
 			});
 		}
 
@@ -233,14 +246,18 @@ public final class PhotonInstaller {
 							+ ". A newer Wynn-Photon may support your Photon: " + InstallReport.MOD_PAGE,
 					keep)));
 			case OLDER_VERSION -> new InstallReport(title, found, need, InstallReport.addPhotonSteps(bundle, List.of(keep)));
-			case EDITED -> new InstallReport("your Photon copy is edited", found, need, InstallReport.addPhotonSteps(bundle, List.of(
+			case EDITED, EDITED_OUTSIDE_SHADERS -> new InstallReport("your Photon copy is edited", found, need, InstallReport.addPhotonSteps(bundle, List.of(
 					"Wynn-Photon only patches an unmodified Photon. You can keep your edited copy next to it.")));
 		};
 	}
 
-	/** First zip or folder whose shaders/ files are byte-for-byte the base pack's. */
-	private Path findBasePack() throws IOException {
+	/**
+	 * Every zip or folder whose shaders/ files are byte-for-byte the base pack's. ShaderPatcher then checks the whole
+	 * pack; this scan is what explains the packs that can't be used.
+	 */
+	private List<Path> findBasePacks() throws IOException {
 		rejected.clear();
+		List<Path> found = new ArrayList<>();
 		List<Path> entries;
 		try (Stream<Path> list = Files.list(shaderpacks)) {
 			entries = list.sorted().toList();
@@ -260,10 +277,8 @@ public final class PhotonInstaller {
 				}
 				int differing = countDifferences(pack, looksLikePhoton);
 				if (differing == 0) {
-					LOGGER.info("Using '{}' as {}", name, bundle.baseDisplayName());
-					return entry;
-				}
-				if (looksLikePhoton) {
+					found.add(entry);
+				} else if (looksLikePhoton) {
 					LOGGER.info("Skipping '{}': {} of its {} files are not the same as in {}",
 							name, differing, bundle.baseFiles().size(), bundle.baseDisplayName());
 					rejected.add(classify(name));
@@ -275,7 +290,7 @@ public final class PhotonInstaller {
 				}
 			}
 		}
-		return null;
+		return found;
 	}
 
 	/** A pack that differs from the base: another version when its name says so, otherwise edited. */
@@ -329,23 +344,37 @@ public final class PhotonInstaller {
 		return differing;
 	}
 
-	private void build(Path base, Path output) throws IOException {
-		Path temp = shaderpacks.resolve(TEMP_PREFIX + UUID.randomUUID());
+	/**
+	 * Builds the patched pack from this base. ShaderPatcher checks the whole base against the patch, applies the patch,
+	 * checks the result and moves the finished folder, marker included, into place. False when the base turns out
+	 * to differ outside shaders/, which the scan in {@link #findBasePacks()} doesn't look at.
+	 */
+	private boolean build(Path base, Path output) throws IOException {
+		String name = base.getFileName().toString();
+		Path unpacked = null;
 		try {
-			Files.createDirectory(temp);
+			Path source = base;
 			try (PackSource pack = PackSource.open(base)) {
-				pack.copyTo(temp);
+				// ShaderPatcher wants shaders/ at the root, so a zip with everything in one folder is unpacked first.
+				if (pack != null && pack.nested()) {
+					unpacked = shaderpacks.resolve(TEMP_PREFIX + UUID.randomUUID());
+					Files.createDirectory(unpacked);
+					pack.copyTo(unpacked);
+					source = unpacked;
+				}
 			}
-			bundle.applyTo(temp);
-			writeMarker(temp, base.getFileName().toString());
-			if (Files.exists(output)) {
-				deleteRecursively(output);
-			}
-			Files.move(temp, output);
-			LOGGER.info("Created '{}' from '{}' ({} patch file(s))", output.getFileName(), base.getFileName(), bundle.patches().size());
+			bundle.patcher(LOGGER::debug).apply(source, shaderpacks);
+			LOGGER.info("Created '{}' from '{}'", output.getFileName(), name);
+			return true;
+		} catch (BaseMismatchException | InvalidPackException e) {
+			LOGGER.info("Skipping '{}': {}", name, e.getMessage());
+			rejected.add(new Rejected(name, Rejection.EDITED_OUTSIDE_SHADERS, null));
+			return false;
+		} catch (ShaderPatcherException e) {
+			throw new IOException(e.getMessage(), e);
 		} finally {
-			if (Files.exists(temp)) {
-				deleteRecursively(temp);
+			if (unpacked != null) {
+				deleteRecursively(unpacked);
 			}
 		}
 	}
@@ -467,18 +496,6 @@ public final class PhotonInstaller {
 		}
 	}
 
-	private void writeMarker(Path packDir, String basePackName) throws IOException {
-		Properties marker = new Properties();
-		marker.setProperty("patchName", bundle.patchName());
-		marker.setProperty("modVersion", bundle.modVersion());
-		marker.setProperty("patchSetHash", bundle.patchSetHash());
-		marker.setProperty("base", bundle.baseDisplayName());
-		marker.setProperty("basePack", basePackName);
-		try (Writer writer = Files.newBufferedWriter(packDir.resolve(MARKER_FILE), StandardCharsets.UTF_8)) {
-			marker.store(writer, "Created by the Wynn-Photon mod. It deletes and rebuilds this folder when its patches change.");
-		}
-	}
-
 	/** The marker of a pack folder Wynn-Photon created, or null for anything else. */
 	static Properties readMarker(Path pack) {
 		Path file = pack.resolve(MARKER_FILE);
@@ -496,7 +513,10 @@ public final class PhotonInstaller {
 
 	private void deleteLeftoverTempFolders() {
 		try (Stream<Path> list = Files.list(shaderpacks)) {
-			for (Path path : list.filter(p -> p.getFileName().toString().startsWith(TEMP_PREFIX)).toList()) {
+			for (Path path : list.filter(p -> {
+				String name = p.getFileName().toString();
+				return name.startsWith(TEMP_PREFIX) || name.startsWith(PATCHER_TEMP_PREFIX);
+			}).toList()) {
 				deleteRecursively(path);
 			}
 		} catch (IOException e) {

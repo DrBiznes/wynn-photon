@@ -41,6 +41,11 @@ abstract sealed class PackSource implements Closeable {
 
 	abstract void copyTo(Path destination) throws IOException;
 
+	/** True for a zip that holds the whole pack inside one folder. */
+	boolean nested() {
+		return false;
+	}
+
 	@Override
 	public void close() throws IOException {
 	}
@@ -156,6 +161,11 @@ abstract sealed class PackSource implements Closeable {
 					Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
 				}
 			}
+		}
+
+		@Override
+		boolean nested() {
+			return !prefix.isEmpty();
 		}
 
 		@Override

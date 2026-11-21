@@ -9,15 +9,23 @@ unified diffs (`patches/`), never Photon itself. See README.md for the user-faci
 - `work/` is the editable Photon: base + patches. It is gitignored.
 - `.photon/` holds the downloaded Photon zip, its extracted copy (`base/`) and the `work.sha256` snapshot. It is
   gitignored.
-- `patcher-core/` is the patch format, parser and applier. It is compiled into both `buildSrc/` and the mod, so the
-  build and the game apply patches with the same code. Keep it free of Gradle, Minecraft and library dependencies.
+- `bundle-format/` holds only `BundleFormat`: the layout of the jar's `wynn_photon/` folder and the marker file's
+  name. It is compiled into both `buildSrc/` and the mod, so the build writes the bundle and the mod reads it with
+  the same names. Keep it free of Gradle, Minecraft and library dependencies.
 - `buildSrc/` holds the Gradle tasks `DownloadFileTask`, `ApplyPatchesTask`, `MakePatchesTask` and
-  `GeneratePatchBundleTask`. It uses java-diff-utils to generate diffs.
+  `GeneratePatchBundleTask`. Its `wynnphoton.gradle.patch` package is the unified-diff parser and applier for
+  `patches/`; only the build uses it, and it must need nothing but the JDK, because the root build's `patchToolTest`
+  task compiles it again to run its tests (`buildSrc/src/test`) with `gradlew build`. It uses java-diff-utils to
+  generate diffs. `GeneratePatchBundleTask` applies `patches/` and has the ShaderPatcher library
+  (`com.euphoriapatches:shaderpatcher`) turn the result into the one binary patch the jar ships,
+  `wynn_photon/wynn-photon.patch`. The `wynn-photon.properties` marker is part of that patch.
 - `src/main/java/com/wynnphoton/` is the mod. The installer runs from the `preLaunch` entrypoint and loads no
   Minecraft classes. Only `client/` (the `client` entrypoint and the install toasts) touches Minecraft; it gets
   results through `Notices`. Iris is reached by reflection (`IrisReloader`), so the mod runs without it.
-  `PhotonInstaller` finds the base pack by SHA-256 of its `shaders/` files, builds the patched pack, writes the
-  `wynn-photon.properties` marker and updates `config/iris.properties`.
+  `PhotonInstaller` finds the base pack by SHA-256 of its `shaders/` files, has ShaderPatcher (nested in the jar)
+  verify the whole pack and build the patched one, and updates `config/iris.properties`. The mod never applies
+  unified diffs itself. `shaderpatcher_version` in `gradle.properties` sets the library version for both the mod
+  and `buildSrc/`.
 - `docs/CHANGELOG.md` has one entry per version. `docs/PROJECT_PLAN.md` holds the roadmap and brainstorm; research write-ups go in `docs/research/`.
 
 ## Making shader changes
@@ -52,7 +60,10 @@ lighting test" in `docs/DEVELOPMENT.md`). Its harness is the dev-only `lighttest
   `JAVA_TOOL_OPTIONS=-Djdk.net.unixdomain.tmpdir=C:/nonexistent-udsock`. Never put this in the project.
 - Patch files must keep LF line endings and trailing whitespace (`.gitattributes`, `.editorconfig`). A blank context
   line is a single space.
-- Only text files can be patched. Binary changes, such as textures, are not supported yet.
+- Only text files can be patched. The jar's ShaderPatcher patch could carry binary changes, such as textures, but
+  `patches/` and `makePatches` are text-only, so they are not supported yet.
+- ShaderPatcher compares the whole base pack, not just `shaders/`. A Photon copy with anything added, changed or
+  removed is rejected (`Rejection.EDITED_OUTSIDE_SHADERS` when only files outside `shaders/` differ).
 - Bump `mod_version` in `gradle.properties` for each release. The patched pack's folder name includes it.
 - Block and item IDs: `10079` was Photon's pink light slot. It is now the Wynncraft candle sconce (lit redstone
   torch and repeater candelabra), and pink was merged into `10078`. `10077` (purple) is now Wynncraft molten rock, and

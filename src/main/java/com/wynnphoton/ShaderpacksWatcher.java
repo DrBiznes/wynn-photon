@@ -21,11 +21,17 @@ public final class ShaderpacksWatcher implements Runnable {
 	private final PhotonInstaller installer;
 	private final long intervalMillis;
 	private final Runnable onInstalled;
+	/**
+	 * The folder as the failed install left it. Taken here and not on the watcher thread, so a pack that arrives
+	 * before that thread gets going still counts as a change.
+	 */
+	private final List<String> baseline;
 
 	public ShaderpacksWatcher(PhotonInstaller installer, long intervalMillis, Runnable onInstalled) {
 		this.installer = installer;
 		this.intervalMillis = intervalMillis;
 		this.onInstalled = onInstalled;
+		this.baseline = fingerprint();
 	}
 
 	public Thread start() {
@@ -38,7 +44,7 @@ public final class ShaderpacksWatcher implements Runnable {
 
 	@Override
 	public void run() {
-		List<String> handled = fingerprint();
+		List<String> handled = baseline;
 		List<String> previous = handled;
 		while (!Thread.currentThread().isInterrupted()) {
 			try {

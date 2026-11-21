@@ -22,8 +22,8 @@ work/           editable Photon = base + patches                              gi
    ```properties
    shaderpacksDir=C:/Users/you/AppData/Roaming/ModrinthApp/profiles/<profile>/shaderpacks
    ```
-4. `gradlew makePatches` writes your edits back into `patches/`. It re-applies the new patches with the same code the mod
-   uses in game and fails if they don't reproduce `work/` exactly. Commit `patches/`.
+4. `gradlew makePatches` writes your edits back into `patches/`. It re-applies the new patches with the same code the
+   build uses to make the jar's patch, and fails if they don't reproduce `work/` exactly. Commit `patches/`.
 5. `gradlew build` produces the jar and runs the tests. The tests patch the real Photon zip.
 
 `applyPatches` won't overwrite `work/` if it has edits that aren't in `patches/` yet. Run `makePatches` first, or pass
@@ -93,10 +93,22 @@ build/light-test/*.png           the shots, named <spot>__<time>__<set>.png
 
 ## How it works
 
-- `patcher-core/` holds the patch format and applier. Both the Gradle tasks (`buildSrc/`) and the mod compile it,
-  so the patches are applied by the same code in the build and in game.
-- `generatePatchBundle` packs `patches/` into the jar under `wynn_photon/`. It adds a manifest and the SHA-256 of
-  every file in Photon's `shaders/` folder, which the mod uses to recognize the base pack.
+- `patches/` holds unified diffs, which only the build reads. Their parser and applier are the
+  `wynnphoton.gradle.patch` package in `buildSrc/`, with tests in `buildSrc/src/test`. Gradle doesn't run buildSrc's
+  tests itself, so the root build's `patchToolTest` task compiles that package again and runs them as part of
+  `gradlew build`. The package must need nothing but the JDK.
+- `bundle-format/` holds `BundleFormat`, the layout of the jar's `wynn_photon/` folder. Both `buildSrc/` and the mod
+  compile it, so the build writes the bundle and the mod reads it with the same names.
+- `generatePatchBundle` applies `patches/` to the base pack, adds the `wynn-photon.properties` marker, and has
+  [ShaderPatcher](https://github.com/EuphoriaPatches/ShaderPatcher) diff the Photon zip against the result. The jar
+  gets that one binary patch, `wynn_photon/wynn-photon.patch`, a manifest, and the SHA-256 of every file in Photon's
+  `shaders/` folder. ShaderPatcher checks that the patch reproduces the patched pack before it writes it.
+- In game, the mod's own scan finds copies of Photon by those hashes and explains the ones it can't use.
+  ShaderPatcher, nested in the mod jar, then checks the whole base pack against the patch, applies it, checks the
+  result and moves the finished folder into place. It compares the whole pack, so a copy with files added, changed
+  or removed outside `shaders/` is rejected too.
+- `shaderpatcher_version` in `gradle.properties` sets the library version for both sides: `buildSrc/` generates the
+  patch with it and the mod nests the same version to apply it.
 - `patchedPackZip` writes the patched pack as a ready-to-use shader pack zip,
   `build/distributions/photon_v1.4_WynnPhoton_<version>.zip`, for test setups (such as other mods' dev clients) that
   skip the patcher. It has no `wynn-photon.properties` marker, so the mod never treats it as one of its own packs. The

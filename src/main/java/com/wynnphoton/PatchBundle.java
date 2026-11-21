@@ -1,29 +1,30 @@
 package com.wynnphoton;
 
+import com.euphoriapatches.shaderpatcher.ExistingOutput;
+import com.euphoriapatches.shaderpatcher.PatchSource;
+import com.euphoriapatches.shaderpatcher.ShaderPatcher;
+import com.euphoriapatches.shaderpatcher.exception.ShaderPatcherException;
 import com.wynnphoton.core.BundleFormat;
-import com.wynnphoton.core.PatchApplier;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Consumer;
 
-/** The patches shipped in the jar plus what they apply to (written by the generatePatchBundle task). */
+/** The patch shipped in the jar plus what it applies to (written by the generatePatchBundle task). */
 public record PatchBundle(
 		String patchName,
 		String modVersion,
 		String baseName,
 		String baseDisplayName,
 		String patchSetHash,
-		Map<String, String> baseFiles,
-		Map<String, String> patches) {
+		Map<String, String> baseFiles) {
 
 	public static PatchBundle loadFromClasspath() throws IOException {
 		ClassLoader loader = PatchBundle.class.getClassLoader();
@@ -40,21 +41,13 @@ public record PatchBundle(
 			}
 		}
 
-		Map<String, String> patches = new LinkedHashMap<>();
-		for (String name : manifest.getProperty(BundleFormat.KEY_PATCHES, "").split(",")) {
-			if (!name.isBlank()) {
-				patches.put(name, read(loader, BundleFormat.PATCHES_DIR + name));
-			}
-		}
-
 		return new PatchBundle(
 				required(manifest, BundleFormat.KEY_PATCH_NAME),
 				required(manifest, BundleFormat.KEY_MOD_VERSION),
 				required(manifest, BundleFormat.KEY_BASE_NAME),
 				required(manifest, BundleFormat.KEY_BASE_DISPLAY_NAME),
 				required(manifest, BundleFormat.KEY_PATCH_SET_HASH),
-				Collections.unmodifiableMap(baseFiles),
-				Collections.unmodifiableMap(patches));
+				Collections.unmodifiableMap(baseFiles));
 	}
 
 	/** Folder name of the patched pack, e.g. "photon_v1.4 + WynnPhoton_0.1.0". */
@@ -62,38 +55,20 @@ public record PatchBundle(
 		return baseName + " + " + patchName + "_" + modVersion;
 	}
 
-	public void applyTo(Path packDir) throws IOException {
-		Path root = packDir.toAbsolutePath().normalize();
-		PatchApplier.Tree tree = new PatchApplier.Tree() {
-			@Override
-			public byte[] read(String path) throws IOException {
-				Path file = resolve(path);
-				return Files.isRegularFile(file) ? Files.readAllBytes(file) : null;
-			}
-
-			@Override
-			public void write(String path, byte[] content) throws IOException {
-				Path file = resolve(path);
-				Files.createDirectories(file.getParent());
-				Files.write(file, content);
-			}
-
-			@Override
-			public void delete(String path) throws IOException {
-				Files.deleteIfExists(resolve(path));
-			}
-
-			private Path resolve(String path) throws IOException {
-				Path file = root.resolve(path).normalize();
-				if (!file.startsWith(root)) {
-					throw new IOException("Patch path leaves the pack folder: " + path);
-				}
-				return file;
-			}
-		};
-		for (Map.Entry<String, String> patch : patches.entrySet()) {
-			PatchApplier.apply(tree, patch.getKey(), patch.getValue());
-		}
+	/**
+	 * A ShaderPatcher for the bundled patch. It names its result {@link #outputName()} whatever the base pack is
+	 * called, and replaces a pack already there. Building it reads only the patch's header, and fails when the jar
+	 * holds a patch for another version.
+	 */
+	public ShaderPatcher patcher(Consumer<String> debugLog) throws ShaderPatcherException {
+		String output = outputName();
+		return ShaderPatcher.builder(PatchSource.classpath(PatchBundle.class, BundleFormat.PATCH_FILE))
+				.expectPatchName(patchName)
+				.expectPatchVersion("_" + modVersion)
+				.outputNaming(context -> output)
+				.existingOutput(ExistingOutput.REPLACE)
+				.debugLog(debugLog)
+				.build();
 	}
 
 	private static InputStream open(ClassLoader loader, String resource) throws IOException {

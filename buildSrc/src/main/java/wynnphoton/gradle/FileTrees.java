@@ -1,7 +1,7 @@
 package wynnphoton.gradle;
 
 import com.wynnphoton.core.BundleFormat;
-import com.wynnphoton.core.PatchApplier;
+import wynnphoton.gradle.patch.PatchApplier;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;

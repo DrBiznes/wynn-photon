@@ -47,7 +47,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      # build also runs the tests, which download the Photon base pack from Modrinth and apply patches/ to it.
+      # build also runs the tests, which download the Photon base pack from Modrinth and build the patched pack from it.
       - name: Build
         run: |
           chmod +x gradlew

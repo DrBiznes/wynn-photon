@@ -1,4 +1,4 @@
-package com.wynnphoton.core;
+package wynnphoton.gradle.patch;
 
 import org.junit.jupiter.api.Test;
 

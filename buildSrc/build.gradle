@@ -6,14 +6,29 @@ repositories {
 	mavenCentral()
 }
 
+// Versions shared with the mod come from the root gradle.properties, so they can't drift apart.
+def rootProps = new Properties()
+file('../gradle.properties').withReader('UTF-8') { rootProps.load(it) }
+
 sourceSets {
 	main {
-		// Same patch format/applier the mod uses at runtime.
-		java.srcDir '../patcher-core/src/main/java'
+		// The layout of the jar's wynn_photon/ folder, which the mod reads at runtime.
+		java.srcDir '../bundle-format/src/main/java'
 	}
 }
 
 dependencies {
 	implementation gradleApi()
 	implementation 'io.github.java-diff-utils:java-diff-utils:4.15'
+	// Generates the patch that the mod applies in game with the same library version.
+	implementation "com.euphoriapatches:shaderpatcher:${rootProps.getProperty('shaderpatcher_version')}"
+
+	testImplementation platform("org.junit:junit-bom:${rootProps.getProperty('junit_version')}")
+	testImplementation 'org.junit.jupiter:junit-jupiter'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+// Gradle doesn't run buildSrc's tests on its own. The root build's patchToolTest task compiles and runs them with check.
+test {
+	useJUnitPlatform()
 }

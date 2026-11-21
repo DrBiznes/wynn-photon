@@ -56,7 +56,8 @@ that, one small labelled patch at a time.
 
 ### Done so far
 
-- [x] Patcher mod, patch workflow, `patcher-core` shared by the build and the game (0.1.0)
+- [x] Patcher mod, patch workflow, `patcher-core` shared by the build and the game (0.1.0). Since 0.10.0 the game
+  applies a ShaderPatcher patch instead, and the diff applier lives in `buildSrc/`.
 - [x] Survey of the Wynncraft resource pack (roadmap step 1)
 - [x] Candle sconce: redstone torches, standing, wall and in hand (0.1.0)
 - [x] Lit candelabras → candle light; four-candle candelabra on its own brighter ID (0.2.0, 0.3.0)
@@ -270,9 +271,14 @@ Result: "Full texture audit" in [research/wynn-rp-blocks.md](research/wynn-rp-bl
 
 Goal: install and update as smoothly as Euphoria Patcher (`EuphoriaPatches/EuphoriaPatcher`, studied 2026-11-17).
 
-**Licence: MIT (decided 2026-11-17).** Wynn-Photon writes its own code, so it doesn't inherit Euphoria Patcher's
-MPL-2.0 and copies none of its files. Euphoria is a reference for features only.
+**Licence: MIT (decided 2026-11-17).** Wynn-Photon's own code is MIT and copies none of Euphoria Patcher's files.
 The MIT licence covers our code, not the portions of Photon in `patches/`.
+
+**ShaderPatcher (decided 2026-11-20, 0.10.0).** The mod bundles SpacEagle17's
+[ShaderPatcher](https://github.com/EuphoriaPatches/ShaderPatcher) library (MPL-2.0, unmodified, nested in the jar),
+which he published for patcher mods to use. It verifies the base pack and builds the patched one; our own code keeps
+the base-pack scan, the error reports, settings migration, Iris selection and the toasts. The unified diffs in
+`patches/` stay the source of truth, and the build turns them into the library's patch.
 
 **What Euphoria does that we don't, in build order:**
 

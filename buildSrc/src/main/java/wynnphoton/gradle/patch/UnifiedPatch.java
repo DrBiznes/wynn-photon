@@ -1,4 +1,4 @@
-package com.wynnphoton.core;
+package wynnphoton.gradle.patch;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.wynnphoton.core;
+package wynnphoton.gradle.patch;
 
 import java.io.IOException;
 import java.nio.charset.CharacterCodingException;

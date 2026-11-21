@@ -75,6 +75,33 @@ class PhotonInstallerTest {
 	}
 
 	@Test
+	void rejectsAPhotonChangedOutsideItsShadersFolderAndUsesTheNextOne() throws IOException {
+		Path changed = extract(shaderpacks.resolve("Photon"));
+		Files.writeString(changed.resolve("notes.txt"), "mine");
+
+		assertEquals(PhotonInstaller.Status.BASE_NOT_FOUND, installer().run());
+		assertFalse(Files.exists(shaderpacks.resolve(bundle.outputName())));
+		assertProblem("your Photon copy is edited", "'Photon': Photon v1.4 with files added, changed or removed outside");
+		try (var list = Files.list(shaderpacks)) {
+			assertTrue(list.noneMatch(p -> p.getFileName().toString().startsWith(".")), "no temporary folders are left");
+		}
+
+		Files.copy(PHOTON_ZIP, shaderpacks.resolve("photon_v1.4.zip"));
+		assertEquals(PhotonInstaller.Status.INSTALLED, installer().run());
+		assertEquals("mine", Files.readString(changed.resolve("notes.txt")), "the rejected pack is untouched");
+	}
+
+	@Test
+	void marksThePackWithThePatchesItWasBuiltFrom() throws IOException {
+		Files.copy(PHOTON_ZIP, shaderpacks.resolve("photon_v1.4.zip"));
+		assertEquals(PhotonInstaller.Status.INSTALLED, installer().run());
+
+		Properties marker = PhotonInstaller.readMarker(shaderpacks.resolve(bundle.outputName()));
+		assertEquals(bundle.patchSetHash(), marker.getProperty("patchSetHash"));
+		assertEquals(bundle.modVersion(), marker.getProperty("modVersion"));
+	}
+
+	@Test
 	void explainsAMissingPhotonAndClearsTheReportOnceInstalled() throws IOException {
 		PhotonInstaller installer = installer();
 		assertEquals(PhotonInstaller.Status.BASE_NOT_FOUND, installer.run());

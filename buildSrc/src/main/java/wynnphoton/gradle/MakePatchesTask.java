@@ -4,7 +4,7 @@ import com.github.difflib.DiffUtils;
 import com.github.difflib.UnifiedDiffUtils;
 import com.github.difflib.patch.Patch;
 import com.wynnphoton.core.BundleFormat;
-import com.wynnphoton.core.TextFile;
+import wynnphoton.gradle.patch.TextFile;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.DirectoryProperty;

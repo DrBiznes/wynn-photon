@@ -35,10 +35,12 @@ WynnPhoton patches the [Photon](https://modrinth.com/shader/photon-shader) shade
 - How it's built and tested is in the [development docs](https://github.com/DrBiznes/wynn-photon/blob/main/docs/DEVELOPMENT.md)
 - Photon is © SixthSurge under the [Photon Shaders License Agreement](https://github.com/sixthsurge/photon/blob/main/LICENSE)
 - Wynn-Photon's own code is [MIT](https://github.com/DrBiznes/wynn-photon/blob/main/LICENSE)
+- The jar bundles [ShaderPatcher](https://github.com/EuphoriaPatches/ShaderPatcher) by SpacEagle17, under the [MPL-2.0](https://github.com/EuphoriaPatches/ShaderPatcher/blob/main/LICENSE)
 
 ## Acknowledgments
 
 - Thanks to SixthSurge for Photon
+- Thanks to SpacEagle17 for ShaderPatcher, which builds the patched pack
 - Thanks to the Wynncraft team for creating an awesome MMORPG experience in Minecraft
 
 ## Support and My Mods

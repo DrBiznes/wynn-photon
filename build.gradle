@@ -19,9 +19,9 @@ base {
 
 sourceSets {
 	main {
-		// The patch format/applier is shared with the Gradle tasks in buildSrc,
-		// so the patches are written and applied by the same code.
-		java.srcDir 'patcher-core/src/main/java'
+		// The layout of the jar's wynn_photon/ folder is shared with the Gradle tasks in buildSrc,
+		// so the build writes it and the mod reads it with the same names.
+		java.srcDir 'bundle-format/src/main/java'
 	}
 	// Dev only: the lighting screenshot test (gradlew lightTest). Never part of the mod jar.
 	lighttest {
@@ -76,6 +76,10 @@ dependencies {
 		'org.lwjgl:lwjgl-zstd:3.3.3:natives-windows',
 		'org.lwjgl:lwjgl-zstd:3.3.3:natives-linux',
 	].each { localRuntime(it) { transitive = false } }
+
+	// Verifies the base pack and applies the patch. Nested in the mod jar; it bundles its own dependencies.
+	implementation "com.euphoriapatches:shaderpatcher:${project.shaderpatcher_version}"
+	include "com.euphoriapatches:shaderpatcher:${project.shaderpatcher_version}"
 
 	testImplementation platform("org.junit:junit-bom:${project.junit_version}")
 	testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -149,9 +153,10 @@ tasks.register('makePatches', MakePatchesTask) {
 
 def generatePatchBundle = tasks.register('generatePatchBundle', GeneratePatchBundleTask) {
 	group = 'wynn-photon'
-	description = 'Packages patches/ with a manifest describing the base pack they apply to.'
+	description = 'Turns patches/ into the ShaderPatcher patch the mod applies, with a manifest describing the base pack.'
 	dependsOn extractPhoton
 	it.baseDir = baseDir
+	baseZip = downloadPhoton.flatMap { it.outputFile }
 	it.patchesDir = patchesDir
 	patchName = project.patch_name
 	modVersion = project.version.toString()
@@ -371,4 +376,33 @@ test {
 	useJUnitPlatform()
 	dependsOn downloadPhoton
 	systemProperty 'wynnphoton.photonZip', photonDir.file("${photon_pack_name}.zip").asFile.absolutePath
+}
+
+// The unified-diff parser and applier live in buildSrc (wynnphoton.gradle.patch), and Gradle doesn't run buildSrc's
+// tests on its own. That package needs only the JDK, so it and its tests are compiled again here and run with check.
+sourceSets {
+	patchToolTest {
+		java {
+			srcDirs = ['buildSrc/src/main/java', 'buildSrc/src/test/java']
+			include 'wynnphoton/gradle/patch/**'
+		}
+	}
+}
+
+dependencies {
+	patchToolTestImplementation platform("org.junit:junit-bom:${project.junit_version}")
+	patchToolTestImplementation 'org.junit.jupiter:junit-jupiter'
+	patchToolTestRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+def patchToolTest = tasks.register('patchToolTest', Test) {
+	group = 'verification'
+	description = 'Runs the tests of the patch tooling in buildSrc.'
+	testClassesDirs = sourceSets.patchToolTest.output.classesDirs
+	classpath = sourceSets.patchToolTest.runtimeClasspath
+	useJUnitPlatform()
+}
+
+tasks.named('check') {
+	dependsOn patchToolTest
 }
