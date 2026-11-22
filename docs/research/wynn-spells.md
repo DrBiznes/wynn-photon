@@ -86,9 +86,9 @@ that settles and what is still open:
   which `wynn-rp-blocks.md` says to leave to WynnIris. The edits are small and away from WynnIris's anchors, and the
   test ran with WynnIris, but it needs checking on Wynncraft. Spell glow is arguably WynnIris's area too: it would
   be a natural WynnIris feature (it already reads sprites at this exact spot).
-- **Other spells** need only their sprite names in `SpellTags` and a light color. Spells made of particles (most of
-  them: Heal, Arrow Storm, Bash, ...) are drawn by the particle programs, not as item models, and would need
-  another approach.
+- **Other spells** need only their texture names or pixel hashes in `SpellTags` and a light color. Every spell is
+  modelled (confirmed in play), so all of them can work the way Meteor does. Particles a spell adds on top are drawn
+  by the particle programs and can't be tagged.
 - **Reskinned spells** have hashed texture names that change every release. They are matched by a hash of their
   pixels instead (below), but each one has to be found first, by casting it with the debug log on.
 - **The plan for the other spells** is in [SPELL_LIGHTS_PLAN.md](../SPELL_LIGHTS_PLAN.md).

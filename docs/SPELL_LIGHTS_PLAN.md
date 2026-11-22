@@ -28,12 +28,12 @@ live Wynncraft (2026-11-22, branch `experimental/spell-lights`). How it works an
 
 From the Meteor prototype and the 2026-11-21 server pack:
 
-- **Two kinds of spell art.** Some spells are **models**: items on display entities, which the mod can recognise by
-  their textures and tag for the shader. The rest are mostly **particles** (vanilla particle types, often coloured
-  dust), which the model approach can't see. Most base spells are probably particles. Which is which is the first thing
-  the survey has to find out.
-- **Base classes use named models**, `models/item/wynn/spell/` (Meteor, Ice Snake, Totem, Trap, the angel and the
-  Shaman masks). Their texture names are stable.
+- **Every spell is modelled** (confirmed by the user from playing): items on display entities, which the mod can
+  recognise by their textures and tag for the shader, the way it does Meteor. Particles may still be added on top,
+  but they aren't the spell itself, so the model approach covers every spell.
+- **Only a few spells have named models**, `models/item/wynn/spell/` (Meteor, Ice Snake, Totem, Trap, the angel and
+  the Shaman masks), with stable texture names. Expect most spells, base classes included, to be hashed rigs like
+  Dark Wizard's Meteor, matched by pixel hash.
 - **Reskins are rigs.** Dark Wizard's Meteor is four tiny `oak_boat` models (`custom_model_data` 20392-20395) that the
   server scales up and moves, one display entity per part. Their textures have hashed names (`item/w<n>`) that change
   every release, so the mod matches them by a hash of their pixels.
@@ -58,8 +58,6 @@ analysis is done from the logs and the cached server pack.
   `custom_model_data`, its transformation, and its interpolation and teleport times. That shows how each rig is put
   together and moves. Replayed as an `.mcfunction` in the test world, it gives a moving copy of the spell for the dev
   client and the screenshot tests.
-- **Particle log.** Count the particle types and colours spawned near the player after a cast. That tells which
-  particle spells could get light (see "Particle spells").
 
 **A playtest session** goes like this:
 
@@ -69,8 +67,8 @@ analysis is done from the logs and the cached server pack.
 
 **The analysis** for each spell, in [research/wynn-spells.md](research/wynn-spells.md):
 
-- what it is made of: models (which textures, models, items and `custom_model_data`), particles (which types and
-  colours), or both;
+- what it is made of: which textures (names and pixel hashes), models, items and `custom_model_data`, and how many
+  parts;
 - how it moves: still, a rig, a projectile, how long it stays;
 - what should glow and what colour its light should be, or why it is skipped.
 
@@ -88,7 +86,6 @@ What a spell needs once it is surveyed:
 - **Model spells:** an entry in the spell table (texture name or pixel hash → spell kind), a glow rule (which pixels
   glow, like the Meteor's saturation and lightness cut) and a light (colour, strength). The dev test world gets an
   exhibit of its parts, and `testworld/spell_test.txt` a shot of it.
-- **Particle spells:** see below. Probably a later milestone.
 
 Changes to the prototype before more spells go in:
 
@@ -101,15 +98,11 @@ Changes to the prototype before more spells go in:
 - **Lights that come and go.** Spells appear and vanish in a frame. A short fade, from the previous frame's light,
   would look less abrupt. Needs a small history image.
 
-### Particle spells
+### Particles
 
-Most spells are probably particles. Iris draws particles in `gbuffers_textured`, with no item ID. Options, to try in
-this order once the survey shows which particles the spells use:
-
-1. **Glow only.** Photon already makes some particles glow by colour. Coloured dust from spells could get the same.
-2. **Light from particles.** Sum the positions of matching particles into the same light image the models use. That
-   needs a way to tell a spell's particles from everyone else's (colour, size, particle type), which may not exist.
-3. **Skip.** Many particle spells are fast flashes where a light wouldn't add much.
+Every spell is a model, so particles are only extras. Iris draws them in `gbuffers_textured`, with no item ID, so
+they can't be tagged. Photon already makes some particles glow by colour; leave them at that unless a spell looks
+wrong without its particles lit.
 
 ## Where the feature lives: WynnIris or Wynn-Photon
 
@@ -146,22 +139,21 @@ These need updating in `CLAUDE.md`, `docs/PROJECT_PLAN.md` ("Principles") and `r
 ## Milestones
 
 0. **Prototype (done).** Meteor, base and Dark Wizard. Works on live.
-1. **Tooling.** Cast markers, animation capture and particle log in the debug build. Spell table in a data file,
+1. **Tooling.** Cast markers and animation capture in the debug build. Spell table in a data file,
    reserved ID range.
 2. **Survey the 20 base spells**, base class and reskin, in one or two playtest sessions. Fill the survey table.
    Decide per spell: glow, light, or skip.
 3. **Decide where it lives** (WynnIris or Wynn-Photon) and change the rules to match.
 4. **Implement the model spells** class by class, each checked in the dev client and then on live. Several casts at
    once and fading go in here.
-5. **Particle spells,** if the survey finds a workable way.
-6. **First product release:** the base four spells of each class that make sense, with a "Spell Lights" toggle and
+5. **First product release:** the base four spells of each class that make sense, with a "Spell Lights" toggle and
    strength on the Wynn-Photon page.
-7. **Later: every spell.** Ability-tree nodes, archetypes, and new reskins as Wynncraft adds them. The pixel hashes
+6. **Later: every spell.** Ability-tree nodes, archetypes, and new reskins as Wynncraft adds them. The pixel hashes
    need checking after each server pack update.
 
 ## Open questions
 
-- Which base spells are models and which are particles? (Milestone 2.)
+- Which spells are named models and which are hashed rigs, and how many parts each has? (Milestone 2.)
 - Does Wynntils expose a spell-cast event a debug build can listen to without a hard dependency?
 - Can the material mask hold IDs above 127?
 - Does the WynnIris maintainer want spell tags in WynnIris?
