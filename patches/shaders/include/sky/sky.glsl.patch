@@ -1,6 +1,6 @@
 --- a/shaders/include/sky/sky.glsl
 +++ b/shaders/include/sky/sky.glsl
-@@ -46,6 +46,201 @@
+@@ -46,6 +46,241 @@
          * limb_darkening;
  }
  
@@ -170,6 +170,36 @@
 +#if defined WYNN_MOON && !defined VANILLA_MOON && defined PROGRAM_DEFERRED4
 +const float wynn_moon_half_size = WYNN_MOON_SIZE * degree;
 +
++#ifdef WYNN_MOON_BASE
++// A small easter egg: the Humyn colony from Wynncraft's quest to the moon, seen from above on a grid of four cells to
++// a rock texel. It sits in a terraced crater with a pale floor, about one and a half rock texels wide: the copper
++// rocket and three teal buildings, one cell each. Colours stay close to the rock's, so it is found rather than seen.
++// The buildings glow faintly whatever the phase, a little above the dark moon's own light. albedo is a multiple of the
++// moon's colour, as rock is
++void wynn_moon_base(vec2 face_uv, float rock, inout vec3 albedo, inout vec3 glow) {
++    // The cell under the ray, from the crater's centre, which is a quarter of the face off its middle
++    ivec2 cell = ivec2(floor(16.0 * face_uv)) + 4;
++    float r = length(vec2(cell) + 0.5);
++
++    if (r >= 3.0) {
++        return;
++    }
++
++    // The crater: a pale, sandy floor of four by four cells inside a ring of darker terraces
++    albedo = r < 2.2 ? vec3(1.00, 0.95, 0.84) : vec3(0.80 * rock);
++
++    // The rocket on its pad, in copper
++    if (cell == ivec2(-1, 1)) {
++        albedo = vec3(1.10, 0.78, 0.55);
++    }
++    // The buildings, all in the colony's teal: the domed tower and the building beside it, and the greenhouse
++    if (cell == ivec2(1, 0) || cell == ivec2(1, -1) || cell == ivec2(-2, -1)) {
++        albedo = vec3(0.70, 0.98, 0.92);
++        glow = vec3(0.03, 0.07, 0.07);
++    }
++}
++#endif
++
 +vec4 draw_wynn_moon(vec3 ray_dir) {
 +    vec3 normal;
 +    vec2 face_uv;
@@ -190,10 +220,20 @@
 +    vec3 moonlight_dir = vec3(sin(phase_angle), 0.0, -cos(phase_angle));
 +    float lit = max0(dot(wynn_moon_cube_axes * normal, moonlight_dir));
 +
++    vec3 albedo = vec3(rock);
++    vec3 glow = vec3(0.0);
++
++#ifdef WYNN_MOON_BASE
++    // Wynn-Photon: a small easter egg, the Humyn colony from Wynncraft's moon quest
++    if (normal.z < 0.0) {
++        wynn_moon_base(face_uv, rock, albedo, glow);
++    }
++#endif
++
 +    // An unlit face shows faintly, as the dark of the real moon does. 0.7 keeps the brightest face below white, so
 +    // that its rock shows
 +    const vec3 lit_color = vec3(MOON_R, MOON_G, MOON_B);
-+    vec3 color = lit_color * rock * 0.7 * max(sqrt(lit), 0.12);
++    vec3 color = lit_color * albedo * 0.7 * max(sqrt(lit), 0.12) + glow;
 +
 +    return vec4(moon_luminance * sqr(color), 1.0);
 +}
@@ -202,7 +242,7 @@
  vec4 draw_moon(vec3 ray_dir) {
      const float angle = 0.7;
      const mat2 rot = mat2(cos(angle), sin(angle), -sin(angle), cos(angle));
-@@ -172,12 +367,22 @@
+@@ -172,12 +407,22 @@
  
  #ifndef VANILLA_SUN
      // Shader sun
