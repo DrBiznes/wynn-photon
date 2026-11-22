@@ -5,10 +5,11 @@ Every version so far patches Photon v1.4.
 ## 0.10.1
 
 **Added**
-- Square Sun: the sun is now a square, like the vanilla sun, but lit like Photon's: a bright light in the sky with a white-hot centre and a faint warm rim. It replaces Photon's round sun and is on by default. "Square Sun" and "Square Sun Size" on the Wynn-Photon page turn it off and resize it. Sunlight and shadows are unchanged.
+- Cubic Sun: the sun is now a glowing cube seen from one corner, lit like Photon's sun: one white-hot face and two cooler faces of cream and gold. "Cubic Sun" on the Wynn-Photon page turns it into a flat square, like the vanilla sun's, with a white-hot centre and a faint warm rim. "Square Sun" turns both off, for Photon's round sun, and "Sun Size" resizes it. Sunlight and shadows are unchanged.
+- Cubic Moon: the moon is now a cube of rock. Its phases are which of its three faces are lit: all of them at full moon, none at new moon. "Cubic Moon" and "Moon Size" on the Wynn-Photon page turn it off and resize it. Moonlight is unchanged.
 
 **Changed**
-- Vanilla Sun is off by default again, so the Square Sun shows. Turn it on, on the Sky page, to get the vanilla sun back. Vanilla Moon stays on.
+- Vanilla Sun and Vanilla Moon are off by default again, so the cubic sun and moon show. Turn them on, on the Sky page, to get the vanilla ones back.
 
 ## 0.10.0
 
