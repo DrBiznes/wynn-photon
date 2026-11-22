@@ -48,7 +48,10 @@ versions (Voxy, Mod Menu). Wynncraft's CDN refuses downloads outside the game, s
 cached in an instance's `downloads/`.
 `gradlew lightTest` photographs the test world's light test spots under the option sets in
 `testworld/light_test.txt`, unattended, and writes `build/light-test/report.html` with mean luminances (see "The
-lighting test" in `docs/DEVELOPMENT.md`). Its harness is the dev-only `lighttest` source set.
+lighting test" in `docs/DEVELOPMENT.md`). Its harness is the dev-only `lighttest` source set. `gradlew skyTest`
+(`testworld/sky_test.txt`) photographs the sun and moon, aimed at them, across times, moon phases, weather and biomes;
+`gradlew mapTest` (`testworld/map_test.txt`) photographs the Wynncraft map as Voxy LODs in the "Wynn-Photon Map"
+world, which `installMapWorld` builds from a copy of the user's Wynncraft Voxy cache (see "The sky and map tests").
 `gradlew installTestWorld` also installs the "Wynn-Photon Test" gallery world and selects the dev pack in Iris (see
 `testworld/README.md`). Add an exhibit there for every new block change.
 

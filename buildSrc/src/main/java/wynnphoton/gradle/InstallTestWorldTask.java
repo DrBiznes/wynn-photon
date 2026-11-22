@@ -8,6 +8,7 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.work.DisableCachingByDefault;
 
@@ -15,10 +16,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -42,6 +51,10 @@ import java.util.zip.GZIPOutputStream;
  *   <li>Points Iris at the dev shader pack.</li>
  * </ul>
  *
+ * <p>With {@code voidWorld} it makes the map world instead: a superflat world of air, in spectator mode, with no
+ * datapack, and a copy of a Wynncraft Voxy cache ({@code voxyCache}) as the world's own Voxy storage, so Voxy draws
+ * Wynncraft's LODs around the player. The cache is only ever read, and copied again only with {@code fresh}.</p>
+ *
  * It only ever deletes or overwrites a world folder that carries its own marker file.
  */
 @DisableCachingByDefault(because = "Writes into a Minecraft instance outside the build")
@@ -54,7 +67,17 @@ public abstract class InstallTestWorldTask extends DefaultTask {
 	public abstract DirectoryProperty getInstanceDir();
 
 	@InputDirectory
+	@Optional
 	public abstract DirectoryProperty getDatapackDir();
+
+	/** A world of air in spectator mode, for the Voxy map world. */
+	@Input
+	@Optional
+	public abstract Property<Boolean> getVoidWorld();
+
+	/** A closed Voxy world storage (the folder holding {@code CURRENT}) to install as the world's overworld LODs. */
+	@Internal
+	public abstract DirectoryProperty getVoxyCache();
 
 	/** Other Minecraft instances to take the cached Wynncraft resource pack from, tried in order. */
 	@Internal
@@ -87,22 +110,88 @@ public abstract class InstallTestWorldTask extends DefaultTask {
 		Files.writeString(world.resolve(MARKER),
 				"Made by the Wynn-Photon Gradle task installTestWorld. It may delete or overwrite this world.\n");
 
+		boolean voidWorld = getVoidWorld().getOrElse(false);
 		Path levelDat = world.resolve("level.dat");
 		if (!Files.exists(levelDat)) {
-			writeLevelDat(levelDat, getWorldName().get());
+			writeLevelDat(levelDat, getWorldName().get(), voidWorld, getDatapackDir().isPresent());
 			getLogger().lifecycle("Wrote a new level.dat");
 		}
 
-		Path datapack = world.resolve("datapacks").resolve(DATAPACK_NAME);
-		if (Files.exists(datapack)) {
-			deleteRecursively(datapack);
+		if (getDatapackDir().isPresent()) {
+			Path datapack = world.resolve("datapacks").resolve(DATAPACK_NAME);
+			if (Files.exists(datapack)) {
+				deleteRecursively(datapack);
+			}
+			copyRecursively(getDatapackDir().get().getAsFile().toPath(), datapack);
 		}
-		copyRecursively(getDatapackDir().get().getAsFile().toPath(), datapack);
+		if (getVoxyCache().isPresent()) {
+			installVoxyCache(getVoxyCache().get().getAsFile().toPath(), world);
+		}
 
 		installResourcePack(instance, world);
 		selectShaderPack(instance);
 
 		getLogger().lifecycle("Installed the test world at {}", world);
+	}
+
+	// ------------------------------------------------------------------ Voxy
+
+	/**
+	 * Copies a Voxy storage to {@code <world>/voxy/<id>/storage}, the place Voxy looks for this world's overworld,
+	 * with the storage's {@code config.json} beside it. Skipped if it is there already.
+	 */
+	private void installVoxyCache(Path storage, Path world) throws IOException {
+		Path target = world.resolve("voxy").resolve(voxyWorldId(SEED, "minecraft:overworld")).resolve("storage");
+		if (Files.exists(target.resolve("CURRENT"))) {
+			getLogger().lifecycle("Voxy LODs already installed ({})", target.getParent().getFileName());
+			return;
+		}
+		if (!Files.isRegularFile(storage.resolve("CURRENT"))) {
+			throw new GradleException(storage + " is not a Voxy storage (no CURRENT file). Set voxyCache in "
+					+ "local.properties to <instance>/.voxy/saves/play.wynncraft.com/<world id>/storage.");
+		}
+		Path lock = storage.resolve("LOCK");
+		if (Files.exists(lock)) {
+			try (FileChannel channel = FileChannel.open(lock, StandardOpenOption.WRITE);
+				 FileLock held = channel.tryLock()) {
+				if (held == null) {
+					throw new GradleException("The Voxy cache is in use. Close Minecraft first: " + storage);
+				}
+			} catch (IOException e) {
+				throw new GradleException("The Voxy cache is in use. Close Minecraft first: " + storage, e);
+			}
+		}
+		getLogger().lifecycle("Copying the Voxy LODs from {}", storage);
+		Files.createDirectories(target);
+		try (Stream<Path> files = Files.list(storage)) {
+			for (Path file : (Iterable<Path>) files::iterator) {
+				String name = file.getFileName().toString();
+				if (Files.isRegularFile(file) && !name.equals("LOCK") && !name.startsWith("LOG.old.")) {
+					Files.copy(file, target.resolve(name), StandardCopyOption.REPLACE_EXISTING);
+				}
+			}
+		}
+		Path config = storage.getParent().getParent().resolve("config.json");
+		if (Files.isRegularFile(config)) {
+			Files.copy(config, world.resolve("voxy").resolve("config.json"), StandardCopyOption.REPLACE_EXISTING);
+		}
+	}
+
+	/**
+	 * Voxy's folder name for a world: the first 32 hex digits of the SHA-256 of the biome seed (Minecraft's
+	 * obfuscated seed) followed by the dimension's resource key, as Voxy's {@code WorldIdentifier.getWorldId} writes.
+	 */
+	static String voxyWorldId(long seed, String dimension) {
+		try {
+			ByteBuffer seedBytes = ByteBuffer.allocate(Long.BYTES).order(ByteOrder.LITTLE_ENDIAN).putLong(seed);
+			byte[] hashed = MessageDigest.getInstance("SHA-256").digest(seedBytes.array());
+			long biomeSeed = ByteBuffer.wrap(hashed).order(ByteOrder.LITTLE_ENDIAN).getLong();
+			String key = biomeSeed + "ResourceKey[minecraft:dimension / " + dimension + "]";
+			byte[] id = MessageDigest.getInstance("SHA-256").digest(key.getBytes(StandardCharsets.UTF_8));
+			return HexFormat.of().formatHex(id).substring(0, 32);
+		} catch (NoSuchAlgorithmException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	// ------------------------------------------------------------------ resource pack
@@ -196,8 +285,9 @@ public abstract class InstallTestWorldTask extends DefaultTask {
 	// ------------------------------------------------------------------ level.dat
 
 	private static final int DATA_VERSION_1_21_1 = 3955;
+	private static final long SEED = 0L;
 
-	private static void writeLevelDat(Path file, String name) throws IOException {
+	private static void writeLevelDat(Path file, String name, boolean voidWorld, boolean datapack) throws IOException {
 		Map<String, Object> gameRules = new LinkedHashMap<>();
 		// 1.21.1 names; Minecraft's data fixers rename them for newer versions.
 		gameRules.put("doDaylightCycle", "false");
@@ -218,7 +308,9 @@ public abstract class InstallTestWorldTask extends DefaultTask {
 		flat.put("biome", "minecraft:plains");
 		flat.put("features", (byte) 0);
 		flat.put("lakes", (byte) 0);
-		flat.put("layers", List.of(layer("minecraft:bedrock", 1), layer("minecraft:dirt", 2), layer("minecraft:grass_block", 1)));
+		flat.put("layers", voidWorld
+				? List.of(layer("minecraft:air", 1))
+				: List.of(layer("minecraft:bedrock", 1), layer("minecraft:dirt", 2), layer("minecraft:grass_block", 1)));
 		flat.put("structure_overrides", List.of());
 
 		Map<String, Object> dimensions = new LinkedHashMap<>();
@@ -235,7 +327,7 @@ public abstract class InstallTestWorldTask extends DefaultTask {
 						"biome_source", Map.of("type", "minecraft:the_end"))));
 
 		Map<String, Object> worldGen = new LinkedHashMap<>();
-		worldGen.put("seed", 0L);
+		worldGen.put("seed", SEED);
 		worldGen.put("generate_features", (byte) 0);
 		worldGen.put("bonus_chest", (byte) 0);
 		worldGen.put("dimensions", dimensions);
@@ -251,7 +343,7 @@ public abstract class InstallTestWorldTask extends DefaultTask {
 		data.put("version", 19133);
 		data.put("Version", version);
 		data.put("LevelName", name);
-		data.put("GameType", 1); // creative
+		data.put("GameType", voidWorld ? 3 : 1); // spectator in the air, else creative
 		data.put("Difficulty", (byte) 0); // peaceful
 		data.put("DifficultyLocked", (byte) 0);
 		data.put("hardcore", (byte) 0);
@@ -263,13 +355,22 @@ public abstract class InstallTestWorldTask extends DefaultTask {
 		data.put("raining", (byte) 0);
 		data.put("thundering", (byte) 0);
 		data.put("clearWeatherTime", 1_000_000);
-		// Between the daylight row (north, z = -8) and the dark hall (south, z = 16), facing north
-		data.put("SpawnX", 30);
-		data.put("SpawnY", -60);
-		data.put("SpawnZ", 4);
-		data.put("SpawnAngle", 180.0f);
+		if (voidWorld) {
+			// South of Wynncraft's Mount Wynn, facing it
+			data.put("SpawnX", -183);
+			data.put("SpawnY", 240);
+			data.put("SpawnZ", -1764);
+			data.put("SpawnAngle", 180.0f);
+		} else {
+			// Between the daylight row (north, z = -8) and the dark hall (south, z = 16), facing north
+			data.put("SpawnX", 30);
+			data.put("SpawnY", -60);
+			data.put("SpawnZ", 4);
+			data.put("SpawnAngle", 180.0f);
+		}
 		data.put("GameRules", gameRules);
-		data.put("DataPacks", Map.of("Enabled", List.of("vanilla", "file/" + DATAPACK_NAME), "Disabled", List.of()));
+		data.put("DataPacks", Map.of("Enabled", datapack ? List.of("vanilla", "file/" + DATAPACK_NAME) : List.of("vanilla"),
+				"Disabled", List.of()));
 		data.put("WorldGenSettings", worldGen);
 
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();

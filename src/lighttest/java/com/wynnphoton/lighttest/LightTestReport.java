@@ -53,7 +53,7 @@ public final class LightTestReport {
 
 		StringBuilder html = new StringBuilder("""
 				<!doctype html>
-				<html lang="en"><head><meta charset="utf-8"><title>Wynn-Photon light test</title>
+				<html lang="en"><head><meta charset="utf-8"><title>Wynn-Photon screenshot test</title>
 				<style>
 				body { font: 14px/1.4 system-ui, sans-serif; background: #181818; color: #ddd; margin: 24px; }
 				h1, h2, h3 { color: #fff; } h2 { margin-top: 40px; }
@@ -63,9 +63,10 @@ public final class LightTestReport {
 				.up { background: #1f4d2b; } .down { background: #5a2323; } .same { color: #888; }
 				.shots { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
 				figure { margin: 0; width: 240px; } figure img { width: 100%; display: block; }
+				figure img.crop { height: 240px; object-fit: none; object-position: center; }
 				figcaption { font-size: 12px; } code { color: #9cf; }
 				</style></head><body>
-				<h1>Wynn-Photon light test</h1>
+				<h1>Wynn-Photon screenshot test</h1>
 				<p>Brightness is the mean luminance of the displayed picture, as a percentage of white (sRGB decoded to
 				linear light, Rec. 709 weights). A ratio of 2.00 is twice the light on screen, after tone mapping.
 				Ratios within about the measurement noise (see the noise table) mean no change.</p>
@@ -85,6 +86,9 @@ public final class LightTestReport {
 		html.append("</tr>");
 		for (Spot spot : cases.spots) {
 			for (Time time : cases.times) {
+				if (!shot(cases, spot, time, luminance)) {
+					continue;
+				}
 				html.append("<tr><td>").append(spot.name()).append(", ").append(time.name()).append("</td>");
 				for (OptionSet set : cases.sets) {
 					Double value = luminance.get(LightTestCases.shotName(spot, time, set));
@@ -95,42 +99,54 @@ public final class LightTestReport {
 		}
 		html.append("</table>");
 
-		html.append("<h2>Comparisons</h2><p>Each cell: luminance of B divided by luminance of A. Green is at least 5% "
-				+ "brighter, red at least 5% darker.</p><table><tr><th>Spot, time</th>");
-		for (Compare c : cases.compares) {
-			html.append("<th title='").append(c.title()).append("'>").append(c.b()).append("<br>/ ").append(c.a()).append("</th>");
-		}
-		html.append("</tr>");
 		StringBuilder ratios = new StringBuilder("spot,time,a,b,luminance_a,luminance_b,ratio\n");
-		for (Spot spot : cases.spots) {
-			for (Time time : cases.times) {
-				html.append("<tr><td>").append(spot.name()).append(", ").append(time.name()).append("</td>");
-				for (Compare c : cases.compares) {
-					Double a = luminance.get(spot.name() + "__" + time.name() + "__" + c.a() + ".png");
-					Double b = luminance.get(spot.name() + "__" + time.name() + "__" + c.b() + ".png");
-					if (a == null || b == null) {
-						html.append("<td></td>");
+		if (!cases.compares.isEmpty()) {
+			html.append("<h2>Comparisons</h2><p>Each cell: luminance of B divided by luminance of A. Green is at least "
+					+ "5% brighter, red at least 5% darker.</p><table><tr><th>Spot, time</th>");
+			for (Compare c : cases.compares) {
+				html.append("<th title='").append(c.title()).append("'>").append(c.b()).append("<br>/ ").append(c.a())
+						.append("</th>");
+			}
+			html.append("</tr>");
+			for (Spot spot : cases.spots) {
+				for (Time time : cases.times) {
+					if (!shot(cases, spot, time, luminance)) {
 						continue;
 					}
-					double ratio = b / Math.max(a, 1e-6);
-					String cls = ratio >= 1.05 ? "up" : ratio <= 1 / 1.05 ? "down" : "same";
-					html.append("<td class='").append(cls).append("'>").append(String.format(Locale.ROOT, "%.2f", ratio)).append("</td>");
-					ratios.append(String.format(Locale.ROOT, "%s,%s,%s,%s,%.4f,%.4f,%.4f%n", spot.name(), time.name(),
-							c.a(), c.b(), a, b, ratio));
+					html.append("<tr><td>").append(spot.name()).append(", ").append(time.name()).append("</td>");
+					for (Compare c : cases.compares) {
+						Double a = luminance.get(spot.name() + "__" + time.name() + "__" + c.a() + ".png");
+						Double b = luminance.get(spot.name() + "__" + time.name() + "__" + c.b() + ".png");
+						if (a == null || b == null) {
+							html.append("<td></td>");
+							continue;
+						}
+						double ratio = b / Math.max(a, 1e-6);
+						String cls = ratio >= 1.05 ? "up" : ratio <= 1 / 1.05 ? "down" : "same";
+						html.append("<td class='").append(cls).append("'>")
+								.append(String.format(Locale.ROOT, "%.2f", ratio)).append("</td>");
+						ratios.append(String.format(Locale.ROOT, "%s,%s,%s,%s,%.4f,%.4f,%.4f%n", spot.name(),
+								time.name(), c.a(), c.b(), a, b, ratio));
+					}
+					html.append("</tr>");
 				}
-				html.append("</tr>");
 			}
+			html.append("</table><ul>");
+			for (Compare c : cases.compares) {
+				html.append("<li><b>").append(c.b()).append(" / ").append(c.a()).append("</b>: ").append(c.title())
+						.append("</li>");
+			}
+			html.append("</ul>");
 		}
-		html.append("</table><ul>");
-		for (Compare c : cases.compares) {
-			html.append("<li><b>").append(c.b()).append(" / ").append(c.a()).append("</b>: ").append(c.title()).append("</li>");
-		}
-		html.append("</ul>");
 		Files.writeString(dir.resolve("ratios.csv"), ratios.toString(), StandardCharsets.UTF_8);
 
-		html.append("<h2>Shots</h2><p>Click a picture for the full size.</p>");
+		html.append("<h2>Shots</h2><p>Click a picture for the full size. A spot aimed at the sun or the moon also "
+				+ "shows the middle of the picture at its own size.</p>");
 		for (Spot spot : cases.spots) {
 			for (Time time : cases.times) {
+				if (!shot(cases, spot, time, luminance)) {
+					continue;
+				}
 				html.append("<h3>").append(spot.name()).append(", ").append(time.name()).append("</h3><div class='shots'>");
 				for (OptionSet set : cases.sets) {
 					String file = LightTestCases.shotName(spot, time, set);
@@ -141,6 +157,11 @@ public final class LightTestReport {
 					html.append("<figure><a href='").append(file).append("'><img loading='lazy' src='").append(file)
 							.append("'></a><figcaption>").append(set.name()).append(": ")
 							.append(String.format(Locale.ROOT, "%.2f", value)).append("</figcaption></figure>");
+					if (spot.aimed() && spot.pitch() == 0) {
+						html.append("<figure><a href='").append(file).append("'><img class='crop' loading='lazy' src='")
+								.append(file).append("'></a><figcaption>").append(set.name())
+								.append(", middle at 1:1</figcaption></figure>");
+					}
 				}
 				html.append("</div>");
 			}
@@ -148,6 +169,11 @@ public final class LightTestReport {
 		html.append("</body></html>\n");
 		Files.writeString(dir.resolve("report.html"), html.toString(), StandardCharsets.UTF_8);
 		System.out.println("Light test report: " + dir.resolve("report.html").toAbsolutePath().toUri());
+	}
+
+	/** Whether any option set has a shot of this spot at this time. */
+	private static boolean shot(LightTestCases cases, Spot spot, Time time, Map<String, Double> luminance) {
+		return cases.sets.stream().anyMatch(set -> luminance.containsKey(LightTestCases.shotName(spot, time, set)));
 	}
 
 	private static String options(OptionSet set) {
