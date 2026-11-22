@@ -5,7 +5,7 @@ Every version so far patches Photon v1.4.
 ## 0.10.1
 
 **Added**
-- Cubic Sun: the sun is now a glowing cube seen from one corner, lit like Photon's sun: one white-hot face and two cooler faces of cream and gold. "Cubic Sun" on the Wynn-Photon page turns it into a flat square, like the vanilla sun's, with a white-hot centre and a faint warm rim. "Square Sun" turns both off, for Photon's round sun, and "Sun Size" resizes it. Sunlight and shadows are unchanged.
+- Cubic Sun: the sun is now a glowing cube seen from one corner, lit like Photon's sun: white-hot in the middle, where the sunlight comes from, with three faces that cool towards its outline, each in its own tone. "Cubic Sun" on the Wynn-Photon page turns it into a flat square, like the vanilla sun's, with a white-hot centre and a faint warm rim. "Wynn-Photon Sun" turns both off, for Photon's round sun, and "Sun Size" resizes it. Sunlight and shadows are unchanged.
 - Cubic Moon: the moon is now a cube of rock. Its phases are which of its three faces are lit: all of them at full moon, none at new moon. "Cubic Moon" and "Moon Size" on the Wynn-Photon page turn it off and resize it. Moonlight is unchanged.
 
 **Changed**

@@ -91,9 +91,11 @@ lighting test" in `docs/DEVELOPMENT.md`). Its harness is the dev-only `lighttest
   (`WYNN_SUN`) is Photon's sun with the vanilla sun's shape: a square, or with `WYNN_SUN_CUBE` a cube seen from one
   corner. The moon (`WYNN_MOON`) is the same cube made of rock, with phases from which faces are lit. The look follows
   the "Cubic Sun & Moon" resource pack, which is all rights reserved: nothing of it is copied, and both cubes are
-  computed. The sun's white-hot face carries Photon's amount of light; everything else on it has fixed luminances
-  near the sky's, tuned from screenshots, because Photon's tone mapping burns anything much brighter to white and the
-  faces and rims are lost. A first version in Wynncraft's pixel-art style (gold rays, texels covering the sky) clashed
+  computed. The sun cube is seen exactly from one corner, so that corner, its white-hot part, is the sun's
+  direction and Photon's sunlight lines up with it. Everything else on the sun has fixed luminances near the sky's,
+  tuned from screenshots, because Photon's tone mapping burns anything much brighter to white and the faces and rims
+  are lost; for the same reason the cube's corner sends out a fifth of the light of Photon's disk, or its bloom
+  hides the cube. A first version in Wynncraft's pixel-art style (gold rays, texels covering the sky) clashed
   with Photon's look.
 - Every light change updates both the colored-light volume (`block.properties` + `light_colors.glsl`) and Photonics
   (`ph_lights.json`). Photonics' built-in defaults list `repeater`, `comparator`, `redstone_torch` and

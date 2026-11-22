@@ -50,12 +50,12 @@
 +option.WYNN_MIN_LIGHT_I.comment         = The least light any surface gets, so nights, dense cities and caves never go fully black. It fades away where other light is brighter, so daylight and lit rooms don't change. Higher values show more detail in the dark but look flatter. 0 turns it off
 +option.WYNN_PLAYER_LIGHT_I               = Player Light
 +option.WYNN_PLAYER_LIGHT_I.comment       = The player lights their surroundings as if always holding a torch, like the light radius in Diablo. 1.00 is as bright as a torch; higher is brighter and reaches further. A torch or lantern you really hold counts towards it. It casts no shadows. 0 turns it off
-+option.WYNN_SUN                          = Square Sun
-+option.WYNN_SUN.comment                  = Draws the sun as a square, like the vanilla sun, but lit like Photon's: a bright light in the sky with a white-hot centre and a faint warm rim. It replaces Photon's round sun. Only the picture changes: sunlight and shadows stay the same. Vanilla Sun, on the Sky page, replaces it when on
++option.WYNN_SUN                          = Wynn-Photon Sun
++option.WYNN_SUN.comment                  = Draws Wynn-Photon's own sun in place of Photon's round one: a glowing cube, or a flat square like the vanilla sun's with Cubic Sun off. It is lit like Photon's sun, a bright light in the sky. Only the picture changes: sunlight and shadows stay the same. Vanilla Sun, on the Sky page, replaces it when on
 +option.WYNN_SUN_CUBE                     = Cubic Sun
-+option.WYNN_SUN_CUBE.comment             = Makes the Square Sun a cube seen from one corner: one white-hot face and two cooler ones. Off leaves it a flat square
++option.WYNN_SUN_CUBE.comment             = Makes the Wynn-Photon Sun a cube seen from one corner. It is white-hot in the middle, where the sunlight comes from, and its three faces cool towards its outline, each in its own tone. Off leaves it a flat square with a white-hot centre and a faint warm rim
 +option.WYNN_SUN_SIZE                     = Sun Size
-+option.WYNN_SUN_SIZE.comment             = Half the width of the square or cubic sun in degrees. It gives off about the same light at any size, so a larger sun is less dazzling
++option.WYNN_SUN_SIZE.comment             = Half the width of the square sun in degrees. The cubic sun is about a third wider. A larger sun is less dazzling, because it gives off the same light
 +option.WYNN_MOON                         = Cubic Moon
 +option.WYNN_MOON.comment                 = Draws the moon as a cube of rock, in place of Photon's round moon. Its phases are which of its three faces are lit: all of them at full moon, none at new moon. Only the picture changes: moonlight stays the same. Vanilla Moon, on the Sky page, replaces it when on
 +option.WYNN_MOON_SIZE                    = Moon Size
