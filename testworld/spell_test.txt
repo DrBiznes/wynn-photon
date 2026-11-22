@@ -1,0 +1,17 @@
+# Experimental: the spell-light comparison. Run it with `gradlew lightTest -Pcases=testworld/spell_test.txt`.
+# The format is described at the top of light_test.txt. The spot looks south at the two still Meteor models of
+# spells.mcfunction over a stone pad: facing south, the purple one (east) is on the left, the orange one on the right.
+
+spot meteors      10.5 -60 93.5   0 10  fov=70 settle=4000
+spot meteor_close  4.5 -60 99.5   0 20  fov=70 settle=4000
+
+time midnight 18000
+time noon      6000
+
+set off         PHOTONICS_ENABLED=false
+set off_nospell PHOTONICS_ENABLED=false WYNN_SPELL_LIGHT_I=0.00
+set on          PHOTONICS_ENABLED=true
+set on_nospell  PHOTONICS_ENABLED=true WYNN_SPELL_LIGHT_I=0.00
+
+compare off_nospell off   Spell lights on, relative to off, Photonics off
+compare on_nospell on     Spell lights on, relative to off, Photonics on

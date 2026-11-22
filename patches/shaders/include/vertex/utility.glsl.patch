@@ -1,0 +1,22 @@
+--- a/shaders/include/vertex/utility.glsl
++++ b/shaders/include/vertex/utility.glsl
+@@ -1,6 +1,9 @@
+ #if !defined INCLUDE_VERTEX_UTILITY
+ #define INCLUDE_VERTEX_UTILITY
+ 
++// Wynn-Photon: spell IDs (Iris rejects a comment after an #include)
++#include "/include/misc/wynn_spells.glsl"
++
+ uint get_material_mask() {
+ #if defined PROGRAM_GBUFFERS_TERRAIN || defined PROGRAM_GBUFFERS_WATER
+     // Terrain
+@@ -12,6 +15,9 @@
+ #ifdef IS_IRIS
+     uint item_id = uint(max(currentRenderedItemId - 10000, 0));
+     id = id == 100 ? item_id : id;
++    // Wynn-Photon (experimental): spell models the mod tagged keep their spell
++    // ID on any entity (display entities, armor stands), see wynn_spells.glsl
++    id = is_wynn_spell(item_id) ? item_id : id;
+ #endif
+     return id;
+ #elif defined PROGRAM_GBUFFERS_BLOCK \

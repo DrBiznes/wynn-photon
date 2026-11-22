@@ -2,6 +2,11 @@
 
 Every version so far patches Photon v1.4.
 
+## Unreleased (experimental, branch `experimental/spell-lights`)
+
+**Added**
+- Spell lights (experimental): Mage's Meteor glows, only on its flame (and the purple variant's cracks), and lights up the ground around it, orange or purple, with or without Photonics. The Wynn-Photon mod tells the shader which models are spells, so it needs the mod. "Spell Lights (Experimental)" on the Wynn-Photon page sets the strength; 0 turns it off. See `docs/research/wynn-spells.md`.
+
 ## 0.10.1
 
 **Added**

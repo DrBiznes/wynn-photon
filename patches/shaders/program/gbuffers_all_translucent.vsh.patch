@@ -1,0 +1,14 @@
+--- a/shaders/program/gbuffers_all_translucent.vsh
++++ b/shaders/program/gbuffers_all_translucent.vsh
+@@ -150,6 +150,11 @@
+     ); // Apply vertex animations
+     position_scene = position_scene - cameraPosition; // Back to scene space
+ 
++#if defined PROGRAM_GBUFFERS_ENTITIES_TRANSLUCENT && defined IS_IRIS
++    // Wynn-Photon: spell lights
++    wynn_spell_add_vertex(material_mask, position_scene);
++#endif
++
+ #if defined PROGRAM_GBUFFERS_WATER
+     tint.a = 1.0;
+ 

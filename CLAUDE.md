@@ -75,7 +75,9 @@ world, which `installMapWorld` builds from a copy of the user's Wynncraft Voxy c
   `10067` (black, merged into `10066`) is the magma block, `10068` (brown, merged into `10070`) is the enchanting
   table, `10054` (the old enchanting table) is glowstone, `10098` is
   quartz, `10099` is the iron block, `10104` is unlit candle props and
-  `10105` is chests. A non-light Wynn ID that light should pass
+  `10105` is chests. `10106`/`10107` are item IDs, not blocks: the mod tags the orange and purple Meteor spell
+  models with them (`client/SpellTags.java`, `include/misc/wynn_spells.glsl`; experimental, see
+  `docs/research/wynn-spells.md`). A non-light Wynn ID that light should pass
   through must also be listed in `is_transparent_block` in `voxelization.glsl`, as `10104` is.
   Before taking another ID, check `block.properties`, `item.properties`,
   `light_colors.glsl` and `ph_lights.json`.

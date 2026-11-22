@@ -1,6 +1,6 @@
 --- a/shaders/include/lighting/diffuse_lighting.glsl
 +++ b/shaders/include/lighting/diffuse_lighting.glsl
-@@ -13,7 +13,13 @@
+@@ -13,10 +13,19 @@
  #include "/include/lighting/lpv/blocklight.glsl"
  #endif
  
@@ -15,7 +15,13 @@
  #include "/include/lighting/handheld_lighting.glsl"
  #endif
  
-@@ -65,6 +71,20 @@
++// Wynn-Photon: spell lights
++#include "/include/misc/wynn_spells.glsl"
++
+ #if !defined WORLD_OVERWORLD
+ #undef CLOUD_SHADOWS
+ #endif
+@@ -65,6 +74,20 @@
      return falloff;
  }
  
@@ -36,7 +42,7 @@
  float get_skylight_falloff(float skylight) {
  #if defined WORLD_OVERWORLD
      return sqr(skylight);
-@@ -143,7 +163,8 @@
+@@ -143,7 +166,8 @@
          scene_pos,
          flat_normal,
          mc_blocklight,
@@ -46,7 +52,7 @@
      );
  #else
      lighting += mc_blocklight;
-@@ -153,6 +174,10 @@
+@@ -153,6 +177,14 @@
      lighting += get_handheld_lighting(scene_pos, ao);
  #endif
  
@@ -54,10 +60,14 @@
 +    lighting += get_wynn_player_light(scene_pos, ao); // Wynn-Photon
 +#endif
 +
++#ifdef WYNN_SPELL_LIGHTS
++    lighting += get_wynn_spell_light(scene_pos, ao); // Wynn-Photon
++#endif
++
      return lighting;
  }
  
-@@ -188,6 +213,12 @@
+@@ -188,6 +220,12 @@
  
      lighting += skylight * get_skylight_falloff(light_levels.y);
  
@@ -70,7 +80,7 @@
      return lighting;
  }
  
-@@ -311,6 +342,10 @@
+@@ -311,6 +349,10 @@
      // Skylight
  
  #if defined PHOTONICS_DIFFUSE
@@ -81,7 +91,7 @@
      if (is_lod) {
          lighting += get_sky_lighting(
              material,
-@@ -324,7 +359,8 @@
+@@ -324,7 +366,8 @@
  // When combined gi is enabled
  // Photonics includes gi in the result of sample_photonics_direct
  #ifndef PHOTONICS_RESTIR_COMBINED_GI
@@ -91,7 +101,7 @@
  #endif
      }
  
-@@ -351,8 +387,66 @@
+@@ -351,8 +394,71 @@
          blocklight += sample_photonics_handheld(uv);
  #endif
  
@@ -99,6 +109,11 @@
 +        // Wynn-Photon: the player light isn't traced by Photonics, so it
 +        // casts no shadows here, like Photon's own handheld light
 +        lighting += get_wynn_player_light(scene_pos, ao);
++#endif
++
++#ifdef WYNN_SPELL_LIGHTS
++        // Wynn-Photon: spell lights, untraced like the player light
++        lighting += get_wynn_spell_light(scene_pos, ao);
 +#endif
 +
          // BLOCKLIGHT_I is applied in /photonics/modifiers/modify_lights.glsl
@@ -159,7 +174,7 @@
      } else {
          lighting += get_block_lighting(
              scene_pos,
-@@ -381,6 +475,19 @@
+@@ -381,6 +487,19 @@
          * (1.0 - light_levels.y * light_levels.y)
          * (1.0 - 0.7 * darknessFactor);
      lighting += nightVision * night_vision_scale * directional_lighting * ao;

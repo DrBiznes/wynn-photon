@@ -1,0 +1,12 @@
+{
+	"required": false,
+	"minVersion": "0.8",
+	"package": "com.wynnphoton.client.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"ItemLayerSpellMixin"
+	],
+	"injectors": {
+		"defaultRequire": 0
+	}
+}

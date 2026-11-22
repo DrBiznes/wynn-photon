@@ -8,7 +8,17 @@
  attribute vec4 at_tangent;
  attribute vec3 mc_Entity;
  attribute vec2 mc_midTexCoord;
-@@ -161,7 +162,8 @@
+@@ -133,7 +134,8 @@
+ 
+ #if defined PROGRAM_GBUFFERS_ENTITIES && !defined COLORWHEEL
+     // Fix fire entity not glowing with Colored Lights
+-    if (light_levels.x > 0.99) {
++    // Wynn-Photon: not for spell models, which have their own glow
++    if (light_levels.x > 0.99 && !is_wynn_spell(material_mask)) {
+         material_mask = 40;
+     }
+ #endif
+@@ -161,11 +163,16 @@
      vec3 pos = transform(gl_ModelViewMatrix, gl_Vertex.xyz);
      pos = view_to_scene_space(pos);
      pos = pos + cameraPosition;
@@ -18,3 +28,11 @@
      pos = pos - cameraPosition;
  
      scene_pos = pos;
+ 
++#if defined PROGRAM_GBUFFERS_ENTITIES && defined IS_IRIS
++    wynn_spell_add_vertex(material_mask, pos); // Wynn-Photon: spell lights
++#endif
++
+ #if defined POM && defined PROGRAM_GBUFFERS_TERRAIN
+     tangent_pos = (pos - gbufferModelViewInverse[3].xyz) * tbn;
+ #endif

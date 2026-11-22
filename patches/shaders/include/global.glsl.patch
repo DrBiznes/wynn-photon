@@ -1,0 +1,14 @@
+--- a/shaders/include/global.glsl
++++ b/shaders/include/global.glsl
+@@ -1,5 +1,11 @@
+ // Extensions
+ 
++// Wynn-Photon (experimental): the entity vertex shaders write spell light
++// positions to an image (/include/misc/wynn_spells.glsl)
++#if defined vsh && (defined PROGRAM_GBUFFERS_ENTITIES || defined PROGRAM_GBUFFERS_ENTITIES_TRANSLUCENT)
++    #extension GL_ARB_shader_image_load_store : enable
++#endif
++
+ /*
+ #ifdef MC_GL_KHR_shader_subgroup
+     #extension GL_KHR_shader_subgroup_vote : enable

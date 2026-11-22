@@ -1,0 +1,101 @@
+--- /dev/null
++++ b/shaders/include/misc/wynn_spells.glsl
+@@ -1,0 +1,98 @@
++#if !defined INCLUDE_MISC_WYNN_SPELLS
++#define INCLUDE_MISC_WYNN_SPELLS
++
++// Wynn-Photon (experimental): Wynncraft spell lights.
++//
++// Wynncraft draws its spells as item models on display entities. The
++// Wynn-Photon mod recognises a spell model by its texture's name and hands the
++// shader the spell's own item ID (currentRenderedItemId, below) instead of the
++// item it is drawn on (a potion). Without the mod no model carries these IDs,
++// so nothing here does anything.
++//
++// - Surfaces: the spell's material mask makes its fire emissive (material.glsl).
++// - Light: every spell vertex the entity programs draw adds its position to
++//   wynn_spell_img, a tiny image Iris clears every frame. Deferred shading takes
++//   the average as a point light, like the player light. It casts no shadows,
++//   and with several spells of one kind in view their lights merge at the
++//   middle.
++//
++// Item IDs, shared with com.wynnphoton.client.SpellTags in the mod:
++//   10106  Meteor, orange fire
++//   10107  Meteor, purple (void) fire
++
++const uint WYNN_SPELL_FIRE = 106u;
++const uint WYNN_SPELL_VOID = 107u;
++
++bool is_wynn_spell(uint material_mask) {
++    return material_mask == WYNN_SPELL_FIRE || material_mask == WYNN_SPELL_VOID;
++}
++
++// Texels of wynn_spell_img: one group of four per spell kind, holding the sum
++// of x, y and z in 1/16 blocks and the vertex count
++const int wynn_spell_kinds = 2;
++const float wynn_spell_pos_scale = 16.0;
++
++#if defined IS_IRIS && defined vsh \
++    && (defined PROGRAM_GBUFFERS_ENTITIES \
++        || defined PROGRAM_GBUFFERS_ENTITIES_TRANSLUCENT)
++layout(r32i) uniform iimage2D wynn_spell_img;
++
++// Call from the entity vertex shaders with the vertex's scene position
++void wynn_spell_add_vertex(uint material_mask, vec3 scene_pos) {
++    if (!is_wynn_spell(material_mask) || WYNN_SPELL_LIGHT_I <= 0.0) return;
++
++    int base = 4 * int(material_mask - WYNN_SPELL_FIRE);
++    ivec3 p = ivec3(round(scene_pos * wynn_spell_pos_scale));
++    imageAtomicAdd(wynn_spell_img, ivec2(base + 0, 0), p.x);
++    imageAtomicAdd(wynn_spell_img, ivec2(base + 1, 0), p.y);
++    imageAtomicAdd(wynn_spell_img, ivec2(base + 2, 0), p.z);
++    imageAtomicAdd(wynn_spell_img, ivec2(base + 3, 0), 1);
++}
++#endif
++
++#if defined IS_IRIS && defined PROGRAM_DEFERRED4
++#define WYNN_SPELL_LIGHTS
++
++uniform isampler2D wynn_spell_sampler;
++
++// Light colours in sRGB, and strengths in torches
++const vec3[wynn_spell_kinds] wynn_spell_light_color = vec3[](
++    vec3(1.00, 0.50, 0.15), // Meteor, orange fire
++    vec3(0.75, 0.30, 1.00)  // Meteor, purple fire
++);
++const float[wynn_spell_kinds] wynn_spell_light_strength = float[](1.5, 1.5);
++
++vec3 get_wynn_spell_light(vec3 scene_pos, float ao) {
++    if (WYNN_SPELL_LIGHT_I <= 0.0) return vec3(0.0);
++
++    vec3 lighting = vec3(0.0);
++
++    for (int kind = 0; kind < wynn_spell_kinds; ++kind) {
++        int count = texelFetch(wynn_spell_sampler, ivec2(4 * kind + 3, 0), 0).x;
++        if (count <= 0) continue;
++
++        vec3 light_pos = vec3(
++            texelFetch(wynn_spell_sampler, ivec2(4 * kind + 0, 0), 0).x,
++            texelFetch(wynn_spell_sampler, ivec2(4 * kind + 1, 0), 0).x,
++            texelFetch(wynn_spell_sampler, ivec2(4 * kind + 2, 0), 0).x
++        ) * rcp(wynn_spell_pos_scale * float(count));
++
++        float strength = wynn_spell_light_strength[kind] * WYNN_SPELL_LIGHT_I;
++
++        // Same falloff as the player light: reach grows with the square root
++        // of the strength
++        vec3 to_light = (scene_pos - light_pos) * rcp(sqrt(max(strength, 1.0)));
++        float falloff = lift(rcp(dot(to_light, to_light) + 1.0), 3.0);
++        falloff *= mix(ao, 1.0, falloff * falloff);
++
++        vec3 color = from_srgb(wynn_spell_light_color[kind])
++            * (blocklight_scale * rcp(15.0) * 14.0);
++
++        lighting += color * (strength * falloff);
++    }
++
++    return lighting;
++}
++#endif
++
++#endif // INCLUDE_MISC_WYNN_SPELLS
