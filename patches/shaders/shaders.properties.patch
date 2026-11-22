@@ -33,7 +33,7 @@
  
 +# Wynn-Photon (experimental): spell light positions, summed by the entity
 +# programs and read by deferred shading. Cleared every frame
-+image.wynn_spell_img = wynn_spell_sampler red_integer r32i int true false 8 1
++image.wynn_spell_img = wynn_spell_sampler red_integer r32i int true false 12 1
 +
  # Photonics Gi
  

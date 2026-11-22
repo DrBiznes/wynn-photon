@@ -52,7 +52,7 @@ cached on 2026-11-21 (`PRODUCTION_aeac8911…`), the newest one, which includes 
    saturated pixels glow: the rock's saturation is at most 0.19 in both variants, the fire's and cracks' at least
    0.31, so the cut is at 0.22-0.30.
 3. **Light** (`include/misc/wynn_spells.glsl`). The entity vertex shaders add every spell vertex's position to
-   `wynn_spell_img`, an 8×1 `r32i` image Iris clears every frame (`imageAtomicAdd`, in 1/16 blocks). Deferred shading
+   `wynn_spell_img`, a 12×1 `r32i` image (four texels per spell kind) Iris clears every frame (`imageAtomicAdd`, in 1/16 blocks). Deferred shading
    takes the average per spell kind as a point light, with the player light's falloff. It works with and without
    Photonics, because it is added next to the player light in both paths. It casts no shadows.
 
@@ -67,14 +67,18 @@ stone pad orange and purple, with Photonics on and off. At the first strength (3
 at midnight (6× up close) and the light tinted the whole pad, which was too much. At 1.5 torches, the default now, it
 is about 2.2-2.4× and pools around each meteor.
 
-Not tested: Wynncraft itself. Whether the server's meteor uses the potion or the sword item doesn't matter (the
-sprite is the same), but these are open:
+**On live Wynncraft (2026-11-22), Dark Wizard's Meteor glows and lights its surroundings, and looks great**, with
+the profile's own setup (WynnIris 1.2.2, Photonics 0.3.4, Voxy). See "Found on live" below for how it was found. What
+that settles and what is still open:
 
-- **Draw order.** If Iris draws the meteor in the translucent entity pass, that pass runs after deferred shading, so
-  the light would be missing (the glow would still show). In the dev client the meteor is drawn before deferred.
-- **Light brightness on Wynncraft's displays.** Photon turns any entity at full block light into fire (mask 40); a
-  spell keeps its own mask instead.
-- **Several meteors at once** share one light at their middle, per color.
+- **Draw order: fine.** Iris draws spell parts in the solid entity pass, before deferred shading, so the light of the
+  same frame is there. (Had they been drawn in the translucent pass, after deferred shading, only the glow would have
+  shown.)
+- **A rig of moving parts works.** The light sits at the average of every tagged part's vertices, which on live is
+  close enough to the fire.
+- **WynnIris** compiled the edited entity programs and kept its own effects.
+- **Open:** several meteors of one kind share one light at their middle. The regular Mage meteors (`meteor_0`,
+  `meteor_1`) are only tested in the dev client; Wynncraft didn't draw them for Dark Wizard.
 
 ## Limits and open questions
 
@@ -85,5 +89,23 @@ sprite is the same), but these are open:
 - **Other spells** need only their sprite names in `SpellTags` and a light color. Spells made of particles (most of
   them: Heal, Arrow Storm, Bash, ...) are drawn by the particle programs, not as item models, and would need
   another approach.
-- **Reskinned spells** with hashed textures can't be matched by name. Matching by sprite contents (a hash of the
-  pixels, computed once at resource load) would survive the reshuffles, but someone has to find each model first.
+- **Reskinned spells** have hashed texture names that change every release. They are matched by a hash of their
+  pixels instead (below), but each one has to be found first, by casting it with the debug log on.
+- **The plan for the other spells** is in [SPELL_LIGHTS_PLAN.md](../SPELL_LIGHTS_PLAN.md).
+
+## Found on live: Dark Wizard's Meteor
+
+The first live test, as Dark Wizard (the Mage reskin), showed no light: Wynncraft never drew `wynn/spell/meteor_*`.
+A debug log (a file named `wynn-photon-spell-debug` in the config folder makes the mod log every new texture drawn on
+item models near the camera) found the reskin's texture: `item/w-672617585612035381`, a 128×512 animated sheet of
+dark purple rock and magenta fire. It is used by four tiny `oak_boat` models, `custom_model_data` 20392-20395, each a
+fraction of a block: **reskinned spells are rigs of small parts that the server scales and moves**, one display entity
+per part.
+
+Hashed names change every release, so the mod matches this texture by a CRC-32 of its pixels (`SpellTags.pixelHash`,
+`0x09101c92`), which survives renaming as long as the art stays the same. The debug log prints each texture's hash.
+It gets its own ID, 10108, with a magenta light. Its rock is dark but up to 0.9 saturated, so the glow also needs a
+lightness of at least 0.12-0.25; every fire pixel is at least 0.3 light. In the test world two of its parts, scaled up,
+glow and light the pad magenta.
+
+`meteor_1` (purple) exists in the pack but wasn't drawn for Dark Wizard on live.

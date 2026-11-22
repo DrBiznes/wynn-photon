@@ -4,6 +4,7 @@
 
 spot meteors      10.5 -60 93.5   0 10  fov=70 settle=4000
 spot meteor_close  4.5 -60 99.5   0 20  fov=70 settle=4000
+spot dark_meteor  10.5 -60 101.5  0 15  fov=70 settle=4000
 
 time midnight 18000
 time noon      6000

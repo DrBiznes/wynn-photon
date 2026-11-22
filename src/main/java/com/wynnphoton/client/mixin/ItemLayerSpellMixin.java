@@ -34,6 +34,7 @@ abstract class ItemLayerSpellMixin {
 	)
 	private void wynnPhoton$tagSpell(PoseStack poseStack, SubmitNodeCollector collector, int light, int overlay,
 			int outlineColor, CallbackInfo ci) {
+		SpellTags.debugLog(quads, poseStack.last().pose());
 		int id = SpellTags.spellId(quads);
 		if (id != 0) {
 			SpellTags.setRenderedItem(id);

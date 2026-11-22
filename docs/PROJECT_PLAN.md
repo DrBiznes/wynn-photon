@@ -312,6 +312,13 @@ the base-pack scan, the error reports, settings migration, Iris selection and th
 - [x] Publishing workflow: `.github/workflows/publish.yml` publishes to Modrinth and CurseForge on a GitHub release.
 - [ ] Track new Photon releases (see "Updating to a new Photon release" in [DEVELOPMENT.md](DEVELOPMENT.md)).
 
+### 11. Spell lights (experimental, branch `experimental/spell-lights`)
+
+Spells glow and light up the world around them. Mage's Meteor works on live (2026-11-22), for the base class and
+Dark Wizard. Next: the four base spells of each class, then much later every spell. Needs a decision on whether it
+lives in Wynn-Photon or WynnIris, which changes the "Terrain only" principle. The plan is in
+[SPELL_LIGHTS_PLAN.md](SPELL_LIGHTS_PLAN.md); the research is in [research/wynn-spells.md](research/wynn-spells.md).
+
 ## Brainstorm
 
 These ideas are not prioritized yet. Each one first needs checking against the actual pack.
@@ -343,8 +350,7 @@ item components or model ids. If not, those props can't get their own lights or 
 
 **Entities and NPCs.** *(WynnIris's area.)* Use `entity.properties` for things like glowing eyes or lanterns that mobs and NPCs carry.
 
-**Spell and particle light.** Spells could light their surroundings. This is hard and may need mod-side support;
-WynnIris might be a better home for it.
+**Spell and particle light.** *(Prototyped: Meteor works on live. Now step 11, see [SPELL_LIGHTS_PLAN.md](SPELL_LIGHTS_PLAN.md).)* Spells could light their surroundings. It needs mod-side support: the mod tags spell models by their textures.
 
 **Voxy LODs.** *(Surveyed: materials apply at LOD, but LODs have no colored light. Fix the unsigned wrap.)* Photon has Voxy shaders (`voxy_opaque.glsl`, `voxy.json`). Make sure material and light changes also
 apply to distant terrain, so lights don't pop in or change at the LOD boundary.

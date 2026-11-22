@@ -4,7 +4,8 @@
 	"package": "com.wynnphoton.client.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"ItemLayerSpellMixin"
+		"ItemLayerSpellMixin",
+		"SpriteContentsAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 0

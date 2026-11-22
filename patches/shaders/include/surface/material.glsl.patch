@@ -114,7 +114,7 @@
  // Stained glass, honey and slime
  #ifdef HARDCODED_SPECULAR
          material.f0 = vec3(0.04);
-@@ -836,6 +912,76 @@
+@@ -836,6 +912,80 @@
  #ifdef HARDCODED_SSS
          material.sss_amount = 0.5;
  #endif
@@ -147,14 +147,18 @@
 +        material.is_metal = true;
 +        material.ssr_multiplier = 1.0;
 +#endif
-+    } else if (material_mask == 106u || material_mask == 107u) {
++    } else if (106u <= material_mask && material_mask <= 108u) {
 +#ifdef HARDCODED_EMISSION
 +        // Wynn-Photon (experimental): Wynncraft spell models, tagged by the
-+        // mod (wynn_spells.glsl). So far Mage's Meteor: grey (orange fire) or
-+        // dark teal (purple fire and cracks) rock. Only the saturated fire and
-+        // crack pixels glow. The rock's saturation is at most 0.19, the fire's
-+        // and cracks' at least 0.31
-+        float fire = linear_step(0.22, 0.30, hsl.y);
++        // mod (wynn_spells.glsl). So far Mage's Meteor: grey (orange fire),
++        // dark teal (purple fire and cracks) or, for Dark Wizard, dark purple
++        // (magenta fire) rock. Only the saturated, lit fire and crack pixels
++        // glow. The grey and teal rock's saturation is at most 0.19, the
++        // fire's and cracks' at least 0.31. The dark purple rock is up to
++        // 0.9 saturated but under 0.15 lightness where it is, while every
++        // fire pixel is at least 0.3 light
++        float fire = linear_step(0.22, 0.30, hsl.y)
++            * linear_step(0.12, 0.25, hsl.z);
 +        material.emission = 1.0 * albedo_sqrt * fire * (0.3 + 0.7 * hsl.z)
 +            * sqrt(WYNN_SPELL_LIGHT_I);
 +#endif

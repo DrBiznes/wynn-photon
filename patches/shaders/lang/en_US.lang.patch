@@ -51,7 +51,7 @@
 +option.WYNN_PLAYER_LIGHT_I               = Player Light
 +option.WYNN_PLAYER_LIGHT_I.comment       = The player lights their surroundings as if always holding a torch, like the light radius in Diablo. 1.00 is as bright as a torch; higher is brighter and reaches further. A torch or lantern you really hold counts towards it. It casts no shadows. 0 turns it off
 +option.WYNN_SPELL_LIGHT_I                = Spell Lights (Experimental)
-+option.WYNN_SPELL_LIGHT_I.comment        = Spell models glow and light up their surroundings. So far only Mage's Meteor (orange and purple). Needs the Wynn-Photon mod, which tells the shader which models are spells. The light casts no shadows. 0 turns it off
++option.WYNN_SPELL_LIGHT_I.comment        = Spell models glow and light up their surroundings. So far only Mage's Meteor (orange and purple, and Dark Wizard's magenta one). Needs the Wynn-Photon mod, which tells the shader which models are spells. The light casts no shadows. 0 turns it off
 +option.WYNN_SUN                          = Wynn-Photon Sun
 +option.WYNN_SUN.comment                  = Draws Wynn-Photon's own sun in place of Photon's round one: a glowing cube, or a flat square like the vanilla sun's with Cubic Sun off. It is lit like Photon's sun, a bright light in the sky. Only the picture changes: sunlight and shadows stay the same. Vanilla Sun, on the Sky page, replaces it when on
 +option.WYNN_SUN_CUBE                     = Cubic Sun
