@@ -2,6 +2,14 @@
 
 Every version so far patches Photon v1.4.
 
+## 0.10.1
+
+**Added**
+- Square Sun: the sun is now a square, like the vanilla sun, but lit like Photon's: a bright light in the sky with a white-hot centre and a faint warm rim. It replaces Photon's round sun and is on by default. "Square Sun" and "Square Sun Size" on the Wynn-Photon page turn it off and resize it. Sunlight and shadows are unchanged.
+
+**Changed**
+- Vanilla Sun is off by default again, so the Square Sun shows. Turn it on, on the Sky page, to get the vanilla sun back. Vanilla Moon stays on.
+
 ## 0.10.0
 
 **Added**

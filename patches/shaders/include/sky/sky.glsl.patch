@@ -1,0 +1,77 @@
+--- a/shaders/include/sky/sky.glsl
++++ b/shaders/include/sky/sky.glsl
+@@ -46,6 +46,60 @@
+         * limb_darkening;
+ }
+ 
++// Wynn-Photon: the square sun (WYNN_SUN), drawn in place of Photon's round disk: Photon's sun with the vanilla sun's
++// shape. Like Photon's it is light added to the sky, bright enough to bloom, and it sends out the same total light
++// whatever its size. Like the vanilla sun it is a square whose sides follow the sun's path. In place of Photon's
++// smooth limb darkening it cools in four square steps from a white-hot centre to a faint warm rim, an ember core,
++// on an 8x8 texel grid. Only the picture changes: sunlight, shadows and the glow in the air around the sun are Photon's.
++#if defined WYNN_SUN && !defined VANILLA_SUN && defined PROGRAM_DEFERRED4
++// Half the width of the square
++const float wynn_sun_half_size = WYNN_SUN_SIZE * degree;
++
++vec3 draw_wynn_sun(vec3 ray_dir) {
++    float nu = dot(ray_dir, sun_dir);
++
++    // The square's corners are sqrt(2) half sizes from its centre
++    if (nu < cos(1.5 * wynn_sun_half_size)) {
++        return vec3(0.0);
++    }
++
++    // The axis the sun turns around. Iris tilts the sun's path about X by sunPathRotation
++    const vec3 path_axis = vec3(
++        0.0, sin(sunPathRotation * degree), cos(sunPathRotation * degree)
++    );
++    vec3 tangent = normalize(cross(path_axis, sun_dir));
++    vec3 bitangent = cross(sun_dir, tangent);
++
++    // The square ring of texels under this ray: 0 at the centre, 3 at the rim
++    vec2 texel = vec2(dot(ray_dir, tangent), dot(ray_dir, bitangent))
++        * (4.0 / (nu * tan(wynn_sun_half_size)));
++    float ring = floor(max_of(abs(texel)));
++
++    if (ring > 3.5) {
++        return vec3(0.0);
++    }
++
++    // The two inner rings carry the sun's light: 16 of the square's 64 texels, the second ring at 0.3 of the centre.
++    // Their luminance makes the square send out one unit of light whatever its size, as Photon's disk does:
++    // 1 / the square's solid angle, over the mean of the 64 texels
++    const float core_luminance = 64.0 / (4.0 + 12.0 * 0.3)
++        / (4.0 * tan(wynn_sun_half_size) * tan(wynn_sun_half_size));
++
++    // Colour and luminance of each ring. The two outer rings are the ember's edge: they stay near the sky's own
++    // brightness, because anything brighter burns out to white and the steps are lost
++    const vec4 rings[4] = vec4[4](
++        vec4(1.00, 0.97, 0.90, core_luminance),
++        vec4(1.00, 0.93, 0.80, 0.3 * core_luminance),
++        vec4(1.00, 0.82, 0.50, 3.0),
++        vec4(1.00, 0.62, 0.22, 1.0)
++    );
++
++    vec4 ring_color = rings[int(ring)];
++
++    return ring_color.a * sun_color * ring_color.rgb;
++}
++#endif
++
+ vec4 draw_moon(vec3 ray_dir) {
+     const float angle = 0.7;
+     const mat2 rot = mat2(cos(angle), sin(angle), -sin(angle), cos(angle));
+@@ -172,8 +226,13 @@
+ 
+ #ifndef VANILLA_SUN
+     // Shader sun
++#ifdef WYNN_SUN
++    // Wynn-Photon: the square sun instead of Photon's round disk
++    sky += draw_wynn_sun(ray_dir);
++#else
+     sky += draw_sun(ray_dir);
+ #endif
++#endif
+ 
+ #ifndef VANILLA_MOON
+     // Shader moon

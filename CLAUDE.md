@@ -81,10 +81,16 @@ lighting test" in `docs/DEVELOPMENT.md`). Its harness is the dev-only `lighttest
   pixels, skyboxes, fog. Don't edit Photon's entity, hand or text programs, don't reuse colortex11-13, and keep
   "photon" in the pack name. See "Scope" in `docs/research/wynn-rp-blocks.md`. One deliberate exception: the
   defaults of Photon's own sky options `VANILLA_SUN`, `VANILLA_MOON` and `GALAXY` are on, because Wynncraft's pack
-  ships no sun or moon texture and so uses the vanilla ones. No sky code is changed. A second exception, for
+  ships no sun or moon texture and so uses the vanilla ones. `VANILLA_SUN` is off again since 0.10.1, for the third
+  exception below. A second exception, for
   WynnVista: `d2_clouds_upscaling.fsh` keeps a cloud distance for WynnVista's world effects in `colortex12.a`, and
   `colortex12` is RGBA16F for it. Nothing Photon reads is changed. WynnVista uses that channel whenever the buffer
-  has one, so keep its meaning: blocks to the cloud, 0 for none and on terrain.
+  has one, so keep its meaning: blocks to the cloud, 0 for none and on terrain. A third exception: the square sun
+  (`WYNN_SUN`, `draw_wynn_sun` in `include/sky/sky.glsl`), Photon's sun with the vanilla sun's shape, which `draw_sky`
+  adds in place of Photon's round disk. It changes the sun's picture only, not its light, and `VANILLA_SUN` replaces
+  it. Its two inner rings carry Photon's amount of light; its two outer rings have fixed luminances near the sky's,
+  tuned from screenshots, because Photon's tone mapping burns anything much brighter to white and the rim is lost.
+  A first version in Wynncraft's pixel-art style (gold rays, texels covering the sky) clashed with Photon's look.
 - Every light change updates both the colored-light volume (`block.properties` + `light_colors.glsl`) and Photonics
   (`ph_lights.json`). Photonics' built-in defaults list `repeater`, `comparator`, `redstone_torch` and
   `enchanting_table` by name. To remove one of those lights, also add the block to the `"disabled"` override in
