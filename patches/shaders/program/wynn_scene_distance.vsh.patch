@@ -1,0 +1,22 @@
+--- /dev/null
++++ b/shaders/program/wynn_scene_distance.vsh
+@@ -1,0 +1,19 @@
++/*
++--------------------------------------------------------------------------------
++
++  Wynn-Photon: program/wynn_scene_distance.vsh
++  The distance to the scene, anti-aliased over time, for WynnVista
++  (see wynn_scene_distance.fsh)
++
++--------------------------------------------------------------------------------
++*/
++
++#include "/include/global.glsl"
++
++out vec2 uv;
++
++void main() {
++    uv = gl_MultiTexCoord0.xy;
++
++    gl_Position = vec4(gl_Vertex.xy * 2.0 - 1.0, 0.0, 1.0);
++}

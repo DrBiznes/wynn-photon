@@ -19,7 +19,7 @@
  option.SNOW_OPACITY                    = Snow Opacity
  option.SNOW_OPACITY.comment            = Adjust the opacity of snow particles
  option.EDGE_HIGHLIGHT                  = Edge Highlight
-@@ -819,4 +822,42 @@
+@@ -819,4 +822,44 @@
  option.PHOTONICS_RESTIR_COMBINED_GI       = Include Skylight GI
  option.PHOTONICS_RESTIR_COMBINED_GI.comment = Whether Gi should be ran through ReSTIR's denoiser instead of its usual path. \nResults in much sharper Gi, at the cost of performance.
  
@@ -62,3 +62,5 @@
 +option.WYNN_MOON_SIZE.comment            = Half the width of the cubic moon in degrees
 +option.WYNN_MOON_BASE                    = Moon Base
 +option.WYNN_MOON_BASE.comment            = A small easter egg on the cubic moon, for those who look closely: the Humyn colony from Wynncraft's moon quest
++option.WYNN_VISTA_EDGES                   = WynnVista Effect Edges
++option.WYNN_VISTA_EDGES.comment           = Keeps the WynnVista mod's world effects, such as the void under the Sky Islands, from shimmering along the edges of the blocks in front of them. It costs a little video memory and one light pass a frame. Without WynnVista it does nothing, and you can turn it off

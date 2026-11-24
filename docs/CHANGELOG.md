@@ -2,6 +2,11 @@
 
 Every version so far patches Photon v1.4.
 
+## 0.10.2
+
+**Added**
+- WynnVista support: WynnVista's world effects, such as the void under the Sky Islands, no longer shimmer along the edges of the blocks in front of them. Needs WynnVista 2.2.5 or later. "WynnVista Effect Edges" on the Wynn-Photon page turns it off, which saves a little video memory and one light pass a frame if you don't use WynnVista.
+
 ## 0.10.1
 
 **Added**

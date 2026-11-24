@@ -88,7 +88,10 @@ world, which `installMapWorld` builds from a copy of the user's Wynncraft Voxy c
   for the third exception below. A second exception, for
   WynnVista: `d2_clouds_upscaling.fsh` keeps a cloud distance for WynnVista's world effects in `colortex12.a`, and
   `colortex12` is RGBA16F for it. Nothing Photon reads is changed. WynnVista uses that channel whenever the buffer
-  has one, so keep its meaning: blocks to the cloud, 0 for none and on terrain. A third exception: our own sun and moon
+  has one, so keep its meaning: blocks to the cloud, 0 for none and on terrain. Also for WynnVista, and outside
+  Photon's own files altogether: the pass `program/wynn_scene_distance.fsh` (`composite90` in each dimension), which
+  keeps the distance to the scene, anti-aliased over time, in `colortex20` (see "The scene distance for WynnVista"
+  in `docs/DEVELOPMENT.md`), switched by `WYNN_VISTA_EDGES`. Nothing else may write `colortex20`. A third exception: our own sun and moon
   (`draw_wynn_sun` and `draw_wynn_moon` in `include/sky/sky.glsl`), which `draw_sky` draws in place of Photon's round
   ones. They change the pictures only, not the light, and `VANILLA_SUN` and `VANILLA_MOON` replace them. The sun
   (`WYNN_SUN`) is Photon's sun with the vanilla sun's shape: a square, or with `WYNN_SUN_CUBE` a cube seen from one

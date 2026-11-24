@@ -1,0 +1,8 @@
+--- /dev/null
++++ b/shaders/world-1/composite90.vsh
+@@ -1,0 +1,5 @@
++#version 400 compatibility
++#define WORLD_NETHER
++#define vsh
++// Wynn-Photon: a pass of its own, after all of Photon's (see the program)
++#include "/program/wynn_scene_distance.vsh"

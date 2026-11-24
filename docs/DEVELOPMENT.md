@@ -156,6 +156,49 @@ Photon reads is changed, so the pack's own picture is the same.
   --shaderpack ... --burst ... --dump-clouds ...` saves consecutive frames and this buffer with them (see "Shader pack
   clouds" in WynnVista's `docs/WORLD_EFFECTS.md`).
 
+### The scene distance for WynnVista
+
+WynnVista cuts its world effects off at the terrain using the depth buffer. With TAA every frame's depth is shifted by a
+part of a pixel, while the image WynnVista draws over is the blend of many frames. Along the edge of a block a pixel is
+therefore the block in one frame's depth and what is behind it in the next, and an effect cut by that depth was there
+one frame and gone the next over an image that stood still: the dark void under the Sky Islands shimmered along every
+block edge in front of it.
+
+`program/wynn_scene_distance.fsh` is a pass of our own (`composite90` in `world0`, `world-1` and `world1`, after all of
+Photon's) that does to the scene's distance what `c4_taa_exposure` does to its colour: it carries last frame's value to
+where the pixel was, keeps it within what the nine pixels around hold now, and blends this frame's in. Along an edge the
+result lies between the distance of the block and of what is behind it, by how much of the pixel each covers. WynnVista
+works the block's share out from that and draws that much of the effect in front of it, the same in every frame.
+
+- The program, its vertex stage and six stubs are all new files, and the buffer's format is declared in the program's
+  own header comment. Nothing Photon draws reads it. The only hooks in Photon's files are for its switch, "WynnVista
+  Effect Edges" on the Wynn-Photon page (`WYNN_VISTA_EDGES`, on by default): the option and its decoy in
+  `settings.glsl`, its name in `lang/en_US.lang`, and in `shaders.properties` its place on the page and the three
+  `program.<world>/composite90.enabled` lines. Switched off, the pass does not run and WynnVista draws its effects as
+  with stock Photon.
+- The contract with WynnVista (2.2.5 and later): `colortex20` is R16 and holds `log2(1 + blocks to the scene) / 16`, 1 for sky. WynnVista
+  takes the pack to provide it whenever `colortex20` exists with that format and the view's size, so don't use that
+  buffer for anything else. A value that does not lie between the nearest and the furthest distance around a pixel is
+  ignored there, so a frame in which the pass did not run does no harm.
+- A frame's share of the result is 5% (`blend_weight`). Photon's own TAA takes 10% to 35%: with that much, a pixel half
+  covered by a block followed which frames hit the block instead of settling on a half. What is carried over from
+  before the camera moved is dealt with by the clamp, not by the blend, so the low share leaves no trail.
+- What it leans on in Photon, and so what a new Photon release can break: the names `screen_to_view_space`,
+  `view_to_scene_space` and `reproject_scene_space` (`include/utility/space_conversion.glsl`), `lod_depth_tex` and
+  `is_lod_terrain` (`include/misc/lod_mod_support.glsl`), `taau_render_scale` and `hand_depth` (`include/global.glsl`),
+  the `TAA` option, and the custom uniforms `view_res`, `view_pixel_size` and `taa_offset`. A rename fails loudly when
+  the pack is compiled. It also needs `composite90` and `colortex20` to stay unused by Photon, which uses
+  `composite` to `composite22` and `colortex0` to `colortex16` today; if Photon takes either, move ours and tell
+  WynnVista the new buffer (`FogModels.Photon.resolvedDistanceBuffer` there).
+- It needs an Iris with more than 16 colour buffers. WynnIris 1.2.2 has 32; Photon itself uses `colortex16` with Voxy.
+- Cost: the buffer is 2 bytes a pixel, and Iris keeps two textures for a buffer a pass both reads and writes: 8 MB at
+  1920x1080, 33 MB at 3840x2160. The pass reads the depth of nine pixels (and the LOD mod's) and the history once. In
+  WynnVista's fixture client (1920x1080, Voxy, RTX 4070, 2026-11-24) its GPU time could not be told from none: the
+  frame before WynnVista's effects took 4.90 ms with the pass and 5.34 ms with its stubs set aside, medians of 22
+  batches of 100 frames each, in runs that range over 0.5 ms by themselves.
+- To test it, use WynnVista's fixture client with `work/` linked in as the shader pack (see "Effect edges under a
+  shader pack" in WynnVista's `docs/WORLD_EFFECTS.md`).
+
 ## How it works
 
 - `patches/` holds unified diffs, which only the build reads. Their parser and applier are the
