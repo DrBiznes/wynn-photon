@@ -1,58 +1,154 @@
 --- /dev/null
 +++ b/shaders/include/misc/wynn_spells.glsl
-@@ -1,0 +1,102 @@
+@@ -1,0 +1,223 @@
 +#if !defined INCLUDE_MISC_WYNN_SPELLS
 +#define INCLUDE_MISC_WYNN_SPELLS
 +
 +// Wynn-Photon (experimental): Wynncraft spell lights.
 +//
 +// Wynncraft draws its spells as item models on display entities. The
-+// Wynn-Photon mod recognises a spell model by its texture's name and hands the
-+// shader the spell's own item ID (currentRenderedItemId, below) instead of the
-+// item it is drawn on (a potion). Without the mod no model carries these IDs,
-+// so nothing here does anything.
++// Wynn-Photon mod recognises a spell model by its texture (its name, or a hash
++// of its pixels for Wynncraft's hashed textures) and hands the shader the
++// spell's own item ID (currentRenderedItemId) instead of the item it is drawn
++// on (a potion or an oak boat). Without the mod no model carries these IDs, so
++// nothing here does anything.
 +//
-+// - Surfaces: the spell's material mask makes its fire emissive (material.glsl).
++// - Surfaces: each spell kind has a glow rule, a cut on saturation and
++//   lightness that picks its fire, cracks or energy out of its rock or metal
++//   (applied in material.glsl).
 +// - Light: every spell vertex the entity programs draw adds its position to
-+//   wynn_spell_img, a tiny image Iris clears every frame. Deferred shading takes
-+//   the average as a point light, like the player light. It casts no shadows,
-+//   and with several spells of one kind in view their lights merge at the
-+//   middle.
++//   one of wynn_spell_slots slots of wynn_spell_img, a tiny image Iris clears
++//   every frame. The slot is picked from the spell kind and a coarse world
++//   cell, so two casts apart get lights of their own. Deferred shading takes
++//   each slot's average as a point light, like the player light, after
++//   merging same-kind slots that are close (one spell across a cell edge). It
++//   casts no shadows.
 +//
-+// Item IDs, shared with com.wynnphoton.client.SpellTags in the mod:
-+//   10106  Meteor, orange fire
-+//   10107  Meteor, purple (void) fire
-+//   10108  Dark Wizard's Meteor, magenta fire (matched by its pixels: its
-+//          texture name is hashed)
++// Item IDs 10128-10159 (masks 128-159) are spell kinds, shared with the mod's
++// spell table (src/main/resources/wynn_photon/spells.txt). A kind is a look:
++// one glow rule and one light. Kinds not listed below have no glow or light.
 +
-+const uint WYNN_SPELL_FIRE = 106u;
-+const uint WYNN_SPELL_VOID = 107u;
-+const uint WYNN_SPELL_DARK = 108u;
++const uint wynn_spell_first = 128u;
++const int wynn_spell_kinds = 32;
 +
 +bool is_wynn_spell(uint material_mask) {
-+    return WYNN_SPELL_FIRE <= material_mask && material_mask <= WYNN_SPELL_DARK;
++    return wynn_spell_first <= material_mask
++        && material_mask < wynn_spell_first + uint(wynn_spell_kinds);
 +}
 +
-+// Texels of wynn_spell_img: one group of four per spell kind, holding the sum
-+// of x, y and z in 1/16 blocks and the vertex count
-+const int wynn_spell_kinds = 3;
++// Per kind: the glow rule, as (saturation from, saturation to, lightness
++// from, lightness to) of two smooth steps, and the glow strength. Strength 0:
++// no glow.
++//
++//  0  Meteor, named model (meteor_0), orange fire
++//  1  Meteor, named model (meteor_1), purple fire
++//  2  Mage's Meteor, orange fire: a rig of four oak_boat parts. The rock is
++//     dark red-brown, up to 0.4 saturated at under 0.4 lightness; the fire
++//     and cracks are more saturated and lighter
++//  3  Dark Wizard's Meteor, magenta fire: the same rig. Its dark purple rock
++//     is up to 0.9 saturated but under 0.15 lightness where it is, while
++//     every fire pixel is at least 0.3 light
++//
++// Candidates, from the server pack only (spells.txt lists them with "?", so
++// only the spell debug build uses them until a playtest confirms them):
++//  4  Mage's ice and light (Ice Snake's icicles, cyan beams and crosses):
++//     pale cyan and white, all of it glows except the darkest edges
++//  5  Dark Wizard's magenta energy (the same parts, and the Meteor's trail,
++//     sparks and rings): pink and magenta glow, the dark purple doesn't
++//  6  Mage's orange energy (the Meteor's trail, sparks and rings, a streak
++//     and a beam): the saturated orange and yellow glow
++const vec4[wynn_spell_kinds] wynn_spell_glow_cut = vec4[](
++    vec4(0.22, 0.30, 0.12, 0.25),
++    vec4(0.22, 0.30, 0.12, 0.25),
++    vec4(0.45, 0.60, 0.25, 0.40),
++    vec4(0.22, 0.30, 0.12, 0.25),
++    vec4(0.00, 0.00, 0.35, 0.60),
++    vec4(0.30, 0.45, 0.25, 0.40),
++    vec4(0.45, 0.60, 0.30, 0.45),
++    vec4(0.0),
++    vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0),
++    vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0),
++    vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0),
++    vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0),
++    vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0),
++    vec4(0.0), vec4(0.0), vec4(0.0), vec4(0.0)
++);
++const float[wynn_spell_kinds] wynn_spell_glow_strength = float[](
++    1.0, 1.0, 1.0, 1.0,
++    1.0, 1.0, 1.0, 0.0,
++    0.0, 0.0, 0.0, 0.0,
++    0.0, 0.0, 0.0, 0.0,
++    0.0, 0.0, 0.0, 0.0,
++    0.0, 0.0, 0.0, 0.0,
++    0.0, 0.0, 0.0, 0.0,
++    0.0, 0.0, 0.0, 0.0
++);
++
++// Per kind: the light colour in sRGB and its strength in torches. Strength 0:
++// glow only, no light.
++const vec3[wynn_spell_kinds] wynn_spell_light_color = vec3[](
++    vec3(1.00, 0.50, 0.15), // Meteor, orange fire
++    vec3(0.75, 0.30, 1.00), // Meteor, purple fire
++    vec3(1.00, 0.50, 0.15), // Mage's Meteor, orange fire
++    vec3(1.00, 0.30, 0.75), // Dark Wizard's Meteor, magenta fire
++    vec3(0.55, 0.85, 1.00), // Mage's ice and light, cyan (candidate)
++    vec3(1.00, 0.30, 0.75), // Dark Wizard's energy, magenta (candidate)
++    vec3(1.00, 0.55, 0.20), // Mage's energy, orange (candidate)
++    vec3(0.0),
++    vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0),
++    vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0),
++    vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0),
++    vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0),
++    vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0),
++    vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0)
++);
++const float[wynn_spell_kinds] wynn_spell_light_strength = float[](
++    1.5, 1.5, 1.5, 1.5,
++    1.0, 1.0, 1.0, 0.0,
++    0.0, 0.0, 0.0, 0.0,
++    0.0, 0.0, 0.0, 0.0,
++    0.0, 0.0, 0.0, 0.0,
++    0.0, 0.0, 0.0, 0.0,
++    0.0, 0.0, 0.0, 0.0,
++    0.0, 0.0, 0.0, 0.0
++);
++
++// Texels of wynn_spell_img: wynn_spell_slots groups of eight, each holding the
++// sum of x, y and z in 1/16 blocks (camera-relative), the vertex count, and
++// the spell kind + 1 (imageAtomicMax: if two kinds share a slot, one wins)
++const int wynn_spell_slots = 16;
++const int wynn_spell_slot_texels = 8;
 +const float wynn_spell_pos_scale = 16.0;
++const float wynn_spell_cell_size = 8.0; // blocks
++const float wynn_spell_merge_distance = 6.0; // blocks
 +
 +#if defined IS_IRIS && defined vsh \
 +    && (defined PROGRAM_GBUFFERS_ENTITIES \
 +        || defined PROGRAM_GBUFFERS_ENTITIES_TRANSLUCENT)
 +layout(r32i) uniform iimage2D wynn_spell_img;
 +
-+// Call from the entity vertex shaders with the vertex's scene position
++// Call from the entity vertex shaders with the vertex's scene position. Both
++// programs declare cameraPosition before including this
 +void wynn_spell_add_vertex(uint material_mask, vec3 scene_pos) {
 +    if (!is_wynn_spell(material_mask) || WYNN_SPELL_LIGHT_I <= 0.0) return;
 +
-+    int base = 4 * int(material_mask - WYNN_SPELL_FIRE);
++    int kind = int(material_mask - wynn_spell_first);
++    if (wynn_spell_light_strength[kind] <= 0.0) return;
++
++    // World cell, so a cast keeps its slot while the camera moves
++    ivec3 cell = ivec3(floor((scene_pos + cameraPosition) / wynn_spell_cell_size));
++    uint h = uint(cell.x) * 73856093u
++           ^ uint(cell.y) * 19349663u
++           ^ uint(cell.z) * 83492791u
++           ^ uint(kind) * 2654435761u;
++    int base = wynn_spell_slot_texels * int(h % uint(wynn_spell_slots));
++
 +    ivec3 p = ivec3(round(scene_pos * wynn_spell_pos_scale));
 +    imageAtomicAdd(wynn_spell_img, ivec2(base + 0, 0), p.x);
 +    imageAtomicAdd(wynn_spell_img, ivec2(base + 1, 0), p.y);
 +    imageAtomicAdd(wynn_spell_img, ivec2(base + 2, 0), p.z);
 +    imageAtomicAdd(wynn_spell_img, ivec2(base + 3, 0), 1);
++    imageAtomicMax(wynn_spell_img, ivec2(base + 4, 0), kind + 1);
 +}
 +#endif
 +
@@ -61,34 +157,59 @@
 +
 +uniform isampler2D wynn_spell_sampler;
 +
-+// Light colours in sRGB, and strengths in torches
-+const vec3[wynn_spell_kinds] wynn_spell_light_color = vec3[](
-+    vec3(1.00, 0.50, 0.15), // Meteor, orange fire
-+    vec3(0.75, 0.30, 1.00), // Meteor, purple fire
-+    vec3(1.00, 0.30, 0.75)  // Dark Wizard's Meteor, magenta fire
-+);
-+const float[wynn_spell_kinds] wynn_spell_light_strength = float[](1.5, 1.5, 1.5);
-+
 +vec3 get_wynn_spell_light(vec3 scene_pos, float ao) {
 +    if (WYNN_SPELL_LIGHT_I <= 0.0) return vec3(0.0);
 +
-+    vec3 lighting = vec3(0.0);
-+
-+    for (int kind = 0; kind < wynn_spell_kinds; ++kind) {
-+        int count = texelFetch(wynn_spell_sampler, ivec2(4 * kind + 3, 0), 0).x;
++    // Gather the slots in use: position (xyz) and vertex count (w), and kind
++    vec4[wynn_spell_slots] lights;
++    int[wynn_spell_slots] kinds;
++    int n = 0;
++    for (int slot = 0; slot < wynn_spell_slots; ++slot) {
++        int base = wynn_spell_slot_texels * slot;
++        int count = texelFetch(wynn_spell_sampler, ivec2(base + 3, 0), 0).x;
 +        if (count <= 0) continue;
 +
-+        vec3 light_pos = vec3(
-+            texelFetch(wynn_spell_sampler, ivec2(4 * kind + 0, 0), 0).x,
-+            texelFetch(wynn_spell_sampler, ivec2(4 * kind + 1, 0), 0).x,
-+            texelFetch(wynn_spell_sampler, ivec2(4 * kind + 2, 0), 0).x
-+        ) * rcp(wynn_spell_pos_scale * float(count));
++        lights[n] = vec4(
++            vec3(
++                texelFetch(wynn_spell_sampler, ivec2(base + 0, 0), 0).x,
++                texelFetch(wynn_spell_sampler, ivec2(base + 1, 0), 0).x,
++                texelFetch(wynn_spell_sampler, ivec2(base + 2, 0), 0).x
++            ) * rcp(wynn_spell_pos_scale * float(count)),
++            float(count)
++        );
++        kinds[n] = clamp(
++            texelFetch(wynn_spell_sampler, ivec2(base + 4, 0), 0).x - 1,
++            0,
++            wynn_spell_kinds - 1
++        );
++        ++n;
++    }
++    if (n == 0) return vec3(0.0);
++
++    // Merge close slots of one kind, weighted by vertex count: one spell
++    // whose parts fall in two cells is one light, not two
++    for (int i = 0; i < n; ++i) {
++        if (lights[i].w <= 0.0) continue;
++        for (int j = i + 1; j < n; ++j) {
++            if (lights[j].w <= 0.0 || kinds[j] != kinds[i]) continue;
++            if (distance(lights[i].xyz, lights[j].xyz) > wynn_spell_merge_distance) continue;
++            float w = lights[i].w + lights[j].w;
++            lights[i].xyz = (lights[i].xyz * lights[i].w + lights[j].xyz * lights[j].w) / w;
++            lights[i].w = w;
++            lights[j].w = 0.0;
++        }
++    }
++
++    vec3 lighting = vec3(0.0);
++    for (int i = 0; i < n; ++i) {
++        if (lights[i].w <= 0.0) continue;
++        int kind = kinds[i];
 +
 +        float strength = wynn_spell_light_strength[kind] * WYNN_SPELL_LIGHT_I;
 +
 +        // Same falloff as the player light: reach grows with the square root
 +        // of the strength
-+        vec3 to_light = (scene_pos - light_pos) * rcp(sqrt(max(strength, 1.0)));
++        vec3 to_light = (scene_pos - lights[i].xyz) * rcp(sqrt(max(strength, 1.0)));
 +        float falloff = lift(rcp(dot(to_light, to_light) + 1.0), 3.0);
 +        falloff *= mix(ao, 1.0, falloff * falloff);
 +

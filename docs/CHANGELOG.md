@@ -5,7 +5,12 @@ Every version so far patches Photon v1.4.
 ## Unreleased (experimental, branch `experimental/spell-lights`)
 
 **Added**
-- Spell lights (experimental): Mage's Meteor glows, only on its flame (and the purple variant's cracks), and lights up the ground around it, orange or purple, with or without Photonics. Dark Wizard's Meteor too, in magenta: it is recognised by its picture, so it keeps working when Wynncraft renames its textures. The Wynn-Photon mod tells the shader which models are spells, so it needs the mod. "Spell Lights (Experimental)" on the Wynn-Photon page sets the strength; 0 turns it off. See `docs/research/wynn-spells.md`.
+- Spell lights (experimental): Mage's Meteor glows, only on its fire and cracks, and lights up the ground around it, orange for Mage and magenta for Dark Wizard, with or without Photonics. Spells are recognised by their pictures, so they keep working when Wynncraft renames its textures. The Wynn-Photon mod tells the shader which models are spells, so it needs the mod. "Spell Lights (Experimental)" on the Wynn-Photon page sets the strength; 0 turns it off. See `docs/research/wynn-spells.md`.
+- Several spells at once each get their own light: two meteors no longer share one light between them.
+
+**For developers**
+- The spell table is a data file, `wynn_photon/spells.txt`: adding a spell needs no Java. Spells have their own item IDs, 10128-10159, one per look (glow rule and light colour, in `include/misc/wynn_spells.glsl`).
+- The spell debug build (a `wynn-photon-spell-debug` file in the config folder) logs every cast Wynntils sees, captures the display entities that follow, and writes each capture as a replayable datapack function, in `wynn-photon-spells/` in the game folder. It also uses the table's candidates, parts found in the server pack but not yet seen cast.
 
 ## 0.10.1
 

@@ -44,16 +44,20 @@ cached on 2026-11-21 (`PRODUCTION_aeac8911…`), the newest one, which includes 
 1. **The mod tags the spell model** (`client/SpellTags.java`, `client/mixin/ItemLayerSpellMixin.java`). In 1.21.11
    an item model is drawn one layer at a time by `ItemStackRenderState.LayerRenderState.submit`. Iris (and WynnIris)
    set the item ID at its head, and Iris copies it into the item node when `submitItem` is called (`MixinItemSubmit`).
-   The mixin runs just before that call: if one of the layer's quads uses a known spell sprite
-   (`wynn/spell/meteor_0_a` → 10106, `wynn/spell/meteor_1_a` → 10107), it sets that ID instead. Matching sprite names
+   The mixin runs just before that call: if one of the layer's quads uses a texture in the spell table
+   (`src/main/resources/wynn_photon/spells.txt`: by name, or by a hash of its pixels), it sets that spell kind's ID
+   (10128-10159) instead. Matching sprite names
    is exact and survives `custom_model_data` renumbering. Iris is reached by reflection, so the mod still runs
    without it. This is the same spot where WynnIris looks at a layer's sprites for its skybox signal.
-2. **Glow** (`material.glsl`, masks 106 and 107). `get_material_mask` keeps a spell's item ID on any entity. Only
-   saturated pixels glow: the rock's saturation is at most 0.19 in both variants, the fire's and cracks' at least
+2. **Glow** (`material.glsl`, masks 128-159). `get_material_mask` keeps a spell's item ID on any entity. Each spell
+   kind has a cut on saturation and lightness that picks its fire out of its rock (`wynn_spell_glow_cut` in
+   `wynn_spells.glsl`). For the named meteors the rock's saturation is at most 0.19, the fire's and cracks' at least
    0.31, so the cut is at 0.22-0.30.
 3. **Light** (`include/misc/wynn_spells.glsl`). The entity vertex shaders add every spell vertex's position to
-   `wynn_spell_img`, a 12×1 `r32i` image (four texels per spell kind) Iris clears every frame (`imageAtomicAdd`, in 1/16 blocks). Deferred shading
-   takes the average per spell kind as a point light, with the player light's falloff. It works with and without
+   `wynn_spell_img`, a 128×1 `r32i` image Iris clears every frame (`imageAtomicAdd`, in 1/16 blocks): 16 slots of 8
+   texels, the slot picked by a hash of the spell kind and the vertex's 8-block world cell, so casts apart get their
+   own light. Deferred shading takes each slot's average as a point light, with the player light's falloff, after
+   merging slots of one kind less than 6 blocks apart (one spell across a cell edge). It works with and without
    Photonics, because it is added next to the player light in both paths. It casts no shadows.
 
 `WYNN_SPELL_LIGHT_I` (Wynn-Photon page, "Spell Lights (Experimental)") scales both; 0 turns them off.
@@ -77,8 +81,68 @@ that settles and what is still open:
 - **A rig of moving parts works.** The light sits at the average of every tagged part's vertices, which on live is
   close enough to the fire.
 - **WynnIris** compiled the edited entity programs and kept its own effects.
-- **Open:** several meteors of one kind share one light at their middle. The regular Mage meteors (`meteor_0`,
-  `meteor_1`) are only tested in the dev client; Wynncraft didn't draw them for Dark Wizard.
+- **Open:** the named meteors (`meteor_0`, `meteor_1`) are only tested in the dev client; Wynncraft didn't draw
+  them for Dark Wizard. Mage's own Meteor is a rig too (see "The survey from the server pack"). Several meteors of
+  one kind used to share one light at their middle; since the light slots ("What this branch does") each cast gets its own.
+
+## The survey from the server pack (2026-11-22)
+
+Done offline, before any playtest, against the 2026-11-21 pack (`aeac8911…`), with the 2026-10-08 one (`03ff36a5…`,
+before the reskin update) to compare. The scripts are in `tools/spell-survey/survey.py`.
+
+**How.** Every `oak_boat` model (`custom_model_data`) is mapped to its textures and their pixel hashes, the same CRC-32
+the mod's spell table uses. The hashes are checked against the live log: Dark Wizard's Meteor comes out `09101c92`.
+Then two signals:
+
+- **Twins.** A reskin's spell is the base class's rig with its texture recoloured: the same elements, the same UVs,
+  another picture. Grouping textures whose models have identical geometry (texture slot names left out) finds such
+  pairs. 85 groups have at least one texture that is new since October.
+- **New art.** 575 textures are new since October (93 went). The `custom_model_data` numbers can't be compared
+  between packs (only 64 of 71,709 kept their model), but the pixel hashes can.
+
+**What it found.**
+
+- **Mage's live Meteor is a rig too**, not the named `meteor_0` model: `custom_model_data` 20388-20391, texture
+  `57f6d84a`, the same four parts as Dark Wizard's 20392-20395 with orange fire. It was already in the October pack.
+  So base classes use rigs as well, and the named `wynn/spell/` models are probably leftovers. It is in the spell table
+  now (kind 2), glowing on its fire and cracks only (saturation 0.45-0.60 and lightness 0.25-0.40; its rock is dark
+  red-brown up to 0.4 saturated). Dark Wizard's softer cut would light its rock.
+- **The Meteor has more parts**, right after its rig, each in an orange and a pink version: a fire trail (20396/20398),
+  sparks (20400-20409, two textures on the same models), a ring (20411/20413), squares (20424-20449) and a beam
+  (20450/20451).
+- **Each reskin recolours its class's art one way**, which sorts most twin groups by class (a guess until the
+  playtest names them):
+
+  | Class (reskin) | Recolour | Twin groups (`custom_model_data` of the base version) |
+  | --- | --- | --- |
+  | Mage (Dark Wizard) | orange and cyan to pink and magenta | Meteor 20388-20451; icicles 33001 (5 parts, Ice Snake?); beams 32173, 18078, 31950; a cross 32175; a streak 23957; sparks 13615; glyph pages 33676-33715 |
+  | Archer (Hunter) | green and yellow to indigo and purple | arrows 1576-1635 (six base colours, two new); a star 1578; arcs 1594 (34 parts); 1586; glyphs 13475; waves 22726 |
+  | Warrior (Knight) | red and orange to grey | 4084 (12 parts); a frame 4108; a fire burst 4218; 4248; 35087 (18 parts); 35249 |
+  | Assassin (Ninja) | green and yellow to cyan; indigo to pink | sparkle crosses 34215 (28 parts); slashes 34620 (78 parts); 34602, 34610, 34753 |
+  | Shaman (Skyseer) | green to teal, cyan or gold | circles 33722; arcs 33728; 28892; 33759 |
+
+- **Candidates.** The Mage and Dark Wizard groups are in `spells.txt` as candidates (`?` lines), with three new kinds:
+  4 for Mage's cyan ice and light, 5 for Dark Wizard's magenta energy, 6 for Mage's orange energy. Only the debug build
+  uses them, so a playtest shows them glowing and its log says which spell each belongs to.
+
+What the pack can't say: which spell a group belongs to, which groups are spells at all (some may be weapons, mobs or
+cosmetics recoloured the same way), and which parts the server shows together. The playtest's captures answer that.
+
+## Survey tooling (debug build)
+
+With a file named `wynn-photon-spell-debug` in the config folder, the mod (`client/SpellDebug.java`):
+
+- logs every spell Wynntils sees cast, with the class and whether it is the reskin (Wynntils' `SpellEvent.Cast`,
+  reached by reflection; without Wynntils, captures still start on their own);
+- **captures** what follows: every display entity and armor stand within 24 blocks, when it appears (its full data:
+  item and `custom_model_data`, transformation, interpolation and teleport times), changes and goes, and the textures
+  drawn on item models meanwhile, with their pixel hashes and spell table entries. A capture starts on a cast, or when
+  a display entity appears within 12 blocks, and ends 3 seconds after the last change;
+- writes each capture as a datapack function, `wynn_spell_capture:c<n>/start`, which replays it tick by tick where it
+  is run, for the dev client and the screenshot tests;
+- uses the spell table's candidates.
+
+Everything goes to `wynn-photon-spells/` in the game folder (`spells-<time>.log` and `datapack/`).
 
 ## Limits and open questions
 
@@ -104,7 +168,7 @@ per part.
 
 Hashed names change every release, so the mod matches this texture by a CRC-32 of its pixels (`SpellTags.pixelHash`,
 `0x09101c92`), which survives renaming as long as the art stays the same. The debug log prints each texture's hash.
-It gets its own ID, 10108, with a magenta light. Its rock is dark but up to 0.9 saturated, so the glow also needs a
+It got its own ID, 10108 (now 10131, spell kind 3), with a magenta light. Its rock is dark but up to 0.9 saturated, so the glow also needs a
 lightness of at least 0.12-0.25; every fire pixel is at least 0.3 light. In the test world two of its parts, scaled up,
 glow and light the pad magenta.
 

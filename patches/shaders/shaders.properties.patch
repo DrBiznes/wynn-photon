@@ -27,18 +27,19 @@
  
  iris.features.optional = CUSTOM_IMAGES ENTITY_TRANSLUCENT
  
-@@ -457,6 +459,10 @@
+@@ -457,6 +459,11 @@
  #endif
  #endif
  
 +# Wynn-Photon (experimental): spell light positions, summed by the entity
-+# programs and read by deferred shading. Cleared every frame
-+image.wynn_spell_img = wynn_spell_sampler red_integer r32i int true false 12 1
++# programs and read by deferred shading: 16 slots of 8 texels. Cleared every
++# frame
++image.wynn_spell_img = wynn_spell_sampler red_integer r32i int true false 128 1
 +
  # Photonics Gi
  
  #if defined PHOTONICS && defined PHOTONICS_ENABLED && !defined PHOTONICS_RESTIR_COMBINED_GI
-@@ -596,7 +602,11 @@
+@@ -596,7 +603,11 @@
  uniform.float.biome_pale_garden = 0.0
  #endif
  

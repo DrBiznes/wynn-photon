@@ -227,6 +227,10 @@ public final class LightTestClient implements ClientModInitializer {
 							waitFrames(5, 200);
 						}
 						teleport(server, player, spot, look(spot, sunPathRotation));
+						if (spot.function() != null) {
+							command(server, String.format(Locale.ROOT, "execute positioned %.3f %.3f %.3f run function %s",
+									spot.x(), spot.y(), spot.z(), spot.function()));
+						}
 						waitFrames(settleFrames, settle);
 						if (spot.aimed()) {
 							// The sky moves a little while the image settles: aim again just before the shot

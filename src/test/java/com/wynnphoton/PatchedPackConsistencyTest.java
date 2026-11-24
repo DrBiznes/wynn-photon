@@ -105,6 +105,52 @@ class PatchedPackConsistencyTest {
 		assertTrue(duplicates.isEmpty(), "block entries on more than one line: " + duplicates);
 	}
 
+	/**
+	 * Experimental spell lights: the spell table's item IDs are the shader's spell kinds (wynn_spells.glsl), no block,
+	 * item or entity uses them, and every kind the table uses has a glow or a light in the shader.
+	 */
+	@Test
+	void spellKindsMatchTheShader() throws IOException {
+		String spells = Files.readString(shaders.resolve("include/misc/wynn_spells.glsl"));
+		assertTrue(spells.contains("const uint wynn_spell_first = " + (SpellTable.FIRST_ID - 10000) + "u;"));
+		assertTrue(spells.contains("const int wynn_spell_kinds = " + (SpellTable.LAST_ID - SpellTable.FIRST_ID + 1)
+				+ ";"));
+		for (String file : List.of("block.properties", "item.properties", "entity.properties")) {
+			Matcher m = Pattern.compile("(?m)^\\w+\\.(\\d+)\\s*=").matcher(Files.readString(shaders.resolve(file)));
+			while (m.find()) {
+				int id = Integer.parseInt(m.group(1));
+				assertFalse(SpellTable.FIRST_ID <= id && id <= SpellTable.LAST_ID, file + " uses spell ID " + id);
+			}
+		}
+		float[] glow = floatArray(spells, "wynn_spell_glow_strength");
+		float[] light = floatArray(spells, "wynn_spell_light_strength");
+		assertEquals(32, glow.length);
+		assertEquals(32, light.length);
+		SpellTable table = SpellTable.loadFromClasspath(true);
+		List<SpellTable.Entry> entries = new ArrayList<>(table.sprites().values());
+		entries.addAll(table.pixels().values());
+		assertFalse(entries.isEmpty());
+		for (SpellTable.Entry entry : entries) {
+			int kind = entry.id() - SpellTable.FIRST_ID;
+			assertTrue(glow[kind] > 0 || light[kind] > 0, "spell kind " + kind + " (" + entry.name()
+					+ ") has no glow or light in wynn_spells.glsl");
+		}
+	}
+
+	/** The numbers of a GLSL {@code float[](...)} constant, comments skipped. */
+	private static float[] floatArray(String glsl, String name) {
+		int start = glsl.indexOf(name + " = float[](");
+		assertTrue(start >= 0, name + " not found");
+		String body = glsl.substring(glsl.indexOf('(', start) + 1, glsl.indexOf(");", start))
+				.replaceAll("//[^\\n]*", "");
+		String[] parts = body.split(",");
+		float[] values = new float[parts.length];
+		for (int i = 0; i < parts.length; i++) {
+			values[i] = Float.parseFloat(parts[i].strip());
+		}
+		return values;
+	}
+
 	@Test
 	void wynnBlocksSitWhereTheChangelogSays() {
 		assertTrue(blockIds.get(10079).contains("redstone_torch:lit=true"));

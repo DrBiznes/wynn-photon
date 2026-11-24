@@ -9,7 +9,8 @@
 #                                             The yaw can be "sun" or "moon" to look straight at it; the pitch is then
 #                                             added to the pitch that does. Options: fov=<degrees>, times=<a,b,...> and
 #                                             sets=<a,b,...> (only those; all when left out), biome=<id> (fills the
-#                                             ground around the spot with that biome first), settle=<ms>
+#                                             ground around the spot with that biome first), settle=<ms>,
+#                                             function=<id> (a datapack function to run there before the shot)
 #   time <name> <ticks> [weather=clear|rain|thunder]
 #   set <name> [KEY=value ...]                shader options; everything not listed is the pack's default
 #   compare <set A> <set B> <title...>        a report table of the brightness of B relative to A

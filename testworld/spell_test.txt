@@ -1,10 +1,16 @@
 # Experimental: the spell-light comparison. Run it with `gradlew lightTest -Pcases=testworld/spell_test.txt`.
 # The format is described at the top of light_test.txt. The spot looks south at the two still Meteor models of
 # spells.mcfunction over a stone pad: facing south, the purple one (east) is on the left, the orange one on the right.
+# dark_meteor and mage_meteor look at two parts of Dark Wizard's and Mage's Meteor rigs, scaled up; candidates at
+# Mage spell parts that spells.txt only lists as candidates (they glow only with the spell debug file).
 
 spot meteors      10.5 -60 93.5   0 10  fov=70 settle=4000
 spot meteor_close  4.5 -60 99.5   0 20  fov=70 settle=4000
 spot dark_meteor  10.5 -60 101.5  0 15  fov=70 settle=4000
+spot mage_meteor  28.5 -60 101.5  0 15  fov=70 settle=4000
+spot candidates   46.5 -60  98.5  0 10  fov=70 settle=4000
+# Drops one meteor (meteor_once) to test the spell debug capture; with the debug file in run/config it writes a replay
+spot meteor_capture 10.5 -60 95.5  0 -5  fov=70 settle=8000 times=midnight sets=on function=wynn_photon_test:meteor_once
 
 time midnight 18000
 time noon      6000

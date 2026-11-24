@@ -4,10 +4,20 @@
 # third one in a loop. Runs from load once the chunks are loaded; run it by hand to put them back.
 execute unless loaded 0 -61 96 run return run schedule function wynn_photon_test:spells 20t
 kill @e[type=item_display,tag=wynn_spell_test]
-fill -2 -61 92 24 -61 112 stone
+fill -2 -61 92 58 -61 112 stone
 summon item_display 4.5 -58 104.5 {Tags:["wynn_spell_test"],item_display:"head",Rotation:[0f,0f],item:{id:"minecraft:potion",count:1,components:{"minecraft:custom_model_data":{floats:[4039f]}}}}
 summon item_display 16.5 -58 104.5 {Tags:["wynn_spell_test"],item_display:"head",Rotation:[0f,0f],item:{id:"minecraft:potion",count:1,components:{"minecraft:custom_model_data":{floats:[4031f]}}}}
 # Dark Wizard's Meteor is a rig of four tiny oak_boat models (custom_model_data 20392-20395) that the server scales
 # and moves; two of them, scaled up, stand in for it here
 summon item_display 10.5 -59 108.5 {Tags:["wynn_spell_test"],item:{id:"minecraft:oak_boat",count:1,components:{"minecraft:custom_model_data":{floats:[20395f]}}},transformation:{translation:[0f,0f,0f],left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],scale:[48f,48f,48f]}}
 summon item_display 10.5 -59 108.5 {Tags:["wynn_spell_test"],item:{id:"minecraft:oak_boat",count:1,components:{"minecraft:custom_model_data":{floats:[20394f]}}},transformation:{translation:[0f,0f,0f],left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],scale:[48f,48f,48f]}}
+# Mage's own Meteor is the same rig with orange fire (custom_model_data 20388-20391), east of the others
+summon item_display 28.5 -59 108.5 {Tags:["wynn_spell_test"],item:{id:"minecraft:oak_boat",count:1,components:{"minecraft:custom_model_data":{floats:[20391f]}}},transformation:{translation:[0f,0f,0f],left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],scale:[48f,48f,48f]}}
+summon item_display 28.5 -59 108.5 {Tags:["wynn_spell_test"],item:{id:"minecraft:oak_boat",count:1,components:{"minecraft:custom_model_data":{floats:[20390f]}}},transformation:{translation:[0f,0f,0f],left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],scale:[48f,48f,48f]}}
+# Candidates from the server pack (spells.txt "?" lines, which glow only with the spell debug file): Mage's and
+# Dark Wizard's icicles (33001, 33006), crosses (32175, both textures) and beams (32173, 32174), west to east
+summon item_display 40.5 -59 106.5 {Tags:["wynn_spell_test"],item:{id:"minecraft:oak_boat",count:1,components:{"minecraft:custom_model_data":{floats:[33001f]}}},transformation:{translation:[0f,0f,0f],left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],scale:[24f,24f,24f]}}
+summon item_display 43.5 -59 106.5 {Tags:["wynn_spell_test"],item:{id:"minecraft:oak_boat",count:1,components:{"minecraft:custom_model_data":{floats:[33006f]}}},transformation:{translation:[0f,0f,0f],left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],scale:[24f,24f,24f]}}
+summon item_display 46.5 -59 106.5 {Tags:["wynn_spell_test"],item:{id:"minecraft:oak_boat",count:1,components:{"minecraft:custom_model_data":{floats:[32175f]}}},transformation:{translation:[0f,0f,0f],left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],scale:[24f,24f,24f]}}
+summon item_display 49.5 -59 106.5 {Tags:["wynn_spell_test"],item:{id:"minecraft:oak_boat",count:1,components:{"minecraft:custom_model_data":{floats:[32173f]}}},transformation:{translation:[0f,0f,0f],left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],scale:[24f,24f,24f]}}
+summon item_display 52.5 -59 106.5 {Tags:["wynn_spell_test"],item:{id:"minecraft:oak_boat",count:1,components:{"minecraft:custom_model_data":{floats:[32174f]}}},transformation:{translation:[0f,0f,0f],left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],scale:[24f,24f,24f]}}

@@ -1,6 +1,15 @@
 --- a/shaders/include/surface/material.glsl
 +++ b/shaders/include/surface/material.glsl
-@@ -265,7 +265,10 @@
+@@ -3,6 +3,8 @@
+ 
+ #include "/include/post_processing/aces/matrices.glsl"
+ #include "/include/utility/color.glsl"
++// Wynn-Photon: spell kinds and their glow rules
++#include "/include/misc/wynn_spells.glsl"
+ 
+ const float air_n = 1.000293; // for 0°C and 1 atm
+ const float water_n = 1.333; // for 20°C
+@@ -265,7 +267,10 @@
                          } else { // 11
  // Obsidian, nether bricks
  #ifdef HARDCODED_SPECULAR
@@ -12,7 +21,7 @@
                              material.roughness = sqr(1.0 - smoothness);
                              material.f0 = vec3(0.02);
                              material.ssr_multiplier = 1.0;
-@@ -603,9 +606,13 @@
+@@ -603,9 +608,13 @@
                          } else { // 39
  #ifdef HARDCODED_EMISSION
                              // Lava
@@ -27,7 +36,7 @@
  #endif
                          }
                      }
-@@ -727,7 +734,14 @@
+@@ -727,7 +736,14 @@
                          }
                      } else { // 54-56
                          if (material_mask == 54u) { // 54
@@ -43,7 +52,7 @@
                          } else { // 55
  #ifdef HARDCODED_EMISSION
                              // Amethyst cluster
-@@ -825,7 +839,69 @@
+@@ -825,7 +841,69 @@
          }
      }
  
@@ -114,7 +123,7 @@
  // Stained glass, honey and slime
  #ifdef HARDCODED_SPECULAR
          material.f0 = vec3(0.04);
-@@ -836,6 +912,80 @@
+@@ -836,6 +914,78 @@
  #ifdef HARDCODED_SSS
          material.sss_amount = 0.5;
  #endif
@@ -147,20 +156,18 @@
 +        material.is_metal = true;
 +        material.ssr_multiplier = 1.0;
 +#endif
-+    } else if (106u <= material_mask && material_mask <= 108u) {
++    } else if (is_wynn_spell(material_mask)) {
 +#ifdef HARDCODED_EMISSION
 +        // Wynn-Photon (experimental): Wynncraft spell models, tagged by the
-+        // mod (wynn_spells.glsl). So far Mage's Meteor: grey (orange fire),
-+        // dark teal (purple fire and cracks) or, for Dark Wizard, dark purple
-+        // (magenta fire) rock. Only the saturated, lit fire and crack pixels
-+        // glow. The grey and teal rock's saturation is at most 0.19, the
-+        // fire's and cracks' at least 0.31. The dark purple rock is up to
-+        // 0.9 saturated but under 0.15 lightness where it is, while every
-+        // fire pixel is at least 0.3 light
-+        float fire = linear_step(0.22, 0.30, hsl.y)
-+            * linear_step(0.12, 0.25, hsl.z);
-+        material.emission = 1.0 * albedo_sqrt * fire * (0.3 + 0.7 * hsl.z)
-+            * sqrt(WYNN_SPELL_LIGHT_I);
++        // mod. Each spell kind has its own cut on saturation and lightness
++        // that picks its fire, cracks or energy out of the rest of the model
++        // (wynn_spells.glsl)
++        int kind = int(material_mask - wynn_spell_first);
++        vec4 cut = wynn_spell_glow_cut[kind];
++        float glow = linear_step(cut.x, cut.y, hsl.y)
++            * linear_step(cut.z, cut.w, hsl.z);
++        material.emission = wynn_spell_glow_strength[kind] * albedo_sqrt
++            * glow * (0.3 + 0.7 * hsl.z) * sqrt(WYNN_SPELL_LIGHT_I);
 +#endif
 +    } else if (material_mask == 105u) {
 +        // Wynn-Photon: chests (were in 30). Wood like 30, plus a faint glow

@@ -1,6 +1,7 @@
 package com.wynnphoton.client;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.wynnphoton.SpellTable;
 import com.wynnphoton.client.mixin.SpriteContentsAccessor;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -10,6 +11,7 @@ import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
+import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -28,44 +30,33 @@ import static com.wynnphoton.WynnPhotonPreLaunch.LOGGER;
  * Experimental: tags Wynncraft spell models for the shader pack.
  *
  * <p>Wynncraft draws its spell models (Meteor, Ice Snake, Totem, ...) as items on display entities. They are all
- * {@code minecraft:potion} or {@code diamond_sword} told apart by {@code custom_model_data}, which Iris's
- * {@code item.properties} can't match, so the shader can't tell a meteor from a potion. Each spell's textures do have
- * their own textures, though: named ones for the classes' own spells, hashed ones for the reskins. When an item layer is submitted, this looks at its quads' sprites, and if one is a known
- * spell texture it overrides the item ID Iris hands the shader ({@code currentRenderedItemId}) with the spell's own
- * ID. The shader then makes the spell's fire emissive and lights the area around it.
+ * {@code minecraft:potion}, {@code diamond_sword} or {@code oak_boat} told apart by {@code custom_model_data}, which Iris's
+ * {@code item.properties} can't match, so the shader can't tell a meteor from a potion. Each spell has its own
+ * textures, though: a few named ones ({@code wynn/spell/...}), and hashed ones ({@code item/w<n>}) for the rigs of
+ * small {@code oak_boat} parts that most spells are, which are matched by a hash of their pixels. The spell table
+ * ({@link SpellTable}) lists them. When an item layer is submitted, this looks at its quads' sprites, and if one is a
+ * known spell texture it overrides the item ID Iris hands the shader ({@code currentRenderedItemId}) with the spell
+ * kind's ID. The shader then makes the spell glow and lights the area around it.
  *
  * <p>Iris is reached by reflection, as everywhere else in the mod: without Iris this does nothing.
  */
 public final class SpellTags {
 	/**
-	 * Sprite name to the item ID the shader sees. Keep in step with the WYNN_SPELL_* IDs in the shader pack. Only for
-	 * Wynncraft's named textures: hashed ones ({@code item/w<n>}) are renamed every release, see {@link #SPELL_PIXELS}.
-	 */
-	private static final Map<Identifier, Integer> SPELL_SPRITES = Map.of(
-			Identifier.withDefaultNamespace("wynn/spell/meteor_0_a"), 10106, // Meteor, orange fire
-			Identifier.withDefaultNamespace("wynn/spell/meteor_1_a"), 10107 // Meteor, purple (void) fire
-	);
-
-	/**
-	 * Pixel hash ({@link #pixelHash}) to the item ID, for spell textures with hashed names. The hash survives
-	 * Wynncraft's renaming as long as the picture doesn't change. The names are from the 2026-11-21 pack.
-	 */
-	private static final Map<Integer, Integer> SPELL_PIXELS = Map.of(
-			0x09101c92, 10108 // Dark Wizard's Meteor, magenta fire (item/w-672617585612035381)
-	);
-
-	/** Each sprite's item ID (0 for none), worked out once. Weak, so reloaded atlases drop the old sprites. */
-	private static final Map<SpriteContents, Integer> CACHE = new WeakHashMap<>();
-
-	/**
 	 * Debug: with a file named {@code wynn-photon-spell-debug} in the config folder, every texture drawn on an item
-	 * model within {@link #DEBUG_RANGE} blocks of the camera is logged once, so a spell's textures can be found by
-	 * casting it and reading the log.
+	 * model within {@link #DEBUG_RANGE} blocks of the camera is logged once, and again in each capture after a cast
+	 * ({@link SpellDebug}), so a spell's textures can be found by casting it and reading the log. The spell table's
+	 * candidates are used too. Declared first: the table needs it.
 	 */
-	private static final boolean DEBUG = Files.exists(
+	static final boolean DEBUG = Files.exists(
 			FabricLoader.getInstance().getConfigDir().resolve("wynn-photon-spell-debug"));
 	private static final float DEBUG_RANGE = 32;
 	private static final Set<Identifier> DEBUG_SEEN = new HashSet<>();
+
+	/** The spell table ({@link SpellTable#RESOURCE}); empty if it can't be read. */
+	private static final SpellTable TABLE = loadTable();
+
+	/** Each sprite's item ID (0 for none), worked out once. Weak, so reloaded atlases drop the old sprites. */
+	private static final Map<SpriteContents, Integer> CACHE = new WeakHashMap<>();
 
 	private static final Object NOT_LOOKED_UP = new Object();
 	private static Object capturedState = NOT_LOOKED_UP;
@@ -91,18 +82,36 @@ public final class SpellTags {
 		return 0;
 	}
 
+	private static SpellTable loadTable() {
+		try {
+			SpellTable table = SpellTable.loadFromClasspath(DEBUG);
+			LOGGER.info("Spell table: {} named and {} hashed spell textures{}", table.sprites().size(),
+					table.pixels().size(), DEBUG ? ", with candidates (spell debug is on)" : "");
+			return table;
+		} catch (IOException e) {
+			LOGGER.warn("Could not read the spell table; spell models won't glow: {}", e.getMessage());
+			return SpellTable.EMPTY;
+		}
+	}
+
 	private static int spriteId(SpriteContents contents) {
 		Integer cached = CACHE.get(contents);
 		if (cached != null) {
 			return cached;
 		}
-		Integer id = SPELL_SPRITES.get(contents.name());
-		if (id == null && contents.name().getPath().startsWith("item/w")) {
-			id = SPELL_PIXELS.get(pixelHash(contents));
-		}
-		int result = id == null ? 0 : id;
+		SpellTable.Entry entry = entry(contents);
+		int result = entry == null ? 0 : entry.id();
 		CACHE.put(contents, result);
 		return result;
+	}
+
+	/** The sprite's spell table entry, or null. Hashes the pixels of Wynncraft's hashed textures only. */
+	static SpellTable.Entry entry(SpriteContents contents) {
+		SpellTable.Entry entry = TABLE.sprites().get(contents.name().toString());
+		if (entry == null && contents.name().getPath().startsWith("item/w")) {
+			entry = TABLE.pixels().get(pixelHash(contents));
+		}
+		return entry;
 	}
 
 	/**
@@ -148,11 +157,15 @@ public final class SpellTags {
 			}
 			last = sprite;
 			SpriteContents contents = sprite.contents();
-			if (DEBUG_SEEN.add(contents.name())) {
-				LOGGER.info("[spell debug] texture {} {}x{}{} quads={} distance={} pixels={} spell={}", contents.name(),
-						contents.width(), contents.height(), contents.isAnimated() ? " animated" : "", n,
-						String.format(Locale.ROOT, "%.1f", distance),
-						String.format(Locale.ROOT, "%08x", pixelHash(contents)), spriteId(contents));
+			boolean first = DEBUG_SEEN.add(contents.name());
+			boolean firstInCapture = SpellDebug.seenInCapture(contents.name());
+			if (first || firstInCapture) {
+				SpellTable.Entry entry = entry(contents);
+				SpellDebug.log(String.format(Locale.ROOT,
+						"texture %s %dx%d%s quads=%d at %.1f %.1f %.1f (distance %.1f) pixels=%08x spell=%s",
+						contents.name(), contents.width(), contents.height(), contents.isAnimated() ? " animated" : "",
+						n, at.x, at.y, at.z, distance, pixelHash(contents),
+						entry == null ? "-" : entry.id() + (entry.candidate() ? " (candidate) " : " ") + entry.name()));
 			}
 		}
 	}

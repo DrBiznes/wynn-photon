@@ -1,0 +1,59 @@
+# Wynn-Photon spell table (experimental, see docs/research/wynn-spells.md).
+#
+# Which textures are Wynncraft spell models, and which spell kind each one is. When the mod sees one of these textures
+# on an item model, it hands the shader pack the kind's item ID instead of the item's own, and the pack gives the model
+# the kind's glow and light. A kind is a look, not a spell: one glow rule and one light colour, which several spells
+# can share. The kinds' glow rules and lights are in the pack, in include/misc/wynn_spells.glsl.
+#
+#   <item ID> sprite <texture name> <comment>   a texture by its name: Wynncraft's named ones (wynn/spell/...)
+#   <item ID> pixels <hash> <comment>           a texture by a CRC-32 of its pixels, for Wynncraft's hashed texture
+#                                               names (item/w<n>), which change every release. The spell debug log
+#                                               prints each texture's hash
+#   ? <item ID> ...                             a candidate: only used with the spell debug file
+#                                               (config/wynn-photon-spell-debug), for a playtest to confirm
+#
+# Item IDs are 10128-10159; the kind is the ID minus 10128. The comment is the spell, for the debug log, and the texture
+# name it had in the server pack the hash was taken from (Wynncraft's 2026-11-21 pack unless it says otherwise).
+
+# Kind 0: Meteor's named model, orange fire. In the pack, but not drawn for Mage on live
+10128 sprite wynn/spell/meteor_0_a  Meteor (named model), orange fire
+# Kind 1: Meteor's named model, purple fire. In the pack, but which class or archetype draws it isn't known yet
+10129 sprite wynn/spell/meteor_1_a  Meteor (named model), purple fire
+
+# Kind 2: Mage's Meteor, a rig of four oak_boat parts (custom_model_data 20388-20391), orange fire. The same rig as
+# Dark Wizard's below, which was confirmed on live
+10130 pixels 57f6d84a  Mage Meteor (item/w4981932695371552278)
+# Kind 3: Dark Wizard's Meteor, the same rig (20392-20395), magenta fire. Confirmed on live
+10131 pixels 09101c92  Dark Wizard Meteor (item/w-672617585612035381)
+
+# Candidates (debug only). Found in the server pack, not yet seen cast: each is a pair of the same rig, an older one in
+# Mage's colours and a newer one in Dark Wizard's pink, the way the Meteor rigs are. Which spell each part belongs to is
+# a guess until a playtest's capture log names it. custom_model_data in brackets.
+# The Meteor's other parts, next to its rig: a fire trail (20396/20398), sparks (20400-20409), a ring (20411/20413),
+# squares (20424-20449) and a beam (20450/20451)
+? 10134 pixels 1c49a823  Mage Meteor? trail (item/w227773911180643367) [20396-20397]
+? 10133 pixels 5848b31e  Dark Wizard Meteor? trail (item/w1874004427642411122) [20398-20399]
+? 10134 pixels 93b5cd94  Mage Meteor? sparks (item/w-3649587352349722165) [20400-20409]
+? 10133 pixels 14426715  Dark Wizard Meteor? sparks (item/w8271130531711112748) [20400-20409]
+? 10134 pixels 8d5e2f24  Mage Meteor? ring (item/w7789082004905260648) [20411-20412]
+? 10133 pixels 9bcf618e  Dark Wizard Meteor? ring (item/w-3022664126527969947) [20413-20414]
+? 10134 pixels 23f92cf5  Mage Meteor? squares (item/w4157175555459561993) [20424-20449]
+? 10133 pixels d5121c68  Dark Wizard Meteor? squares (item/w1500737648895922699) [20424-20449]
+? 10134 pixels 497c31e3  Mage Meteor? beam (item/w3078232694307518545) [20450]
+? 10133 pixels 5e242fd0  Dark Wizard Meteor? beam (item/w-6338383348428425739) [20451]
+# Ice Snake? Five-part icicle rigs
+? 10132 pixels e309127f  Mage Ice Snake? icicles (item/w8482020955053293757) [33001-33005]
+? 10133 pixels 27f8b6c3  Dark Wizard Ice Snake? icicles (item/w1184845844033314188) [33006-33010]
+# Heal or Teleport? Beams, crosses and a streak
+? 10132 pixels 51f5b598  Mage Heal/Teleport? beam (item/w-149307511030795652) [32173]
+? 10133 pixels 03586bff  Dark Wizard Heal/Teleport? beam (item/w5890375669862315721) [32174]
+? 10132 pixels 664be6c8  Mage Heal? cross (item/w-4588004333971226406) [32175-32176]
+? 10133 pixels 06a944b5  Dark Wizard Heal? cross (item/w5053259520052321990) [32175-32176]
+? 10132 pixels d4507c03  Mage Teleport? beam (item/w1206912931366766147) [18078-18086]
+? 10133 pixels 0939dd86  Dark Wizard Teleport? beam (item/w5260008808884117306) [18087-18095]
+? 10134 pixels 48e3caf6  Mage spell? streak (item/w35896950026049346) [23957-23966]
+? 10133 pixels 850f6d3d  Dark Wizard spell? streak (item/w-6306871503108771537) [23957-23966]
+? 10134 pixels 53d341cf  Mage spell? beam (item/w4239226004967063482) [31950-31951]
+? 10133 pixels 25a5aec7  Dark Wizard spell? beam (item/w-7786348572118214860) [31950-31951]
+? 10132 pixels 210c6694  Mage spell? cyan sparks (item/w-2229961016400787853) [13615-13652]
+? 10133 pixels 2eec6036  Dark Wizard spell? magenta sparks (item/w-8628475040628661199) [13615-13652]

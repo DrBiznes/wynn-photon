@@ -32,8 +32,11 @@ From the Meteor prototype and the 2026-11-21 server pack:
   recognise by their textures and tag for the shader, the way it does Meteor. Particles may still be added on top,
   but they aren't the spell itself, so the model approach covers every spell.
 - **Only a few spells have named models**, `models/item/wynn/spell/` (Meteor, Ice Snake, Totem, Trap, the angel and
-  the Shaman masks), with stable texture names. Expect most spells, base classes included, to be hashed rigs like
-  Dark Wizard's Meteor, matched by pixel hash.
+  the Shaman masks), with stable texture names. Most spells, base classes included, are hashed rigs: Mage's own
+  Meteor is one (20388-20391), the twin of Dark Wizard's, found in the pack survey.
+- **The pack survey (2026-11-22)** sorted the recoloured rig pairs by class and put the Mage and Dark Wizard ones in
+  the spell table as candidates; see "The survey from the server pack" in
+  [research/wynn-spells.md](research/wynn-spells.md).
 - **Reskins are rigs.** Dark Wizard's Meteor is four tiny `oak_boat` models (`custom_model_data` 20392-20395) that the
   server scales up and moves, one display entity per part. Their textures have hashed names (`item/w<n>`) that change
   every release, so the mod matches them by a hash of their pixels.
@@ -47,23 +50,28 @@ From the Meteor prototype and the 2026-11-21 server pack:
 For each spell: what it draws, how it moves, and whether it should glow or give light. The user plays, and the
 analysis is done from the logs and the cached server pack.
 
-**Tooling first** (an experimental build, never released):
+**Tooling** (done, in the debug build: the `wynn-photon-spell-debug` file in the config folder; see "Survey tooling"
+in [research/wynn-spells.md](research/wynn-spells.md)):
 
-- **Texture log.** Exists: with `config/wynn-photon-spell-debug`, the mod logs every new texture drawn on item models
-  near the camera, with its size, animation, distance and pixel hash.
-- **Cast markers.** Log a line when a spell is cast, so the textures that follow can be matched to it. Wynntils knows
-  every cast (it parses the spell's click combo), so an optional hook into Wynntils' spell event would name the spell
-  in the log. Without Wynntils, a debug key that writes a numbered mark is enough.
-- **Animation capture.** For a few seconds after a cast, log every new display entity near the player: its item and
-  `custom_model_data`, its transformation, and its interpolation and teleport times. That shows how each rig is put
-  together and moves. Replayed as an `.mcfunction` in the test world, it gives a moving copy of the spell for the dev
-  client and the screenshot tests.
+- **Texture log.** Every new texture drawn on item models near the camera, with its size, animation, distance, pixel
+  hash and spell table entry, and again in each capture.
+- **Cast markers.** Every cast Wynntils sees, with the spell, the class and base or reskin, from Wynntils'
+  `SpellEvent.Cast` by reflection. Without Wynntils, captures start when a display entity appears near the player.
+- **Animation capture.** After a cast, every display entity and armor stand near the player: when it appears (item,
+  `custom_model_data`, transformation, interpolation and teleport times), changes and goes. Each capture is also
+  written as a replayable datapack function, for the dev client and the screenshot tests.
+- **Candidates.** The spell table's `?` lines, parts the pack survey found but nobody has seen cast, glow in the debug
+  build only.
 
 **A playtest session** goes like this:
 
-1. Install the debug build. Stand somewhere quiet at night.
-2. For each class, cast its four spells, a few seconds apart, as the base class and then the reskin.
-3. Send the log, with anything that looked odd.
+1. Install the debug build, create an empty file named `wynn-photon-spell-debug` in the instance's `config` folder,
+   and keep Wynntils on (it names the casts). Stand somewhere quiet at night, away from mobs and NPCs (their display
+   entities start captures too).
+2. For each class, cast its four spells, at least 5 seconds apart (a capture ends 3 seconds after the last change), as
+   the base class and then the reskin.
+3. Send `wynn-photon-spells/` from the instance folder (the log and the replay datapack), with anything that looked
+   odd. Note which Mage candidates glowed and whether they looked right.
 
 **The analysis** for each spell, in [research/wynn-spells.md](research/wynn-spells.md):
 
@@ -76,8 +84,12 @@ The result is a survey table like this one (Meteor filled in):
 
 | Spell | Class | Art | Glow | Light | Status |
 | --- | --- | --- | --- | --- | --- |
-| Meteor | Mage | model `wynn/spell/meteor_0` (`meteor_0_a` fire) | fire | orange | dev client only |
-| Meteor | Dark Wizard | rig of 4 `oak_boat` parts, texture hash `09101c92` | fire | magenta | live, done |
+| Meteor | Mage | rig of 4 `oak_boat` parts (20388-20391), texture hash `57f6d84a` | fire and cracks | orange | in the table, dev client only |
+| Meteor | Dark Wizard | rig of 4 `oak_boat` parts (20392-20395), texture hash `09101c92` | fire | magenta | live, done |
+| Meteor's trail, sparks, ring, squares, beam | Mage, Dark Wizard | 20396-20451, pairs of hashes | energy | orange, magenta | candidates |
+| Ice Snake? | Mage, Dark Wizard | icicle rigs, 5 parts (33001, 33006) | ice | cyan, magenta | candidates |
+| Heal? Teleport? | Mage, Dark Wizard | beams (32173/32174, 18078/18087, 31950), a cross (32175), a streak (23957) | energy | cyan or orange, magenta | candidates |
+| The other 16 | | twin groups sorted by class in the research doc | | | survey |
 
 ## Implementation
 
@@ -89,12 +101,13 @@ What a spell needs once it is surveyed:
 
 Changes to the prototype before more spells go in:
 
-- **Move the spell table to a data file** in the jar (texture names and pixel hashes → spell kind), so adding a spell
-  needs no Java. The shader keeps one table of kinds (colour, strength, glow rule).
-- **Reserve an ID range for spells.** The prototype uses 10106-10108, inside the materials range 10104-10127.
-  Proposal: 10128-10159, 32 spell kinds. Check first that Photon's gbuffer stores material masks above 127 without loss.
-- **Several casts at once.** Today all spells of one kind share one light at their middle, so two meteors light the
-  ground between them. Give each kind a few slots and sort parts into them by rough position.
+- **Move the spell table to a data file** (done): `src/main/resources/wynn_photon/spells.txt`, texture names and pixel
+  hashes → spell kind. The shader keeps one table of kinds (glow cut, glow strength, light colour and strength) in
+  `include/misc/wynn_spells.glsl`.
+- **Reserve an ID range for spells** (done): 10128-10159, 32 spell kinds. The gbuffer stores the material mask in 8
+  bits, so masks up to 255 survive; nothing else in Photon reads masks above 127 on entities.
+- **Several casts at once** (done): 16 light slots, picked by spell kind and 8-block world cell; same-kind slots less
+  than 6 blocks apart merge back into one light, so a spell across a cell edge isn't lit twice.
 - **Lights that come and go.** Spells appear and vanish in a frame. A short fade, from the previous frame's light,
   would look less abrupt. Needs a small history image.
 
@@ -139,8 +152,8 @@ These need updating in `CLAUDE.md`, `docs/PROJECT_PLAN.md` ("Principles") and `r
 ## Milestones
 
 0. **Prototype (done).** Meteor, base and Dark Wizard. Works on live.
-1. **Tooling.** Cast markers and animation capture in the debug build. Spell table in a data file,
-   reserved ID range.
+1. **Tooling (done, 2026-11-22).** Cast markers and animation capture in the debug build. Spell table in a data file,
+   reserved ID range, several casts at once. The pack survey and Mage candidates.
 2. **Survey the 20 base spells**, base class and reskin, in one or two playtest sessions. Fill the survey table.
    Decide per spell: glow, light, or skip.
 3. **Decide where it lives** (WynnIris or Wynn-Photon) and change the rules to match.
@@ -153,8 +166,7 @@ These need updating in `CLAUDE.md`, `docs/PROJECT_PLAN.md` ("Principles") and `r
 
 ## Open questions
 
-- Which spells are named models and which are hashed rigs, and how many parts each has? (Milestone 2.)
-- Does Wynntils expose a spell-cast event a debug build can listen to without a hard dependency?
-- Can the material mask hold IDs above 127?
+- Which twin groups are which spells, and which parts the server shows together? (Milestone 2.)
+- Answered: Wynntils' `SpellEvent.Cast` can be listened to by reflection. The material mask holds IDs up to 255.
 - Does the WynnIris maintainer want spell tags in WynnIris?
 - How often does Wynncraft change spell art? Each change breaks a pixel hash, which the debug log shows.

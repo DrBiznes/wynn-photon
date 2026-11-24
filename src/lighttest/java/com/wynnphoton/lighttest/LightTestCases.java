@@ -42,6 +42,11 @@ final class LightTestCases {
 			return options.get("biome");
 		}
 
+		/** A datapack function to run at the spot once the camera is there, or null. */
+		String function() {
+			return options.get("function");
+		}
+
 		long settleMillis(long fallback) {
 			return Long.parseLong(options.getOrDefault("settle", Long.toString(fallback)));
 		}
@@ -62,7 +67,7 @@ final class LightTestCases {
 
 	record Compare(String a, String b, String title) {}
 
-	private static final Set<String> SPOT_OPTIONS = Set.of("fov", "times", "sets", "biome", "settle");
+	private static final Set<String> SPOT_OPTIONS = Set.of("fov", "times", "sets", "biome", "settle", "function");
 	private static final Set<String> WEATHERS = Set.of("clear", "rain", "thunder");
 
 	World world = World.GALLERY;
