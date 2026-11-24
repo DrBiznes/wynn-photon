@@ -9,21 +9,281 @@
  #include "/include/sky/projection.glsl"
  #include "/include/sky/rainbow.glsl"
  #include "/include/sky/stars.glsl"
-@@ -170,6 +172,13 @@
+@@ -46,6 +48,241 @@
+         * limb_darkening;
+ }
+ 
++// Wynn-Photon: our own sun and moon, in place of Photon's round ones (draw_sun and draw_moon above). Only the
++// pictures change: sunlight, moonlight, shadows and the glow in the air around the sun are Photon's.
++//
++// The sun (WYNN_SUN) is Photon's sun with the vanilla sun's shape. Like Photon's it is light added to the sky, bright
++// enough to bloom, and it sends out about the same light whatever its size. Like the vanilla sun it is square, and
++// its sides follow the sun's path. In place of Photon's smooth limb darkening, a face cools in four square steps
++// from a white-hot centre to a faint warm rim, an ember core, on an 8x8 texel grid. With WYNN_SUN_CUBE it is a cube
++// seen exactly from one corner, so that corner is the middle of the sun, where Photon's sunlight comes from. The
++// corner is white-hot, and the three faces cool away from it in the same square steps, each to its own tone.
++//
++// The moon (WYNN_MOON) is the same cube made of rock, lit from one side. The light goes round it once a month, so
++// its phases are which of its three faces are lit, and how squarely.
++#if defined PROGRAM_DEFERRED4 && ((defined WYNN_SUN && !defined VANILLA_SUN) || (defined WYNN_MOON && !defined VANILLA_MOON))
++// The axis the sun and moon turn around. Iris tilts their path about X by sunPathRotation
++const vec3 wynn_sky_path_axis = vec3(
++    0.0, sin(sunPathRotation * degree), cos(sunPathRotation * degree)
++);
++
++// A ray in the frame of the sun or moon: x along its path, y along the axis it turns around, z away from the viewer
++vec3 wynn_sky_frame(vec3 ray_dir, vec3 body_dir) {
++    vec3 tangent = normalize(cross(wynn_sky_path_axis, body_dir));
++    vec3 bitangent = cross(body_dir, tangent);
++
++    return vec3(dot(ray_dir, tangent), dot(ray_dir, bitangent), dot(ray_dir, body_dir));
++}
++
++// The moon cube's three axes in that frame: turned 30 degrees about y, tipped 25 about x and rolled 20 about z, which
++// shows its -z face widest, and its +x and -y faces beside it
++const mat3 wynn_moon_cube_axes = mat3(
++    0.7415, 0.4948, -0.4532,
++    -0.3100, 0.8517, 0.4226,
++    0.5950, -0.1729, 0.7849
++);
++// The sun cube's: its (-1, -1, -1) corner points straight at the viewer, so its -x, -y and -z faces show equally
++// around the middle, rolled 15 degrees
++const mat3 wynn_sun_cube_axes = mat3(
++    -0.2113, 0.7887, 0.5774,
++    -0.5774, -0.5774, 0.5774,
++    0.7887, -0.2113, 0.5774
++);
++// A cube looks about 1.5 times as wide as one of its faces. The moon's faces are drawn smaller by that much, so its
++// size is half its width
++const float wynn_cube_face_scale = 0.65;
++
++// Where a ray meets the cube whose centre floats one unit away towards the sun or moon. axes are the cube's axes in
++// the sun's or moon's frame. normal is the face the ray meets, along one of the cube's axes, and face_uv is the place
++// on that face, -1 to 1
++bool wynn_cube(vec3 ray_dir, vec3 body_dir, float half_size, mat3 axes, out vec3 normal, out vec2 face_uv) {
++    // The cube's corners are sqrt(3) half sizes from its centre
++    if (dot(ray_dir, body_dir) < cos(1.8 * half_size)) {
++        return false;
++    }
++
++    // The ray in the cube's own space. The viewer is one unit from its centre
++    float size = tan(half_size);
++    vec3 dir = wynn_sky_frame(ray_dir, body_dir) * axes;
++    vec3 origin = vec3(0.0, 0.0, -1.0) * axes;
++
++    // Distances at which the ray crosses each pair of faces
++    vec3 t0 = (-size - origin) / dir;
++    vec3 t1 = (size - origin) / dir;
++    vec3 t_in = min(t0, t1);
++    float t_near = max_of(t_in);
++
++    if (t_near > min_of(max(t0, t1))) {
++        return false;
++    }
++
++    // The face it enters by is the one it crosses last on the way in
++    normal = -sign(dir) * step(t_near, t_in);
++
++    vec3 hit = (origin + dir * t_near) / size;
++    face_uv = normal.x != 0.0 ? hit.yz : normal.y != 0.0 ? hit.xz : hit.xy;
++
++    return true;
++}
++#endif
++
++#if defined WYNN_SUN && !defined VANILLA_SUN && defined PROGRAM_DEFERRED4
++// Half the width of the square
++const float wynn_sun_half_size = WYNN_SUN_SIZE * degree;
++
++vec3 draw_wynn_sun(vec3 ray_dir) {
++#ifdef WYNN_SUN_CUBE
++    // The cubic sun is about 1.35 times as wide as the square sun of the same size, nearly the vanilla sun's width at
++    // the default size. Most of a cube is its cooler outer steps, so one as small as the square is lost in its glow
++    const float face_half_size = 0.85 * wynn_sun_half_size;
++    vec3 normal;
++    vec2 face_uv;
++
++    if (!wynn_cube(ray_dir, sun_dir, face_half_size, wynn_sun_cube_axes, normal, face_uv)) {
++        return vec3(0.0);
++    }
++
++    // Steps away from the cube's near corner, which is the (-1, -1) corner of all three faces: 0 at the corner, in
++    // the middle of the sun, 3 along the cube's outline
++    int ring = min(int(2.0 * max_of(face_uv) + 2.0), 3);
++
++    // Only the corner is white-hot: one sixteenth of each face. Seen from its corner, each of the three faces covers
++    // 1 / sqrt(3) of its own solid angle, so this luminance makes the corner send out 0.2 units of light whatever
++    // the cube's size. Photon's disk sends out one unit, but that much from so small a patch blooms over the whole
++    // cube and leaves a round glow
++    const float core_luminance = 0.2 * 16.0 / sqrt(3.0)
++        / (4.0 * tan(face_half_size) * tan(face_half_size));
++
++    // The three steps around the corner stay near the sky's own brightness, or they burn out to white and the cube is
++    // lost. Each face has its own tone, which is what tells the faces apart
++    const vec4 rings[4] = vec4[4](
++        vec4(1.00, 0.97, 0.90, core_luminance),
++        vec4(1.00, 0.93, 0.80, 8.0),
++        vec4(1.00, 0.85, 0.60, 3.5),
++        vec4(1.00, 0.72, 0.38, 1.5)
++    );
++
++    vec4 ring_color = rings[ring];
++
++    if (ring >= 1) {
++        ring_color *= normal.z != 0.0
++            ? vec4(1.0)
++            : normal.x != 0.0
++                ? vec4(1.00, 0.90, 0.72, 0.45)
++                : vec4(1.00, 0.78, 0.50, 0.20);
++    }
++#else
++    float nu = dot(ray_dir, sun_dir);
++
++    // The square's corners are sqrt(2) half sizes from its centre
++    if (nu < cos(1.5 * wynn_sun_half_size)) {
++        return vec3(0.0);
++    }
++
++    vec2 face_uv = wynn_sky_frame(ray_dir, sun_dir).xy
++        / (nu * tan(wynn_sun_half_size));
++
++    // The square ring of texels under this ray: 0 at the square's centre, 3 at its rim
++    int ring = int(4.0 * max_of(abs(face_uv)));
++
++    if (ring > 3) {
++        return vec3(0.0);
++    }
++
++    // The two inner rings carry the sun's light: 16 of the square's 64 texels, the second ring at 0.3 of the centre.
++    // Their luminance makes the square send out one unit of light whatever its size, as Photon's disk does:
++    // 1 / the square's solid angle, over the mean of the 64 texels
++    const float core_luminance = 64.0 / (4.0 + 12.0 * 0.3)
++        / (4.0 * tan(wynn_sun_half_size) * tan(wynn_sun_half_size));
++
++    // Colour and luminance of each ring. The two outer rings are the ember's edge: they stay near the sky's own
++    // brightness, because anything brighter burns out to white and the steps are lost
++    const vec4 rings[4] = vec4[4](
++        vec4(1.00, 0.97, 0.90, core_luminance),
++        vec4(1.00, 0.93, 0.80, 0.3 * core_luminance),
++        vec4(1.00, 0.82, 0.50, 3.0),
++        vec4(1.00, 0.62, 0.22, 1.0)
++    );
++
++    vec4 ring_color = rings[ring];
++#endif
++
++    return ring_color.a * sun_color * ring_color.rgb;
++}
++#endif
++
++#if defined WYNN_MOON && !defined VANILLA_MOON && defined PROGRAM_DEFERRED4
++const float wynn_moon_half_size = WYNN_MOON_SIZE * degree;
++
++#ifdef WYNN_MOON_BASE
++// A small easter egg: the Humyn colony from Wynncraft's quest to the moon, seen from above on a grid of four cells to
++// a rock texel. It sits in a terraced crater with a pale floor, about one and a half rock texels wide: the copper
++// rocket and three teal buildings, one cell each. Colours stay close to the rock's, so it is found rather than seen.
++// The buildings glow faintly whatever the phase, a little above the dark moon's own light. albedo is a multiple of the
++// moon's colour, as rock is
++void wynn_moon_base(vec2 face_uv, float rock, inout vec3 albedo, inout vec3 glow) {
++    // The cell under the ray, from the crater's centre, which is a quarter of the face off its middle
++    ivec2 cell = ivec2(floor(16.0 * face_uv)) + 4;
++    float r = length(vec2(cell) + 0.5);
++
++    if (r >= 3.0) {
++        return;
++    }
++
++    // The crater: a pale, sandy floor of four by four cells inside a ring of darker terraces
++    albedo = r < 2.2 ? vec3(1.00, 0.95, 0.84) : vec3(0.80 * rock);
++
++    // The rocket on its pad, in copper
++    if (cell == ivec2(-1, 1)) {
++        albedo = vec3(1.10, 0.78, 0.55);
++    }
++    // The buildings, all in the colony's teal: the domed tower and the building beside it, and the greenhouse
++    if (cell == ivec2(1, 0) || cell == ivec2(1, -1) || cell == ivec2(-2, -1)) {
++        albedo = vec3(0.70, 0.98, 0.92);
++        glow = vec3(0.03, 0.07, 0.07);
++    }
++}
++#endif
++
++vec4 draw_wynn_moon(vec3 ray_dir) {
++    vec3 normal;
++    vec2 face_uv;
++
++    if (!wynn_cube(ray_dir, moon_dir, wynn_cube_face_scale * wynn_moon_half_size, wynn_moon_cube_axes, normal, face_uv)) {
++        return vec4(0.0);
++    }
++
++    // Rock: 8x8 texels to a face, each its own grey, with darker seas in blocks of 2x2
++    vec2 texel = floor(4.0 * face_uv);
++    float face = dot(normal, vec3(1.0, 2.0, 3.0));
++    float rock = 0.75 + 0.25 * hash1(vec3(texel, face));
++    rock *= 0.7 + 0.3 * step(0.35, hash1(vec3(floor(0.5 * texel), face + 7.0)));
++
++    // The light goes round the moon once a month, in the plane of the moon's path. At full moon it comes from the
++    // viewer, and all three faces are lit; at new moon it is behind, and none are
++    float phase_angle = 0.125 * tau * float(moonPhase);
++    vec3 moonlight_dir = vec3(sin(phase_angle), 0.0, -cos(phase_angle));
++    float lit = max0(dot(wynn_moon_cube_axes * normal, moonlight_dir));
++
++    vec3 albedo = vec3(rock);
++    vec3 glow = vec3(0.0);
++
++#ifdef WYNN_MOON_BASE
++    // Wynn-Photon: a small easter egg, the Humyn colony from Wynncraft's moon quest
++    if (normal.z < 0.0) {
++        wynn_moon_base(face_uv, rock, albedo, glow);
++    }
++#endif
++
++    // An unlit face shows faintly, as the dark of the real moon does. 0.7 keeps the brightest face below white, so
++    // that its rock shows
++    const vec3 lit_color = vec3(MOON_R, MOON_G, MOON_B);
++    vec3 color = lit_color * albedo * 0.7 * max(sqrt(lit), 0.12) + glow;
++
++    return vec4(moon_luminance * sqr(color), 1.0);
++}
++#endif
++
+ vec4 draw_moon(vec3 ray_dir) {
+     const float angle = 0.7;
+     const mat2 rot = mat2(cos(angle), sin(angle), -sin(angle), cos(angle));
+@@ -170,14 +407,31 @@
      sky += draw_stars(celestial_dir, galaxy_luminance) * stars_visibility;
  #endif
  
 +#ifdef WYNN_METEORS
 +    // Wynn-Photon: shooting stars, meteor showers and fireballs. Like the stars, they are hidden behind a
-+    // vanilla sun or moon
++    // vanilla sun or moon, and the shader moon below covers them
 +    sky += draw_meteors(ray_dir)
 +        * clamp01(1.0 - dot(skytextured_output, vec3(0.33) * 256.0));
 +#endif
 +
  #ifndef VANILLA_SUN
      // Shader sun
++#ifdef WYNN_SUN
++    // Wynn-Photon: our square or cube sun instead of Photon's round disk
++    sky += draw_wynn_sun(ray_dir);
++#else
      sky += draw_sun(ray_dir);
-@@ -264,6 +273,10 @@
+ #endif
++#endif
+ 
+ #ifndef VANILLA_MOON
+     // Shader moon
++#ifdef WYNN_MOON
++    // Wynn-Photon: the cube moon instead of Photon's round one
++    vec4 moon = draw_wynn_moon(ray_dir);
++#else
+     vec4 moon = draw_moon(ray_dir);
++#endif
+     sky *= 1.0 - moon.a;
+     sky += moon.rgb;
+ #endif
+@@ -264,6 +518,10 @@
      clouds_and_aurora.rgb += crepuscular_rays.xyz;
  #endif
  

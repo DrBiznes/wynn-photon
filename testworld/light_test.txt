@@ -1,8 +1,16 @@
 # The lighting comparison that `gradlew lightTest` runs (see docs/DEVELOPMENT.md, "The lighting test").
 # Every spot is photographed at every time with every option set: spots x times x sets shots.
 #
-#   spot <name> <x> <y> <z> <yaw> <pitch>     camera feet position and angle (yaw 0 looks south, pitch 90 looks down)
-#   time <name> <ticks>
+#   world gallery|map                         the world to shoot in: the gallery test world (the default) or the
+#                                             Wynncraft map world of Voxy LODs (installMapWorld)
+#   renderdistance <chunks>                   the vanilla render distance for the run (else the player's own)
+#   spot <name> <x> <y> <z> <yaw> <pitch> [option=value ...]
+#                                             camera feet position and angle (yaw 0 looks south, pitch 90 looks down).
+#                                             The yaw can be "sun" or "moon" to look straight at it; the pitch is then
+#                                             added to the pitch that does. Options: fov=<degrees>, times=<a,b,...> and
+#                                             sets=<a,b,...> (only those; all when left out), biome=<id> (fills the
+#                                             ground around the spot with that biome first), settle=<ms>
+#   time <name> <ticks> [weather=clear|rain|thunder]
 #   set <name> [KEY=value ...]                shader options; everything not listed is the pack's default
 #   compare <set A> <set B> <title...>        a report table of the brightness of B relative to A
 #

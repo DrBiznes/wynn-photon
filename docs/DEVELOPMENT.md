@@ -78,8 +78,38 @@ build/light-test/*.png           the shots, named <spot>__<time>__<set>.png
 - The test writes the dev pack's option file (`run/shaderpacks/photon_v1.4 + WynnPhoton-dev.txt`) for each option set
   and puts your own options back at the end. If the game is killed half way, your copy is in
   `build/light-test/options-before-test.txt`.
-- The harness is the `lighttest` source set (`src/lighttest/`). Only the `lightTest` run loads it, and it is never
+- The harness is the `lighttest` source set (`src/lighttest/`). Only the screenshot test runs load it, and it is never
   part of the mod jar.
+
+### The sky and map tests
+
+Two more screenshot tests use the same harness, case file format (see the top of `testworld/light_test.txt`) and
+report, at 1600x900:
+
+- `gradlew skyTest` photographs the sun and the moon (`testworld/sky_test.txt`): close-ups at a 30° field of view
+  from sunrise to sunset and through all eight moon phases, wide views with Photon's clouds, rain and thunder, and the
+  ground of a desert, snowy plains, swamp and jungle (the spot's `biome=` fills the ground around it first). Spots
+  aimed at `sun` or `moon` look straight at it, using the game's sun and moon angle and the pack's
+  `sunPathRotation`, so it sits in the middle of the picture; the report shows that middle at 1:1 beside each shot.
+  It compares the cube, the square, Photon's round sun and moon and the vanilla ones. About 70 shots, 8 minutes.
+  Results go to `build/sky-test/`.
+- `gradlew mapTest` photographs the Wynncraft map as Voxy LODs (`testworld/map_test.txt`), the way players see it
+  with Voxy: Mount Wynn from above, a sunset behind it, the sun and moon over the map, and the Realm of Light. Results
+  go to `build/map-test/`. It runs in the "Wynn-Photon Map" world, which `installMapWorld` makes, as WynnVista's Voxy
+  fixture does: a superflat world of air in spectator mode, whose Voxy storage (`voxy/<world id>/storage`) is a copy
+  of a Wynncraft Voxy cache. The cache is `voxyCache` in `local.properties`, or else the biggest Wynncraft world in
+  the `.voxy` folder of the instance holding `shaderpacksDir`. Close Minecraft before the first copy; it is copied
+  once, and again only with `-Pfresh`. `runMapTest` switches `ingest_enabled` off in `run/config/voxy-config.json`
+  for the run and puts the file back afterwards (a copy waits in `build/map-test/` until then), so the empty chunks
+  around the camera never overwrite the LODs; the harness refuses to shoot if it finds ingestion on. Don't open the
+  map world in `gradlew dev`, which ingests. The run uses a render distance of 2.
+- After an Iris reload, Voxy rebuilds its renderer before Iris's new pipeline exists and falls back to its non-shader
+  pipeline (`using pipeline 'NormalRenderPipeline'` in the log), which draws the LODs and the sky wrong until the
+  chunks are reloaded. The harness reloads the chunks (as F3+A does) after every option set's reload. Light test
+  results from before this fix may have shot every set after the first with it.
+- `-Pcases=<file>` runs a test with another case file, for a one-off check.
+- On Windows, `gradlew.bat` breaks a `-Ponly` regex that holds `|`. Set it as an environment variable instead:
+  `ORG_GRADLE_PROJECT_only='sun_close__(noon|sunset)' gradlew skyTest` (Git Bash).
 
 ### Updating to a new Photon release
 

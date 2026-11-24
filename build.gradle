@@ -262,28 +262,76 @@ def prepareDevClient = tasks.register('prepareDevClient', PrepareDevClientTask) 
 	it.devPackName = devPackName
 }
 
+
+// Wynncraft's resource pack isn't downloadable outside the game, so the test worlds take the one Minecraft cached when
+// you joined Wynncraft: from wynncraftInstanceDir (local.properties), the instance holding shaderpacksDir, or .minecraft.
+def wynnPackSources = []
+def wynnInstance = providers.gradleProperty('wynncraftInstanceDir').getOrElse(localProps.getProperty('wynncraftInstanceDir', ''))
+if (!wynnInstance.isBlank()) wynnPackSources << file(wynnInstance)
+if (!devShaderpacks.isBlank()) wynnPackSources << file(devShaderpacks).parentFile
+if (System.getenv('APPDATA')) wynnPackSources << file("${System.getenv('APPDATA')}/.minecraft")
+wynnPackSources << file("${System.getProperty('user.home')}/.minecraft")
+wynnPackSources << file("${System.getProperty('user.home')}/Library/Application Support/minecraft")
+
 def installDevTestWorld = tasks.register('installDevTestWorld', InstallTestWorldTask) {
 	description = 'Installs the test world into run/ for the dev client. -Pfresh starts it over.'
 	dependsOn prepareDevClient
 	instanceDir = devRunDir
 	datapackDir = layout.projectDirectory.dir('testworld/datapack')
-	// Wynncraft's resource pack isn't downloadable outside the game, so take the one Minecraft cached when you joined
-	// Wynncraft: from wynncraftInstanceDir (local.properties), the instance holding shaderpacksDir, or .minecraft.
-	def packSources = []
-	def wynnInstance = providers.gradleProperty('wynncraftInstanceDir').getOrElse(localProps.getProperty('wynncraftInstanceDir', ''))
-	if (!wynnInstance.isBlank()) packSources << file(wynnInstance)
-	if (!devShaderpacks.isBlank()) packSources << file(devShaderpacks).parentFile
-	if (System.getenv('APPDATA')) packSources << file("${System.getenv('APPDATA')}/.minecraft")
-	packSources << file("${System.getProperty('user.home')}/.minecraft")
-	packSources << file("${System.getProperty('user.home')}/Library/Application Support/minecraft")
-	packSourceInstances.from(packSources)
+	packSourceInstances.from(wynnPackSources)
 	worldName = 'Wynn-Photon Test'
 	shaderPack = devPackName
 	fresh = providers.gradleProperty('fresh').isPresent()
 }
 
-def lightTestCases = layout.projectDirectory.file('testworld/light_test.txt')
-def lightTestOut = layout.buildDirectory.dir('light-test')
+// The Wynncraft map world for mapTest: a world of air whose Voxy storage is a copy of a Wynncraft Voxy cache, so Voxy
+// draws the Wynncraft map around the player, as WynnVista's Voxy fixture does. The cache is voxyCache in
+// local.properties (-PvoxyCache=...), or else the biggest Wynncraft world in the .voxy folder of the instance holding
+// shaderpacksDir. Close Minecraft before the first copy. -Pfresh copies it again.
+def voxyCachePath = providers.gradleProperty('voxyCache').orElse(providers.provider {
+	def explicit = localProps.getProperty('voxyCache', '')
+	if (!explicit.isBlank()) return explicit
+	if (devShaderpacks.isBlank()) return null
+	def saves = file(devShaderpacks).parentFile.toPath().resolve('.voxy/saves/play.wynncraft.com').toFile()
+	def biggest = saves.listFiles()?.findAll { new File(it, 'storage/CURRENT').isFile() }?.max { dir ->
+		new File(dir, 'storage').listFiles().sum { it.length() } ?: 0L
+	}
+	return biggest == null ? null : new File(biggest, 'storage').path
+})
+
+def installMapWorld = tasks.register('installMapWorld', InstallTestWorldTask) {
+	group = 'wynn-photon'
+	description = 'Installs the Wynncraft map world (Voxy LODs) into run/ for mapTest. -Pfresh copies the LODs again.'
+	dependsOn prepareDevClient
+	instanceDir = devRunDir
+	packSourceInstances.from(wynnPackSources)
+	worldName = 'Wynn-Photon Map'
+	shaderPack = devPackName
+	voidWorld = true
+	voxyCache.set(layout.dir(voxyCachePath.map { new File(it) }))
+	fresh = providers.gradleProperty('fresh').isPresent()
+	doFirst {
+		if (!voxyCachePath.isPresent()) {
+			throw new GradleException('No Wynncraft Voxy cache found. Set voxyCache in local.properties to '
+					+ '<instance>/.voxy/saves/play.wynncraft.com/<world id>/storage.')
+		}
+	}
+}
+
+// The screenshot tests. Each is a dev client run with the lighttest source set, which photographs every case of its
+// case file and then closes the game, and a report task. -Ponly=<regex> shoots only the cases whose file name
+// (<spot>__<time>__<set>.png) matches. See "The screenshot tests" in docs/DEVELOPMENT.md.
+def screenshotTests = [
+	lightTest: [cases: 'testworld/light_test.txt', out: 'light-test', world: 'Wynn-Photon Test', size: [960, 540],
+				install: installDevTestWorld, title: 'lighting test',
+				what: 'Photographs every lighting test case in the dev client'],
+	skyTest  : [cases: 'testworld/sky_test.txt', out: 'sky-test', world: 'Wynn-Photon Test', size: [1600, 900],
+				install: installDevTestWorld, title: 'sky test',
+				what: 'Photographs the sun and moon at every sky test case in the dev client'],
+	mapTest  : [cases: 'testworld/map_test.txt', out: 'map-test', world: 'Wynn-Photon Map', size: [1600, 900],
+				install: installMapWorld, title: 'map test',
+				what: 'Photographs the Wynncraft map (Voxy LODs) at every map test case in the dev client'],
+]
 
 loom {
 	mods {
@@ -301,17 +349,18 @@ loom {
 			runDir 'run'
 			programArgs '--quickPlaySingleplayer', 'Wynn-Photon Test'
 		}
-		// The dev client plus the lighttest source set, which photographs every case and then closes the game.
-		// -Ponly=<regex> shoots only the cases whose file name (<spot>__<time>__<set>.png) matches.
-		lightTest {
-			client()
-			configName = 'Wynn-Photon light test'
-			runDir 'run'
-			source sourceSets.lighttest
-			programArgs '--quickPlaySingleplayer', 'Wynn-Photon Test', '--width', '960', '--height', '540'
-			property 'wynnphoton.lightTest', lightTestCases.asFile.absolutePath
-			property 'wynnphoton.lightTest.out', lightTestOut.get().asFile.absolutePath
-			property 'wynnphoton.lightTest.only', providers.gradleProperty('only').getOrElse('')
+		screenshotTests.each { name, test ->
+			create(name) {
+				client()
+				configName = "Wynn-Photon ${test.title}"
+				runDir 'run'
+				source sourceSets.lighttest
+				programArgs '--quickPlaySingleplayer', test.world,
+						'--width', test.size[0].toString(), '--height', test.size[1].toString()
+				property 'wynnphoton.lightTest', file(providers.gradleProperty('cases').getOrElse(test.cases)).absolutePath
+				property 'wynnphoton.lightTest.out', layout.buildDirectory.dir(test.out).get().asFile.absolutePath
+				property 'wynnphoton.lightTest.only', providers.gradleProperty('only').getOrElse('')
+			}
 		}
 	}
 }
@@ -323,30 +372,63 @@ tasks.named('runDev') {
 }
 
 // -----------------------------------------------------------------------------
-// Lighting test: gradlew lightTest
+// Screenshot tests: gradlew lightTest, skyTest, mapTest
 //
-// Photographs the light test spots of the test world under the option sets in testworld/light_test.txt, with nobody
-// at the keyboard, and writes build/light-test/report.html. See docs/DEVELOPMENT.md.
+// Each photographs the cases of its file in testworld/ with nobody at the keyboard and writes
+// build/<light|sky|map>-test/report.html. See docs/DEVELOPMENT.md.
 // -----------------------------------------------------------------------------
 
-tasks.named('runLightTest') {
-	description = 'Runs the dev client through every lighting test case and saves the screenshots.'
-	dependsOn installDevTestWorld
+screenshotTests.each { name, test ->
+	def runName = 'run' + name.capitalize()
+	def outDir = layout.buildDirectory.dir(test.out)
+	tasks.named(runName) {
+		description = "Runs the dev client through every ${test.title} case and saves the screenshots."
+		dependsOn test.install
+	}
+	def report = tasks.register("${name}Report", JavaExec) {
+		group = 'wynn-photon'
+		description = "Writes build/${test.out}/report.html from the screenshots of the last ${name} run."
+		classpath = sourceSets.lighttest.output
+		mainClass = 'com.wynnphoton.lighttest.LightTestReport'
+		args file(providers.gradleProperty('cases').getOrElse(test.cases)).absolutePath, outDir.get().asFile.absolutePath
+		mustRunAfter runName
+	}
+	tasks.register(name) {
+		group = 'wynn-photon'
+		description = "${test.what} and writes build/${test.out}/report.html."
+		dependsOn runName, report
+	}
 }
 
-def lightTestReport = tasks.register('lightTestReport', JavaExec) {
-	group = 'wynn-photon'
-	description = 'Writes build/light-test/report.html from the screenshots of the last lightTest run.'
-	classpath = sourceSets.lighttest.output
-	mainClass = 'com.wynnphoton.lighttest.LightTestReport'
-	args lightTestCases.asFile.absolutePath, lightTestOut.get().asFile.absolutePath
-	mustRunAfter 'runLightTest'
+// The map world must never let Voxy ingest its empty chunks over the copied Wynncraft LODs. Voxy reads
+// ingest_enabled from run/config/voxy-config.json when it starts, so runMapTest switches it off there for the run and
+// puts the file back afterwards, even when the run fails. (The harness also refuses to shoot if it finds it on.)
+def voxyConfig = devRunDir.file('config/voxy-config.json').asFile
+def voxyConfigBackup = layout.buildDirectory.file('map-test/voxy-config-before-test.json').get().asFile
+def restoreVoxyConfig = tasks.register('restoreVoxyConfig') {
+	description = 'Puts back run/config/voxy-config.json after runMapTest.'
+	doLast {
+		if (voxyConfigBackup.isFile()) {
+			java.nio.file.Files.move(voxyConfigBackup.toPath(), voxyConfig.toPath(),
+					java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+		}
+	}
 }
-
-tasks.register('lightTest') {
-	group = 'wynn-photon'
-	description = 'Photographs every lighting test case in the dev client and writes build/light-test/report.html.'
-	dependsOn 'runLightTest', lightTestReport
+tasks.named('runMapTest') {
+	finalizedBy restoreVoxyConfig
+	doFirst {
+		if (voxyConfig.isFile()) {
+			voxyConfigBackup.parentFile.mkdirs()
+			if (!voxyConfigBackup.isFile()) {
+				java.nio.file.Files.copy(voxyConfig.toPath(), voxyConfigBackup.toPath())
+			}
+			def config = new groovy.json.JsonSlurper().parse(voxyConfig)
+			config.ingest_enabled = false
+			voxyConfig.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(config)) + '\n'
+		} else {
+			throw new GradleException("${voxyConfig} does not exist yet. Start the dev client once (gradlew dev).")
+		}
+	}
 }
 
 tasks.register('dev') {

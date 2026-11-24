@@ -48,7 +48,10 @@ versions (Voxy, Mod Menu). Wynncraft's CDN refuses downloads outside the game, s
 cached in an instance's `downloads/`.
 `gradlew lightTest` photographs the test world's light test spots under the option sets in
 `testworld/light_test.txt`, unattended, and writes `build/light-test/report.html` with mean luminances (see "The
-lighting test" in `docs/DEVELOPMENT.md`). Its harness is the dev-only `lighttest` source set.
+lighting test" in `docs/DEVELOPMENT.md`). Its harness is the dev-only `lighttest` source set. `gradlew skyTest`
+(`testworld/sky_test.txt`) photographs the sun and moon, aimed at them, across times, moon phases, weather and biomes;
+`gradlew mapTest` (`testworld/map_test.txt`) photographs the Wynncraft map as Voxy LODs in the "Wynn-Photon Map"
+world, which `installMapWorld` builds from a copy of the user's Wynncraft Voxy cache (see "The sky and map tests").
 `gradlew installTestWorld` also installs the "Wynn-Photon Test" gallery world and selects the dev pack in Iris (see
 `testworld/README.md`). Add an exhibit there for every new block change.
 
@@ -81,14 +84,26 @@ lighting test" in `docs/DEVELOPMENT.md`). Its harness is the dev-only `lighttest
   pixels, skyboxes, fog. Don't edit Photon's entity, hand or text programs, don't reuse colortex11-13, and keep
   "photon" in the pack name. See "Scope" in `docs/research/wynn-rp-blocks.md`. One deliberate exception: the
   defaults of Photon's own sky options `VANILLA_SUN`, `VANILLA_MOON` and `GALAXY` are on, because Wynncraft's pack
-  ships no sun or moon texture and so uses the vanilla ones. No sky code is changed. A second exception, for
+  ships no sun or moon texture and so uses the vanilla ones. `VANILLA_SUN` and `VANILLA_MOON` are off again since 0.10.1,
+  for the third exception below. A second exception, for
   WynnVista: `d2_clouds_upscaling.fsh` keeps a cloud distance for WynnVista's world effects in `colortex12.a`, and
   `colortex12` is RGBA16F for it. Nothing Photon reads is changed. WynnVista uses that channel whenever the buffer
-  has one, so keep its meaning: blocks to the cloud, 0 for none and on terrain. A third exception: meteors
-  (`include/sky/meteors.glsl`, `WYNN_METEORS`) are added to the night sky in `sky.glsl` and to sky reflections in
-  `specular_lighting.glsl`. Reflected meteors hide behind clouds through the clouds' transmittance, which
-  `d0_sky_map.fsh` keeps in the sky map's (`colortex4`) alpha; nothing of Photon's reads that channel. WynnIris draws
-  no skybox in Gavel, and nothing of Photon's sky is changed.
+  has one, so keep its meaning: blocks to the cloud, 0 for none and on terrain. A third exception: our own sun and moon
+  (`draw_wynn_sun` and `draw_wynn_moon` in `include/sky/sky.glsl`), which `draw_sky` draws in place of Photon's round
+  ones. They change the pictures only, not the light, and `VANILLA_SUN` and `VANILLA_MOON` replace them. The sun
+  (`WYNN_SUN`) is Photon's sun with the vanilla sun's shape: a square, or with `WYNN_SUN_CUBE` a cube seen from one
+  corner. The moon (`WYNN_MOON`) is the same cube made of rock, with phases from which faces are lit. The look follows
+  the "Cubic Sun & Moon" resource pack, which is all rights reserved: nothing of it is copied, and both cubes are
+  computed. The sun cube is seen exactly from one corner, so that corner, its white-hot part, is the sun's
+  direction and Photon's sunlight lines up with it. Everything else on the sun has fixed luminances near the sky's,
+  tuned from screenshots, because Photon's tone mapping burns anything much brighter to white and the faces and rims
+  are lost; for the same reason the cube's corner sends out a fifth of the light of Photon's disk, or its bloom
+  hides the cube. A first version in Wynncraft's pixel-art style (gold rays, texels covering the sky) clashed
+  with Photon's look. A fourth exception: meteors
+  (`include/sky/meteors.glsl`, `WYNN_METEORS`), added to the night sky in `draw_sky` after the stars and to sky
+  reflections in `specular_lighting.glsl`. Reflected meteors hide behind clouds through the clouds' transmittance,
+  which `d0_sky_map.fsh` keeps in the sky map's (`colortex4`) alpha; nothing of Photon's reads that channel. WynnIris
+  draws no skybox in Gavel.
 - Every light change updates both the colored-light volume (`block.properties` + `light_colors.glsl`) and Photonics
   (`ph_lights.json`). Photonics' built-in defaults list `repeater`, `comparator`, `redstone_torch` and
   `enchanting_table` by name. To remove one of those lights, also add the block to the `"disabled"` override in

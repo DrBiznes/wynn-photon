@@ -7,6 +7,16 @@ Every version so far patches Photon v1.4.
 **Added**
 - Meteors in the night sky. Shooting stars cross the sky at night, most of them white, some blue, a few purple, and very rarely red or yellow, like the meteors that have fallen on Gavel for two thousand years. Now and then a large, slow fireball with a long glowing tail goes by, and on a rare night there is a meteor shower. They reflect in water, and hide behind clouds there as in the sky. "Meteors", "Meteor Rate", "Meteor Showers" and "Fireballs" on the Wynn-Photon page set them.
 
+## 0.10.1
+
+**Added**
+- Cubic Sun: the sun is now a glowing cube seen from one corner, lit like Photon's sun: white-hot in the middle, where the sunlight comes from, with three faces that cool towards its outline, each in its own tone. "Cubic Sun" on the Wynn-Photon page turns it into a flat square, like the vanilla sun's, with a white-hot centre and a faint warm rim. "Wynn-Photon Sun" turns both off, for Photon's round sun, and "Sun Size" resizes it. Sunlight and shadows are unchanged.
+- Cubic Moon: the moon is now a cube of rock. Its phases are which of its three faces are lit: all of them at full moon, none at new moon. "Cubic Moon" and "Moon Size" on the Wynn-Photon page turn it off and resize it. Moonlight is unchanged.
+- A small easter egg on the cubic moon, for those who look closely. "Moon Base" on the Wynn-Photon page turns it off.
+
+**Changed**
+- Vanilla Sun and Vanilla Moon are off by default again, so the cubic sun and moon show. Turn them on, on the Sky page, to get the vanilla ones back.
+
 ## 0.10.0
 
 **Added**

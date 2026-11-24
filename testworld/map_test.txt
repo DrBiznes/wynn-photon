@@ -1,0 +1,29 @@
+# The Wynncraft map comparison that `gradlew mapTest` runs (see docs/DEVELOPMENT.md, "The screenshot tests").
+# The format is described at the top of light_test.txt.
+#
+# It is shot in the map world (installMapWorld): a world of air whose Voxy storage is a copy of a Wynncraft Voxy
+# cache, so everything in the pictures is Voxy LOD terrain, as on Wynncraft with Voxy. Voxy's ingestion is off for
+# the run. A render distance of 2 keeps the empty vanilla chunks around the camera small. Mount Wynn's peak is at
+# -183 205 -1964; yaw 0 looks south, 90 west, 180 north.
+
+world map
+renderdistance 2
+
+spot overview      -183 200 -1450  180 15  fov=70 settle=12000 times=noon,sunset,midnight,noon_rain
+spot west_sunset    420 200 -1964   90 -5  fov=70 settle=12000 times=afternoon,sunset
+spot sun_over_map  -183 190 -1700  sun 25  fov=70 settle=12000 times=morning,noon,sunset
+spot moon_over_map -183 190 -1700  moon 25 fov=70 settle=12000 times=midnight
+spot light_realm   -800 160 -6100    0 12  fov=70 settle=12000 times=noon,midnight
+
+time morning    1500
+time noon       6000
+time afternoon  9500
+time sunset    12300
+time midnight  18000
+time noon_rain  6000 weather=rain
+
+set cube
+set photon   WYNN_SUN=false WYNN_MOON=false
+set vanilla  VANILLA_SUN=true VANILLA_MOON=true
+
+compare photon cube  The cube sun and moon, relative to Photon's round ones

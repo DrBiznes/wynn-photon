@@ -1,0 +1,47 @@
+# The sun and moon comparison that `gradlew skyTest` runs (see docs/DEVELOPMENT.md, "The screenshot tests").
+# The format is described at the top of light_test.txt. Every spot is photographed at the times and with the option
+# sets it lists (all of them when it lists none).
+#
+# The spots stand on open ground well away from the gallery; the biome spots are far out and give the ground around
+# them their biome first. Aimed spots ("sun"/"moon") look straight at it, so it is in the middle of the picture; their
+# pitch is added to that (positive looks lower, to bring the horizon in).
+
+world gallery
+
+spot sun_close     200.5 -60 200.5   sun   0  fov=30 times=sunrise,morning,noon,afternoon,sunset sets=cube_clear,square_clear,photon_clear,vanilla_clear
+spot sun_sky       200.5 -60 200.5   sun  15  fov=70 times=sunrise,noon,sunset,noon_rain,noon_thunder sets=cube,cube_clear
+spot moon_close    200.5 -60 200.5   moon  0  fov=30 times=m0,m1,m2,m3,m4,m5,m6,m7 sets=cube_clear,photon_clear,vanilla_clear
+spot moon_sky      200.5 -60 200.5   moon 15  fov=70 times=m0,m4,midnight_rain sets=cube,cube_clear
+spot desert_sun   2000.5 -60   0.5   sun  20  fov=70 biome=minecraft:desert times=noon,sunset sets=cube
+spot snowy_sun    2000.5 -60 2000.5  sun  20  fov=70 biome=minecraft:snowy_plains times=noon,noon_rain sets=cube
+spot snowy_moon   2000.5 -60 2000.5  moon 20  fov=70 biome=minecraft:snowy_plains times=m0 sets=cube
+spot swamp_sun       0.5 -60 2000.5  sun  20  fov=70 biome=minecraft:swamp times=sunset sets=cube
+spot jungle_moon -2000.5 -60   0.5   moon 20  fov=70 biome=minecraft:jungle times=m0 sets=cube
+
+time sunrise        23500
+time morning         1500
+time noon            6000
+time afternoon       9500
+time sunset         12300
+time noon_rain       6000 weather=rain
+time noon_thunder    6000 weather=thunder
+# The moon's phase is the day number modulo 8: m0 is full, m4 is new
+time m0             18000
+time m1             42000
+time m2             66000
+time m3             90000
+time m4            114000
+time m5            138000
+time m6            162000
+time m7            186000
+time midnight_rain  18000 weather=rain
+
+# "clear" sets switch Photon's clouds off so nothing covers the sun or moon
+set cube
+set cube_clear    CLOUDS_CUMULUS=false CLOUDS_CUMULUS_CONGESTUS=false CLOUDS_ALTOCUMULUS=false CLOUDS_CIRRUS=false CLOUDS_NOCTILUCENT=false
+set square_clear  WYNN_SUN_CUBE=false CLOUDS_CUMULUS=false CLOUDS_CUMULUS_CONGESTUS=false CLOUDS_ALTOCUMULUS=false CLOUDS_CIRRUS=false CLOUDS_NOCTILUCENT=false
+set photon_clear  WYNN_SUN=false WYNN_MOON=false CLOUDS_CUMULUS=false CLOUDS_CUMULUS_CONGESTUS=false CLOUDS_ALTOCUMULUS=false CLOUDS_CIRRUS=false CLOUDS_NOCTILUCENT=false
+set vanilla_clear VANILLA_SUN=true VANILLA_MOON=true CLOUDS_CUMULUS=false CLOUDS_CUMULUS_CONGESTUS=false CLOUDS_ALTOCUMULUS=false CLOUDS_CIRRUS=false CLOUDS_NOCTILUCENT=false
+
+compare photon_clear cube_clear   The cube sun and moon, relative to Photon's round ones
+compare cube_clear square_clear   The square sun, relative to the cube

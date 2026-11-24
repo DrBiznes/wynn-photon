@@ -5,7 +5,7 @@
  
  screen.distance_view                   = Distance View
 +screen.wynn_photon                     = §aWynn-Photon
-+screen.wynn_photon.comment             = Wynn-Photon's settings for its Wynncraft block changes
++screen.wynn_photon.comment             = Wynn-Photon's settings for its Wynncraft block changes and its sun
  
  option.INFO                            = Photon Shaders
  value.INFO.0                           = §eby SixthSurge
@@ -19,7 +19,7 @@
  option.SNOW_OPACITY                    = Snow Opacity
  option.SNOW_OPACITY.comment            = Adjust the opacity of snow particles
  option.EDGE_HIGHLIGHT                  = Edge Highlight
-@@ -819,4 +822,38 @@
+@@ -819,4 +822,50 @@
  option.PHOTONICS_RESTIR_COMBINED_GI       = Include Skylight GI
  option.PHOTONICS_RESTIR_COMBINED_GI.comment = Whether Gi should be ran through ReSTIR's denoiser instead of its usual path. \nResults in much sharper Gi, at the cost of performance.
  
@@ -27,7 +27,7 @@
  
 +option.WYNN_PHOTON_INFO                = Wynn-Photon
 +value.WYNN_PHOTON_INFO.0               = §aWynncraft block tweaks
-+option.WYNN_PHOTON_INFO.comment        = Wynn-Photon patches Photon for Wynncraft's resource pack. These settings tune its block changes. The strengths scale both the glow and the light the block casts, in Colored Lights and in Photonics
++option.WYNN_PHOTON_INFO.comment        = Wynn-Photon patches Photon for Wynncraft's resource pack. These settings tune its block changes and its sun. The strengths scale both the glow and the light the block casts, in Colored Lights and in Photonics
 +option.WYNN_EMERALD_GLOW               = Emerald Glow
 +option.WYNN_EMERALD_GLOW.comment       = Emerald blocks glow faintly green, and emerald ore glows in its green specks. Both cast a faint green light
 +option.WYNN_EMERALD_GLOW_I             = Emerald Glow Strength
@@ -58,3 +58,15 @@
 +option.WYNN_FIREBALLS.comment            = Now and then a large, slow meteor with a long glowing tail crosses the sky. Needs Meteors
 +option.WYNN_PLAYER_LIGHT_I               = Player Light
 +option.WYNN_PLAYER_LIGHT_I.comment       = The player lights their surroundings as if always holding a torch, like the light radius in Diablo. 1.00 is as bright as a torch; higher is brighter and reaches further. A torch or lantern you really hold counts towards it. It casts no shadows. 0 turns it off
++option.WYNN_SUN                          = Wynn-Photon Sun
++option.WYNN_SUN.comment                  = Draws Wynn-Photon's own sun in place of Photon's round one: a glowing cube, or a flat square like the vanilla sun's with Cubic Sun off. It is lit like Photon's sun, a bright light in the sky. Only the picture changes: sunlight and shadows stay the same. Vanilla Sun, on the Sky page, replaces it when on
++option.WYNN_SUN_CUBE                     = Cubic Sun
++option.WYNN_SUN_CUBE.comment             = Makes the Wynn-Photon Sun a cube seen from one corner. It is white-hot in the middle, where the sunlight comes from, and its three faces cool towards its outline, each in its own tone. Off leaves it a flat square with a white-hot centre and a faint warm rim
++option.WYNN_SUN_SIZE                     = Sun Size
++option.WYNN_SUN_SIZE.comment             = Half the width of the square sun in degrees. The cubic sun is about a third wider. A larger sun is less dazzling, because it gives off the same light
++option.WYNN_MOON                         = Cubic Moon
++option.WYNN_MOON.comment                 = Draws the moon as a cube of rock, in place of Photon's round moon. Its phases are which of its three faces are lit: all of them at full moon, none at new moon. Only the picture changes: moonlight stays the same. Vanilla Moon, on the Sky page, replaces it when on
++option.WYNN_MOON_SIZE                    = Moon Size
++option.WYNN_MOON_SIZE.comment            = Half the width of the cubic moon in degrees
++option.WYNN_MOON_BASE                    = Moon Base
++option.WYNN_MOON_BASE.comment            = A small easter egg on the cubic moon, for those who look closely: the Humyn colony from Wynncraft's moon quest
