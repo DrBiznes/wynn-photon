@@ -49,13 +49,13 @@
 +option.WYNN_MIN_LIGHT_I                 = Minimum Light
 +option.WYNN_MIN_LIGHT_I.comment         = The least light any surface gets, so nights, dense cities and caves never go fully black. It fades away where other light is brighter, so daylight and lit rooms don't change. Higher values show more detail in the dark but look flatter. 0 turns it off
 +option.WYNN_METEORS                      = Meteors
-+option.WYNN_METEORS.comment              = Shooting stars cross the night sky, as meteors have fallen on Gavel for two thousand years. Most are white, some blue, a few purple, and red and yellow ones are very rare. They reflect in water
++option.WYNN_METEORS.comment              = Shooting stars cross the night sky, as meteors have fallen on Gavel for two thousand years. Most are white, some blue, a few purple, and red and yellow ones are very rare. Every few minutes a bigger one falls, which flares up or breaks into pieces. They reflect in water
 +option.WYNN_METEOR_RATE                  = Meteor Rate
 +option.WYNN_METEOR_RATE.comment          = How often shooting stars and fireballs fall. At 1.00 a shooting star falls about every 25 seconds, somewhere in the sky
 +option.WYNN_METEOR_SHOWERS               = Meteor Showers
 +option.WYNN_METEOR_SHOWERS.comment       = On a rare night the sky fills with shooting stars, all falling away from one point. Needs Meteors
 +option.WYNN_FIREBALLS                    = Fireballs
-+option.WYNN_FIREBALLS.comment            = Now and then a large, slow meteor with a long glowing tail crosses the sky. Needs Meteors
++option.WYNN_FIREBALLS.comment            = Now and then a large, slow meteor crosses the sky behind its bow shock, trailing sparks and a long glowing wake. A few are giants, and sometimes a purple and a blue one fall side by side. Needs Meteors
 +option.WYNN_PLAYER_LIGHT_I               = Player Light
 +option.WYNN_PLAYER_LIGHT_I.comment       = The player lights their surroundings as if always holding a torch, like the light radius in Diablo. 1.00 is as bright as a torch; higher is brighter and reaches further. A torch or lantern you really hold counts towards it. It casts no shadows. 0 turns it off
 +option.WYNN_SUN                          = Wynn-Photon Sun

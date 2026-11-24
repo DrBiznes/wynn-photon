@@ -103,7 +103,8 @@ world, which `installMapWorld` builds from a copy of the user's Wynncraft Voxy c
   (`include/sky/meteors.glsl`, `WYNN_METEORS`), added to the night sky in `draw_sky` after the stars and to sky
   reflections in `specular_lighting.glsl`. Reflected meteors hide behind clouds through the clouds' transmittance,
   which `d0_sky_map.fsh` keeps in the sky map's (`colortex4`) alpha; nothing of Photon's reads that channel. WynnIris
-  draws no skybox in Gavel.
+  draws no skybox in Gavel. Meteors fall at random, so test them with `gradlew skyTest -Pcases=testworld/meteor_test.txt`:
+  the hidden option `WYNN_METEOR_TEST` draws one of every kind side by side, frozen in flight.
 - Every light change updates both the colored-light volume (`block.properties` + `light_colors.glsl`) and Photonics
   (`ph_lights.json`). Photonics' built-in defaults list `repeater`, `comparator`, `redstone_torch` and
   `enchanting_table` by name. To remove one of those lights, also add the block to the `"disabled"` override in

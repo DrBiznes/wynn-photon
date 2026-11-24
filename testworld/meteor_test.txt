@@ -1,0 +1,25 @@
+# The meteor sheet: `gradlew skyTest -Pcases=testworld/meteor_test.txt` (see docs/DEVELOPMENT.md, "The sky and map
+# tests"). The format is described at the top of light_test.txt.
+#
+# Meteors fall at random, so the hidden shader option WYNN_METEOR_TEST draws one of every kind side by side in the
+# southern sky instead, frozen 1 to 5 sixths of the way through its flight. From east (left) to west: two shooting
+# stars, a white and a purple bright meteor (they flare at 5), a blue one that breaks up (from 3 on), a small white, a
+# yellow and a giant red fireball, and the purple and blue pair. Each set is shot with and without Photon's galaxy.
+
+world gallery
+
+spot sheet      200.5 -60 200.5     0 -38  fov=70
+# The heads of the yellow and the giant red fireball at t3, for the bow shock
+spot shock      200.5 -60 200.5   -27 -43  fov=30 sets=t3,t3_nogalaxy
+# The same in clouds
+spot clouds     200.5 -60 200.5     0 -38  fov=70 sets=t3_clouds
+
+time midnight 18000
+
+set t1            WYNN_METEOR_TEST=1 CLOUDS_CUMULUS=false CLOUDS_CUMULUS_CONGESTUS=false CLOUDS_ALTOCUMULUS=false CLOUDS_CIRRUS=false CLOUDS_NOCTILUCENT=false
+set t3            WYNN_METEOR_TEST=3 CLOUDS_CUMULUS=false CLOUDS_CUMULUS_CONGESTUS=false CLOUDS_ALTOCUMULUS=false CLOUDS_CIRRUS=false CLOUDS_NOCTILUCENT=false
+set t4            WYNN_METEOR_TEST=4 CLOUDS_CUMULUS=false CLOUDS_CUMULUS_CONGESTUS=false CLOUDS_ALTOCUMULUS=false CLOUDS_CIRRUS=false CLOUDS_NOCTILUCENT=false
+set t5            WYNN_METEOR_TEST=5 CLOUDS_CUMULUS=false CLOUDS_CUMULUS_CONGESTUS=false CLOUDS_ALTOCUMULUS=false CLOUDS_CIRRUS=false CLOUDS_NOCTILUCENT=false
+set t3_nogalaxy   WYNN_METEOR_TEST=3 GALAXY=false CLOUDS_CUMULUS=false CLOUDS_CUMULUS_CONGESTUS=false CLOUDS_ALTOCUMULUS=false CLOUDS_CIRRUS=false CLOUDS_NOCTILUCENT=false
+set t5_nogalaxy   WYNN_METEOR_TEST=5 GALAXY=false CLOUDS_CUMULUS=false CLOUDS_CUMULUS_CONGESTUS=false CLOUDS_ALTOCUMULUS=false CLOUDS_CIRRUS=false CLOUDS_NOCTILUCENT=false
+set t3_clouds     WYNN_METEOR_TEST=3

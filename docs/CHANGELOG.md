@@ -5,7 +5,7 @@ Every version so far patches Photon v1.4.
 ## 0.11.0
 
 **Added**
-- Meteors in the night sky. Shooting stars cross the sky at night, most of them white, some blue, a few purple, and very rarely red or yellow, like the meteors that have fallen on Gavel for two thousand years. Now and then a large, slow fireball with a long glowing tail goes by, and on a rare night there is a meteor shower. They reflect in water, and hide behind clouds there as in the sky. "Meteors", "Meteor Rate", "Meteor Showers" and "Fireballs" on the Wynn-Photon page set them.
+- Meteors in the night sky. Shooting stars cross the sky at night, most of them white, some blue, a few purple, and very rarely red or yellow, like the meteors that have fallen on Gavel for two thousand years. Every few minutes a bigger, bright meteor falls, which flares up as it burns out or breaks into three pieces. Now and then a large, slow fireball goes by: a white-hot head behind a bow shock in the meteor's colour, shedding sparks and leaving a long wake that drifts as it fades. Fireballs come in every size up to rare giants, and one in five is a purple and a blue meteor falling side by side, as in the Gylia Cataclysm. On a rare night there is a meteor shower. They reflect in water, and hide behind clouds there as in the sky. "Meteors", "Meteor Rate", "Meteor Showers" and "Fireballs" on the Wynn-Photon page set them.
 
 ## 0.10.1
 
