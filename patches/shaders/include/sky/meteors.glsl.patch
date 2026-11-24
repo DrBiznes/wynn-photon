@@ -1,0 +1,271 @@
+--- /dev/null
++++ b/shaders/include/sky/meteors.glsl
+@@ -1,0 +1,268 @@
++#if !defined INCLUDE_SKY_METEORS
++#define INCLUDE_SKY_METEORS
++
++// Wynn-Photon: meteors in the night sky (WYNN_METEORS). Meteors have been falling on Wynncraft's Gavel province for
++// two thousand years, so the night sky gets shooting stars, now and then a slow fireball, and on rare nights a
++// meteor shower. Their colours follow the lore: most are white, some blue, a few purple, and red and yellow are
++// one-offs. Everything is procedural: time is cut into slots, and a hash of each slot decides whether a meteor
++// falls in it, where, how fast and in which colour. Meteors only draw light; they cast none.
++//
++// draw_meteors() is called for the sky itself (sky.glsl) and for sky reflections (specular_lighting.glsl), which is
++// why it takes nothing but a world-space direction.
++
++#if defined WYNN_METEORS && defined WORLD_OVERWORLD
++
++#include "/include/utility/color.glsl"
++#include "/include/utility/random.glsl"
++
++// x: frameTimeCounter, y: world day (0 to 511), z: night factor, 0 by day and in rain (see shaders.properties)
++uniform vec3 wynn_meteor_clock;
++
++// The real date and time. They only pick which ten minutes have a meteor shower
++uniform ivec3 currentDate;
++uniform ivec3 currentTime;
++
++// Shooting stars: this many lanes, each with one slot every wynn_meteor_period seconds
++const int wynn_meteor_lanes = 6;
++const float wynn_meteor_period = 2.6;
++// Chance that a slot holds a shooting star. On a normal night about one falls every 25 seconds, somewhere in the sky
++const float wynn_meteor_chance = 0.017 * WYNN_METEOR_RATE;
++// The same in a meteor shower: about one a second
++const float wynn_meteor_shower_chance = 0.4;
++// One ten-minute window in this many is a meteor shower
++const float wynn_meteor_shower_rarity = 24.0;
++
++// Fireballs: one slot every wynn_fireball_period seconds, rarely filled (about one every 20 minutes of night)
++const float wynn_fireball_period = 24.0;
++const float wynn_fireball_chance = 0.02 * WYNN_METEOR_RATE;
++
++// Linear Rec. 709 colour of a meteor. x picks it: white is the most common, then blue, purple, red and yellow
++vec3 wynn_meteor_color(float x, bool fireball) {
++    // Fireballs are coloured more often, so that the rare colours are seen at all
++    vec4 thresholds
++        = fireball ? vec4(0.50, 0.75, 0.90, 0.95) : vec4(0.80, 0.92, 0.97, 0.985);
++
++    if (x < thresholds.x) {
++        return vec3(1.00, 0.97, 0.90); // White
++    } else if (x < thresholds.y) {
++        return vec3(0.25, 0.55, 1.00); // Blue
++    } else if (x < thresholds.z) {
++        return vec3(0.62, 0.25, 1.00); // Purple
++    } else if (x < thresholds.w) {
++        return vec3(1.00, 0.20, 0.12); // Red
++    } else {
++        return vec3(1.00, 0.80, 0.15); // Yellow
++    }
++}
++
++// A direction in the upper sky. u.x picks the compass direction and u.y the height
++vec3 wynn_meteor_direction(vec2 u, float min_height, float max_height) {
++    float y = mix(min_height, max_height, u.y);
++    float r = sqrt(1.0 - y * y);
++    return vec3(r * cos(tau * u.x), y, r * sin(tau * u.x));
++}
++
++// Brightness of a streak along the great circle that leaves `start` away from `radiant`.
++// head: how far the head has travelled from `start`, in radians
++// tail: length of the tail behind the head, in radians
++// width: half width of the streak at its head, in radians
++// halo: strength of a soft glow around the head
++// Returns the brightness in x and, in y, how much of it belongs to the head rather than the tail
++vec2 wynn_meteor_streak(
++    vec3 ray_dir,
++    vec3 start,
++    vec3 radiant,
++    float head,
++    float tail,
++    float width,
++    float halo
++) {
++    vec3 normal = cross(radiant, start);
++    float normal_length = length(normal);
++    if (normal_length < 1e-3) {
++        return vec2(0.0);
++    }
++    normal /= normal_length;
++
++    // Sideways distance from the path. Small angles, so the sine stands in for the angle
++    float side = dot(ray_dir, normal);
++    float reach = (halo > 0.0 ? 12.0 : 4.0) * width;
++    if (abs(side) > reach) {
++        return vec2(0.0);
++    }
++
++    // Distance along the path from `start`, and how far behind the head that is
++    vec3 tangent = cross(normal, start);
++    float along = atan(dot(ray_dir, tangent), dot(ray_dir, start));
++    float behind = head - along;
++    if (behind < -reach || behind > tail) {
++        return vec2(0.0);
++    }
++
++    // The tail narrows and dims away from the head
++    float tail_fade = behind > 0.0 ? sqr(1.0 - behind / tail) : 1.0;
++    float local_width = width * (0.35 + 0.65 * tail_fade);
++    float front = min(behind, 0.0);
++
++    float streak = exp(-(side * side + front * front) / (local_width * local_width))
++        * tail_fade;
++
++    // Soft glow around the head
++    float head_distance = length(vec2(side, behind));
++    float glow = halo * exp(-head_distance / (3.0 * width));
++
++    // The head: the glow and the first few widths of the streak
++    float head_share = exp(-max(behind, 0.0) / (6.0 * width));
++
++    return vec2(streak + glow, (streak * head_share + glow) / max(streak + glow, 1e-6));
++}
++
++vec3 draw_meteors(vec3 ray_dir) {
++    float night = wynn_meteor_clock.z;
++
++    // Nothing by day, and nothing at or under the horizon
++    if (night < 1e-3 || ray_dir.y < 0.02) {
++        return vec3(0.0);
++    }
++
++    float time = wynn_meteor_clock.x;
++    // Changes the pattern from night to night and from day to day, so that it doesn't repeat every session
++    float seed = wynn_meteor_clock.y + 0.37 * float(currentDate.z);
++
++    vec3 meteors = vec3(0.0);
++
++    // Meteor shower: decided for ten real minutes at a time, which is about one night in game. All of a shower's
++    // meteors fall away from one point in the sky, its radiant
++#ifdef WYNN_METEOR_SHOWERS
++    float shower_window = float(currentTime.x * 6 + currentTime.y / 10)
++        + 144.0 * float(currentDate.z) + 4464.0 * float(currentDate.y);
++    vec4 shower_hash = hash4(vec2(shower_window, 71.3));
++    bool shower = shower_hash.x * wynn_meteor_shower_rarity < 1.0;
++    vec3 shower_radiant = wynn_meteor_direction(shower_hash.yz, 0.3, 0.9);
++    float chance = shower ? wynn_meteor_shower_chance : wynn_meteor_chance;
++#else
++    const bool shower = false;
++    const vec3 shower_radiant = vec3(0.0, 1.0, 0.0);
++    const float chance = wynn_meteor_chance;
++#endif
++
++    // Shooting stars
++
++    for (int lane = 0; lane < wynn_meteor_lanes; ++lane) {
++        // The lanes' slots start at different times
++        float lane_time
++            = time / wynn_meteor_period + float(lane) / float(wynn_meteor_lanes);
++        float slot = floor(lane_time);
++        vec2 key = vec2(slot, 7.31 * float(lane) + seed);
++
++        vec4 hash_0 = hash4(key);
++        if (hash_0.x >= chance) {
++            continue;
++        }
++        vec4 hash_1 = hash4(key + vec2(0.0, 3.7));
++
++        // When it falls within its slot, and for how long
++        float duration = mix(0.35, 0.9, hash_1.w);
++        float delay = hash_0.w * (wynn_meteor_period - duration);
++        float progress
++            = (fract(lane_time) * wynn_meteor_period - delay) / duration;
++        if (progress <= 0.0 || progress >= 1.0) {
++            continue;
++        }
++
++        vec3 start = wynn_meteor_direction(hash_0.yz, 0.2, 0.95);
++        vec3 radiant = shower
++            ? shower_radiant
++            : wynn_meteor_direction(hash_1.xy, 0.1, 1.0);
++
++        float path_length = mix(8.0, 22.0, hash_1.z) * degree;
++        float head = path_length * progress;
++        float tail = min(head, 0.45 * path_length) + 0.1 * degree;
++
++        // Brightens quickly and burns out slowly
++        float envelope
++            = linear_step(0.0, 0.15, progress) * linear_step(1.0, 0.55, progress);
++
++        vec4 hash_2 = hash4(key + vec2(0.0, 9.1));
++        float luminance = mix(1.5, 4.0, sqr(hash_2.x));
++
++        meteors += wynn_meteor_color(hash_2.y, false)
++            * (luminance * envelope
++                * wynn_meteor_streak(
++                      ray_dir,
++                      start,
++                      radiant,
++                      head,
++                      tail,
++                      0.07 * degree,
++                      0.0
++                ).x);
++    }
++
++    // Fireball: one big, slow meteor with a long tail and a soft glow around its head
++
++#ifdef WYNN_FIREBALLS
++    {
++        float lane_time = time / wynn_fireball_period;
++        float slot = floor(lane_time);
++        vec2 key = vec2(slot, 113.9 + seed);
++
++        vec4 hash_0 = hash4(key);
++        if (hash_0.x < wynn_fireball_chance) {
++            vec4 hash_1 = hash4(key + vec2(0.0, 3.7));
++
++            float duration = mix(3.0, 5.0, hash_1.w);
++            float delay = hash_0.w * (wynn_fireball_period - duration);
++            float progress
++                = (fract(lane_time) * wynn_fireball_period - delay) / duration;
++
++            if (progress > 0.0 && progress < 1.0) {
++                vec3 start = wynn_meteor_direction(hash_0.yz, 0.35, 0.9);
++                vec3 radiant = wynn_meteor_direction(hash_1.xy, 0.5, 1.0);
++
++                float path_length = mix(35.0, 60.0, hash_1.z) * degree;
++                float head = path_length * progress;
++                float tail = min(head, 0.5 * path_length) + 0.5 * degree;
++
++                float envelope = linear_step(0.0, 0.1, progress)
++                    * linear_step(1.0, 0.7, progress);
++
++                // The head flickers as it burns
++                float flicker = 0.8 + 0.4 * noise_1d(18.0 * time);
++
++                vec4 hash_2 = hash4(key + vec2(0.0, 9.1));
++
++                vec2 streak = wynn_meteor_streak(
++                    ray_dir,
++                    start,
++                    radiant,
++                    head,
++                    tail,
++                    0.2 * degree,
++                    0.25
++                );
++
++                // A white-hot head trailing a tail in the meteor's colour
++                vec3 tail_color = wynn_meteor_color(hash_2.y, true);
++                vec3 head_color = vec3(1.00, 0.95, 0.85);
++                vec3 color = mix(tail_color, head_color, streak.y);
++
++                meteors += color * (6.0 * envelope * flicker * streak.x);
++            }
++        }
++    }
++#endif
++
++    // Fade out towards the horizon, where the air is thickest
++    float horizon_fade = linear_step(0.02, 0.2, ray_dir.y);
++
++    return meteors * (night * horizon_fade) * rec709_to_working_color;
++}
++
++#else
++
++vec3 draw_meteors(vec3 ray_dir) { return vec3(0.0); }
++
++#endif
++
++#endif // INCLUDE_SKY_METEORS

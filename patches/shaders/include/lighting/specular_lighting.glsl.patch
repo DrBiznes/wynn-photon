@@ -1,0 +1,32 @@
+--- a/shaders/include/lighting/specular_lighting.glsl
++++ b/shaders/include/lighting/specular_lighting.glsl
+@@ -16,6 +16,12 @@
+ #include "/include/fog/overworld/analytic.glsl"
+ #endif
+ 
++// Wynn-Photon: meteors reflect in water and other smooth surfaces. Not on Voxy's far terrain, whose programs
++// can't declare the meteors' uniforms
++#if defined WYNN_METEORS && !defined WYNN_NO_METEOR_REFLECTIONS
++#include "/include/sky/meteors.glsl"
++#endif
++
+ // ----------------------
+ //   Specular Highlight
+ // ----------------------
+@@ -190,8 +196,14 @@
+         = false; // clamp01(hit_pos.xy) == hit_pos.xy && hit_pos.z >= 1.0;
+     float skylight_falloff
+         = hit_sky ? 1.0 : pow12(linear_step(0.0, 0.75, skylight));
+-    return bicubic_filter(colortex4, project_sky(ray_dir)).rgb
+-        * skylight_falloff;
++    vec4 sky_map = bicubic_filter(colortex4, project_sky(ray_dir));
++    vec3 sky = sky_map.rgb;
++#if defined WYNN_METEORS && !defined WYNN_NO_METEOR_REFLECTIONS
++    // Wynn-Photon: the sky map is too coarse for meteors, so they are drawn straight into the reflection, behind
++    // the clouds, whose transmittance d0_sky_map.fsh keeps in the sky map's alpha
++    sky += draw_meteors(ray_dir) * clamp01(sky_map.a);
++#endif
++    return sky * skylight_falloff;
+ #else
+     return texture(colortex4, project_sky(ray_dir)).rgb;
+ #endif

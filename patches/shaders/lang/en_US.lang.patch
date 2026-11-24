@@ -19,7 +19,7 @@
  option.SNOW_OPACITY                    = Snow Opacity
  option.SNOW_OPACITY.comment            = Adjust the opacity of snow particles
  option.EDGE_HIGHLIGHT                  = Edge Highlight
-@@ -819,4 +822,30 @@
+@@ -819,4 +822,38 @@
  option.PHOTONICS_RESTIR_COMBINED_GI       = Include Skylight GI
  option.PHOTONICS_RESTIR_COMBINED_GI.comment = Whether Gi should be ran through ReSTIR's denoiser instead of its usual path. \nResults in much sharper Gi, at the cost of performance.
  
@@ -48,5 +48,13 @@
 +option.WYNN_PHOTONICS_SKY_FILL_I.comment = Only with Photonics. Photonics replaces Photon's sky light with its traced bounce light, which is very dim in shade, forests and under overhangs. This adds Photon's own sky light back where the traced light is weaker. 1.00 makes shade as bright as without Photonics. 0 turns it off
 +option.WYNN_MIN_LIGHT_I                 = Minimum Light
 +option.WYNN_MIN_LIGHT_I.comment         = The least light any surface gets, so nights, dense cities and caves never go fully black. It fades away where other light is brighter, so daylight and lit rooms don't change. Higher values show more detail in the dark but look flatter. 0 turns it off
++option.WYNN_METEORS                      = Meteors
++option.WYNN_METEORS.comment              = Shooting stars cross the night sky, as meteors have fallen on Gavel for two thousand years. Most are white, some blue, a few purple, and red and yellow ones are very rare. They reflect in water
++option.WYNN_METEOR_RATE                  = Meteor Rate
++option.WYNN_METEOR_RATE.comment          = How often shooting stars and fireballs fall. At 1.00 a shooting star falls about every 25 seconds, somewhere in the sky
++option.WYNN_METEOR_SHOWERS               = Meteor Showers
++option.WYNN_METEOR_SHOWERS.comment       = On a rare night the sky fills with shooting stars, all falling away from one point. Needs Meteors
++option.WYNN_FIREBALLS                    = Fireballs
++option.WYNN_FIREBALLS.comment            = Now and then a large, slow meteor with a long glowing tail crosses the sky. Needs Meteors
 +option.WYNN_PLAYER_LIGHT_I               = Player Light
 +option.WYNN_PLAYER_LIGHT_I.comment       = The player lights their surroundings as if always holding a torch, like the light radius in Diablo. 1.00 is as bright as a torch; higher is brighter and reaches further. A torch or lantern you really hold counts towards it. It casts no shadows. 0 turns it off

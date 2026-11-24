@@ -2,6 +2,11 @@
 
 Every version so far patches Photon v1.4.
 
+## 0.11.0
+
+**Added**
+- Meteors in the night sky. Shooting stars cross the sky at night, most of them white, some blue, a few purple, and very rarely red or yellow, like the meteors that have fallen on Gavel for two thousand years. Now and then a large, slow fireball with a long glowing tail goes by, and on a rare night there is a meteor shower. They reflect in water, and hide behind clouds there as in the sky. "Meteors", "Meteor Rate", "Meteor Showers" and "Fireballs" on the Wynn-Photon page set them.
+
 ## 0.10.0
 
 **Added**

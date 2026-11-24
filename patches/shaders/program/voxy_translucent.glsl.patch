@@ -1,11 +1,14 @@
 --- a/shaders/program/voxy_translucent.glsl
 +++ b/shaders/program/voxy_translucent.glsl
-@@ -9,6 +9,9 @@
+@@ -9,6 +9,12 @@
  #undef HANDHELD_LIGHTING
  #endif
  
 +// Wynn-Photon: no player light on Voxy's far terrain
 +#define WYNN_NO_PLAYER_LIGHT
++
++// Wynn-Photon: no meteor reflections either; their uniforms aren't in voxy.json
++#define WYNN_NO_METEOR_REFLECTIONS
 +
  #ifdef SHADOW_SSRT
  #undef SHADOW_SSRT

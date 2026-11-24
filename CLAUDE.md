@@ -84,7 +84,11 @@ lighting test" in `docs/DEVELOPMENT.md`). Its harness is the dev-only `lighttest
   ships no sun or moon texture and so uses the vanilla ones. No sky code is changed. A second exception, for
   WynnVista: `d2_clouds_upscaling.fsh` keeps a cloud distance for WynnVista's world effects in `colortex12.a`, and
   `colortex12` is RGBA16F for it. Nothing Photon reads is changed. WynnVista uses that channel whenever the buffer
-  has one, so keep its meaning: blocks to the cloud, 0 for none and on terrain.
+  has one, so keep its meaning: blocks to the cloud, 0 for none and on terrain. A third exception: meteors
+  (`include/sky/meteors.glsl`, `WYNN_METEORS`) are added to the night sky in `sky.glsl` and to sky reflections in
+  `specular_lighting.glsl`. Reflected meteors hide behind clouds through the clouds' transmittance, which
+  `d0_sky_map.fsh` keeps in the sky map's (`colortex4`) alpha; nothing of Photon's reads that channel. WynnIris draws
+  no skybox in Gavel, and nothing of Photon's sky is changed.
 - Every light change updates both the colored-light volume (`block.properties` + `light_colors.glsl`) and Photonics
   (`ph_lights.json`). Photonics' built-in defaults list `repeater`, `comparator`, `redstone_torch` and
   `enchanting_table` by name. To remove one of those lights, also add the block to the `"disabled"` override in

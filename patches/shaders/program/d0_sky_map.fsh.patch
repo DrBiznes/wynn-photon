@@ -1,0 +1,24 @@
+--- a/shaders/program/d0_sky_map.fsh
++++ b/shaders/program/d0_sky_map.fsh
+@@ -11,7 +11,12 @@
+ 
+ #include "/include/global.glsl"
+ 
+-layout(location = 0) out vec3 sky_map;
++// Wynn-Photon: the sky map's alpha holds the clouds' transmittance, so that meteors in reflections hide behind
++// clouds as they do in the sky (see get_sky_reflection in specular_lighting.glsl). Nothing of Photon's reads it
++layout(location = 0) out vec4 wynn_sky_map_out;
++vec3 sky_map;
++// Wynn-Photon: set by get_clouds_and_aurora in sky.glsl, in the Overworld only
++float wynn_clouds_transmittance = 1.0;
+ 
+ /* RENDERTARGETS: 4 */
+ 
+@@ -163,4 +168,7 @@
+         sky_map = sky_map * fog[1] + fog[0];
+ #endif
+     }
++
++    // Wynn-Photon: the sky map, and the clouds' transmittance in alpha
++    wynn_sky_map_out = vec4(sky_map, wynn_clouds_transmittance);
+ }

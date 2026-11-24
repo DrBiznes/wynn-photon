@@ -1,0 +1,36 @@
+--- a/shaders/include/sky/sky.glsl
++++ b/shaders/include/sky/sky.glsl
+@@ -14,6 +14,8 @@
+ #include "/include/lighting/colors/weather_color.glsl"
+ #include "/include/misc/lightning_flash.glsl"
+ #include "/include/sky/atmosphere.glsl"
++// Wynn-Photon: meteors in the night sky
++#include "/include/sky/meteors.glsl"
+ #include "/include/sky/projection.glsl"
+ #include "/include/sky/rainbow.glsl"
+ #include "/include/sky/stars.glsl"
+@@ -170,6 +172,13 @@
+     sky += draw_stars(celestial_dir, galaxy_luminance) * stars_visibility;
+ #endif
+ 
++#ifdef WYNN_METEORS
++    // Wynn-Photon: shooting stars, meteor showers and fireballs. Like the stars, they are hidden behind a
++    // vanilla sun or moon
++    sky += draw_meteors(ray_dir)
++        * clamp01(1.0 - dot(skytextured_output, vec3(0.33) * 256.0));
++#endif
++
+ #ifndef VANILLA_SUN
+     // Shader sun
+     sky += draw_sun(ray_dir);
+@@ -264,6 +273,10 @@
+     clouds_and_aurora.rgb += crepuscular_rays.xyz;
+ #endif
+ 
++    // Wynn-Photon: kept in the sky map's alpha for meteors in reflections (wynn_clouds_transmittance is declared in
++    // d0_sky_map.fsh)
++    wynn_clouds_transmittance = clouds_and_aurora.a;
++
+     return clouds_and_aurora;
+ }
+ 
