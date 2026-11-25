@@ -5,8 +5,10 @@ Every version so far patches Photon v1.4.
 ## 0.10.2
 
 **Added**
-- WynnVista support: WynnVista's world effects, such as the void under the Sky Islands, no longer shimmer along the edges of the blocks in front of them. Needs WynnVista 2.2.5 or later. "WynnVista Effect Edges" on the Wynn-Photon page turns it off, which saves a little video memory and one light pass a frame if you don't use WynnVista.
 - Meteors in the night sky. Shooting stars cross the sky at night, most of them white, some blue, a few purple, and very rarely red or yellow, like the meteors that have fallen on Gavel for two thousand years. Every few minutes a bigger, bright meteor falls, which flares up as it burns out or breaks into three pieces. Now and then a large, slow fireball goes by: a white-hot head behind a bow shock in the meteor's colour, shedding sparks and leaving a long wake that drifts as it fades. Fireballs come in every size up to rare giants, and one in five is a purple and a blue meteor falling side by side, as in the Gylia Cataclysm. No two nights are alike: most are quiet, some are busy, and on a rare night there is a meteor shower that lasts until morning. The meteors follow the server's world time, so players in the same world see the same ones at the same moment, but they move on the game's own clock, so lag doesn't make them stutter. They hide behind clouds, and cost no performance while none is falling. "Meteors", "Meteor Rate", "Meteor Showers" and "Fireballs" on the Wynn-Photon page set them.
+
+**Fixed**
+- WynnVista: world effects, such as the void under the Sky Islands, no longer shimmer along the edges of the blocks in front of them. Needs WynnVista 2.2.5 or later. "WynnVista Effect Edges" on the Wynn-Photon page turns it off, which saves a little video memory and one light pass a frame if you don't use WynnVista.
 
 ## 0.10.1
 
