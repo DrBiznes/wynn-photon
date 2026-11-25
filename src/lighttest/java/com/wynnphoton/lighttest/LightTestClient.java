@@ -6,6 +6,7 @@ import com.wynnphoton.lighttest.LightTestCases.Spot;
 import com.wynnphoton.lighttest.LightTestCases.Time;
 import com.wynnphoton.lighttest.LightTestCases.World;
 import net.fabricmc.api.ClientModInitializer;
+import net.minecraft.client.InactivityFpsLimit;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.server.IntegratedServer;
@@ -155,6 +156,10 @@ public final class LightTestClient implements ClientModInitializer {
 				+ ", world " + cases.world.name().toLowerCase(Locale.ROOT));
 
 		StringBuilder manifest = new StringBuilder("spot,time,set,options,file\n");
+		// -Pframes=<n>: after each shot, the time per frame over five runs of n frames, with the frame rate uncapped
+		int timedFrames = Integer.getInteger(CASES_PROPERTY + ".frames", 0);
+		StringBuilder frameTimes = new StringBuilder("file,ms_per_frame_1,ms_per_frame_2,ms_per_frame_3,"
+				+ "ms_per_frame_4,ms_per_frame_5\n");
 		int total = 0;
 		for (OptionSet set : cases.sets) {
 			for (Time time : cases.times) {
@@ -198,6 +203,7 @@ public final class LightTestClient implements ClientModInitializer {
 						long settle = spot.settleMillis(settleMillis);
 						if (!timeSet) {
 							command(server, "time set " + time.ticks());
+							daylightCycle(server, time.flows());
 							if (!time.weather().equals(weather)) {
 								// Rain and thunder fade in and out over a few seconds
 								command(server, "weather " + time.weather());
@@ -238,10 +244,16 @@ public final class LightTestClient implements ClientModInitializer {
 								String.join(" ", set.options().entrySet().stream()
 										.map(e -> e.getKey() + "=" + e.getValue()).toList()), file)).append('\n');
 						log(n + "/" + total + " " + file);
+						if (timedFrames > 0) {
+							frameTimes.append(file).append(',').append(timeFrames(timedFrames)).append('\n');
+						}
 					}
 				}
 			}
 			Files.writeString(outDir.resolve("shots.csv"), manifest.toString(), StandardCharsets.UTF_8);
+			if (timedFrames > 0) {
+				Files.writeString(outDir.resolve("frames.csv"), frameTimes.toString(), StandardCharsets.UTF_8);
+			}
 		} finally {
 			// Put the pack's options, the view, the player, the weather and the time back as they were
 			onClient(() -> {
@@ -254,6 +266,7 @@ public final class LightTestClient implements ClientModInitializer {
 			} else {
 				Files.deleteIfExists(optionsFile);
 			}
+			daylightCycle(server, false);
 			command(server, "time set noon");
 			command(server, "weather clear");
 			command(server, "gamemode creative " + player);
@@ -351,6 +364,48 @@ public final class LightTestClient implements ClientModInitializer {
 			saved.complete(null);
 		} catch (Throwable t) {
 			saved.completeExceptionally(t);
+		}
+	}
+
+	/** The test world keeps its time still. The game rule was renamed in 1.21.11; the other name does nothing. */
+	private static void daylightCycle(IntegratedServer server, boolean on) {
+		command(server, "gamerule advance_time " + on);
+		command(server, "gamerule doDaylightCycle " + on);
+	}
+
+	/**
+	 * The milliseconds per frame of five runs of {@code frames} frames, comma separated, with vsync and the frame
+	 * rate limits off while it measures. One round trip to the client thread is one frame.
+	 */
+	private String timeFrames(int frames) throws InterruptedException {
+		boolean vsync = onClient(() -> mc.options.enableVsync().get());
+		int limit = onClient(() -> mc.options.framerateLimit().get());
+		InactivityFpsLimit inactivity = onClient(() -> mc.options.inactivityFpsLimit().get());
+		onClient(() -> {
+			mc.options.enableVsync().set(false);
+			mc.options.framerateLimit().set(260);
+			mc.options.inactivityFpsLimit().set(InactivityFpsLimit.MINIMIZED);
+			return null;
+		});
+		try {
+			waitFrames(60, 1000);
+			java.util.List<String> runs = new java.util.ArrayList<>();
+			for (int run = 0; run < 5; run++) {
+				long start = System.nanoTime();
+				for (int i = 0; i < frames; i++) {
+					mc.submit(() -> {}).join();
+				}
+				runs.add(String.format(Locale.ROOT, "%.3f", (System.nanoTime() - start) / 1e6 / frames));
+			}
+			log("ms per frame: " + runs);
+			return String.join(",", runs);
+		} finally {
+			onClient(() -> {
+				mc.options.enableVsync().set(vsync);
+				mc.options.framerateLimit().set(limit);
+				mc.options.inactivityFpsLimit().set(inactivity);
+				return null;
+			});
 		}
 	}
 

@@ -10,7 +10,9 @@
 #                                             added to the pitch that does. Options: fov=<degrees>, times=<a,b,...> and
 #                                             sets=<a,b,...> (only those; all when left out), biome=<id> (fills the
 #                                             ground around the spot with that biome first), settle=<ms>
-#   time <name> <ticks> [weather=clear|rain|thunder]
+#   time <name> <ticks> [weather=clear|rain|thunder] [flow=on]
+#                                             flow=on lets the daylight cycle run while the time is shot; the
+#                                             test world keeps its time still otherwise
 #   set <name> [KEY=value ...]                shader options; everything not listed is the pack's default
 #   compare <set A> <set B> <title...>        a report table of the brightness of B relative to A
 #

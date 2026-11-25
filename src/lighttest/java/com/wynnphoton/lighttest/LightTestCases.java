@@ -56,7 +56,8 @@ final class LightTestCases {
 		}
 	}
 
-	record Time(String name, int ticks, String weather) {}
+	/** {@code flows}: the daylight cycle runs while the time is shot (it stands still otherwise). */
+	record Time(String name, int ticks, String weather, boolean flows) {}
 
 	record OptionSet(String name, Map<String, String> options) {}
 
@@ -102,11 +103,13 @@ final class LightTestCases {
 						cases.spots.add(spot);
 					}
 					case "time" -> {
-						String weather = keyValues(p, 3).getOrDefault("weather", "clear");
+						Map<String, String> timeOptions = keyValues(p, 3);
+						String weather = timeOptions.getOrDefault("weather", "clear");
 						if (!WEATHERS.contains(weather)) {
 							throw new IllegalArgumentException("unknown weather " + weather);
 						}
-						cases.times.add(new Time(p[1], Integer.parseInt(p[2]), weather));
+						cases.times.add(new Time(p[1], Integer.parseInt(p[2]), weather,
+								"on".equals(timeOptions.get("flow"))));
 					}
 					case "set" -> cases.sets.add(new OptionSet(p[1], keyValues(p, 2)));
 					case "compare" -> cases.compares.add(new Compare(p[1], p[2],

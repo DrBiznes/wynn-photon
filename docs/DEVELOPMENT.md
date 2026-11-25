@@ -108,10 +108,14 @@ report, at 1600x900:
   chunks are reloaded. The harness reloads the chunks (as F3+A does) after every option set's reload. Light test
   results from before this fix may have shot every set after the first with it.
 - `-Pcases=<file>` runs a test with another case file, for a one-off check.
+- `-Pframes=<n>` also times every case: after its shot, five runs of n frames with vsync and the frame rate limit
+  off, written to `frames.csv` as milliseconds per frame. Shoot the same set twice to see how much the numbers drift.
 - `gradlew skyTest -Pcases=testworld/meteor_test.txt` photographs the meteors. They fall at random, so the hidden
   shader option `WYNN_METEOR_TEST` (1 to 5, on no settings page) draws one of every kind side by side in the southern
   sky instead, frozen that many sixths of the way through its flight. The file shoots the sheet with and without
-  Photon's galaxy and under clouds, and the fireballs' bow shocks close up.
+  Photon's galaxy and under clouds, and the fireballs' bow shocks close up. `WYNN_METEOR_TEST=6` draws the meteors'
+  clock as a dial beside the world's time, and the file shoots it with the daylight cycle running (`flow=on` on a
+  `time` line; the test world keeps its time still otherwise): the two hands should point the same way.
 - On Windows, `gradlew.bat` breaks a `-Ponly` regex that holds `|`. Set it as an environment variable instead:
   `ORG_GRADLE_PROJECT_only='sun_close__(noon|sunset)' gradlew skyTest` (Git Bash).
 

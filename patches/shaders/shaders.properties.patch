@@ -27,18 +27,76 @@
  
  iris.features.optional = CUSTOM_IMAGES ENTITY_TRANSLUCENT
  
-@@ -542,6 +544,10 @@
- # World age in seconds, repeating every 128 days. This is used for animating atmospherics
- uniform.float.world_age = ((worldDay % 128) * 24000.0 + worldTime) / 20.0
- 
-+# Wynn-Photon: clock for the meteors in the night sky (include/sky/meteors.glsl). x is the time in seconds, y the
-+# world day and z how much of the meteors shows: all at night, none by day or in rain
-+uniform.vec3.wynn_meteor_clock = vec3(frameTimeCounter, (worldDay % 512) * 1.0, clamp((-sun_dir_y - 0.05) / 0.2, 0.0, 1.0) * (1.0 - rainStrength))
-+
+@@ -545,6 +547,68 @@
  # Detect whether gamerule doDaylightCycle is enabled
  uniform.bool.daylight_cycle_enabled = worldTime > smooth(worldTime, 0.1, 0.1)
  
-@@ -596,7 +602,11 @@
++# Wynn-Photon: clock for the meteors in the night sky (include/sky/meteors.glsl). x is the time of the world's day in
++# seconds (0 to 1200), y the world day, z how much of the meteors shows by the hour and weather (all at night, none by
++# day or in rain) and w how much shows because the clock is steady.
++# The time follows the server's world time, so that players in one world see the same meteors, but it never runs on it:
++# world time comes in ticks and stutters with lag. It runs on frameTimeCounter plus an offset, which is the difference
++# between the two, eased over 20 seconds. The offset is eased as an angle (a day is one turn), so it doesn't mind
++# either clock wrapping around. Lag barely moves it; after a real change of time it glides to the new value, and the
++# meteors hide while it is more than 3 seconds off. Where time stands still, the clock is frameTimeCounter alone
++variable.float.wynn_sync_angle = (worldTime / 20.0 - frameTimeCounter) * 0.0052359878
++variable.float.wynn_sync_cos = smooth(cos(wynn_sync_angle), 20.0, 20.0)
++variable.float.wynn_sync_sin = smooth(sin(wynn_sync_angle), 20.0, 20.0)
++variable.float.wynn_sync_offset = atan2(wynn_sync_sin, wynn_sync_cos)
++variable.float.wynn_sync_error = abs(atan2(sin(wynn_sync_angle - wynn_sync_offset), cos(wynn_sync_angle - wynn_sync_offset))) * 190.98593
++variable.float.wynn_time_runs = smooth(if(daylight_cycle_enabled, 1.0, 0.0), 10.0, 10.0)
++variable.float.wynn_meteor_time = if(wynn_time_runs > 0.5, 1200.0 * frac((frameTimeCounter + wynn_sync_offset * 190.98593) / 1200.0 + 2.0), 1200.0 * frac(frameTimeCounter / 1200.0))
++variable.float.wynn_meteor_day = (worldDay % 512) * 1.0
++uniform.vec4.wynn_meteor_clock = vec4(wynn_meteor_time, wynn_meteor_day, clamp((-sun_dir_y - 0.05) / 0.2, 0.0, 1.0) * (1.0 - rainStrength), if(wynn_time_runs > 0.5, 1.0 - clamp((wynn_sync_error - 3.0) / 3.0, 0.0, 1.0), 1.0))
++# Wynn-Photon: the meteors' dice. Time is cut into slots, and a slot holds a meteor if its roll (0 to 1) is under
++# the chance. The rolls are made here, once a frame, so that the sky's pixels only work on a slot that holds one.
++# Each is a hash of the slot's number and the world day; the slots are those of meteors.glsl (keep the periods and
++# lane offsets in step). a and b: the six shooting star lanes. c: the two bright meteor lanes and the fireball.
++# wynn_meteor_night: the night's rolls for a meteor shower and for how busy it is
++variable.float.wynn_roll_s0_a = frac(floor(wynn_meteor_time / 2.6 + 0.0 / 6.0) * 0.1031 + wynn_meteor_day * 0.0973 + 0.3183)
++variable.float.wynn_roll_s0_b = frac(wynn_roll_s0_a * (wynn_roll_s0_a + 33.33))
++variable.float.wynn_roll_s0 = frac(wynn_roll_s0_b * (wynn_roll_s0_b + 19.19) * 7.0)
++variable.float.wynn_roll_s1_a = frac(floor(wynn_meteor_time / 2.6 + 1.0 / 6.0) * 0.1031 + wynn_meteor_day * 0.0973 + 0.6366)
++variable.float.wynn_roll_s1_b = frac(wynn_roll_s1_a * (wynn_roll_s1_a + 33.33))
++variable.float.wynn_roll_s1 = frac(wynn_roll_s1_b * (wynn_roll_s1_b + 19.19) * 7.0)
++variable.float.wynn_roll_s2_a = frac(floor(wynn_meteor_time / 2.6 + 2.0 / 6.0) * 0.1031 + wynn_meteor_day * 0.0973 + 0.9549)
++variable.float.wynn_roll_s2_b = frac(wynn_roll_s2_a * (wynn_roll_s2_a + 33.33))
++variable.float.wynn_roll_s2 = frac(wynn_roll_s2_b * (wynn_roll_s2_b + 19.19) * 7.0)
++variable.float.wynn_roll_s3_a = frac(floor(wynn_meteor_time / 2.6 + 3.0 / 6.0) * 0.1031 + wynn_meteor_day * 0.0973 + 1.2732)
++variable.float.wynn_roll_s3_b = frac(wynn_roll_s3_a * (wynn_roll_s3_a + 33.33))
++variable.float.wynn_roll_s3 = frac(wynn_roll_s3_b * (wynn_roll_s3_b + 19.19) * 7.0)
++variable.float.wynn_roll_s4_a = frac(floor(wynn_meteor_time / 2.6 + 4.0 / 6.0) * 0.1031 + wynn_meteor_day * 0.0973 + 1.5915)
++variable.float.wynn_roll_s4_b = frac(wynn_roll_s4_a * (wynn_roll_s4_a + 33.33))
++variable.float.wynn_roll_s4 = frac(wynn_roll_s4_b * (wynn_roll_s4_b + 19.19) * 7.0)
++variable.float.wynn_roll_s5_a = frac(floor(wynn_meteor_time / 2.6 + 5.0 / 6.0) * 0.1031 + wynn_meteor_day * 0.0973 + 1.9098)
++variable.float.wynn_roll_s5_b = frac(wynn_roll_s5_a * (wynn_roll_s5_a + 33.33))
++variable.float.wynn_roll_s5 = frac(wynn_roll_s5_b * (wynn_roll_s5_b + 19.19) * 7.0)
++variable.float.wynn_roll_b0_a = frac(floor(wynn_meteor_time / 9.0 + 0.0 / 2.0) * 0.1031 + wynn_meteor_day * 0.0973 + 2.2281)
++variable.float.wynn_roll_b0_b = frac(wynn_roll_b0_a * (wynn_roll_b0_a + 33.33))
++variable.float.wynn_roll_b0 = frac(wynn_roll_b0_b * (wynn_roll_b0_b + 19.19) * 7.0)
++variable.float.wynn_roll_b1_a = frac(floor(wynn_meteor_time / 9.0 + 1.0 / 2.0) * 0.1031 + wynn_meteor_day * 0.0973 + 2.5464)
++variable.float.wynn_roll_b1_b = frac(wynn_roll_b1_a * (wynn_roll_b1_a + 33.33))
++variable.float.wynn_roll_b1 = frac(wynn_roll_b1_b * (wynn_roll_b1_b + 19.19) * 7.0)
++variable.float.wynn_roll_f_a = frac(floor(wynn_meteor_time / 24.0) * 0.1031 + wynn_meteor_day * 0.0973 + 2.8647)
++variable.float.wynn_roll_f_b = frac(wynn_roll_f_a * (wynn_roll_f_a + 33.33))
++variable.float.wynn_roll_f = frac(wynn_roll_f_b * (wynn_roll_f_b + 19.19) * 7.0)
++variable.float.wynn_roll_shower_a = frac(0.0 * 0.1031 + wynn_meteor_day * 0.0973 + 3.1830)
++variable.float.wynn_roll_shower_b = frac(wynn_roll_shower_a * (wynn_roll_shower_a + 33.33))
++variable.float.wynn_roll_shower = frac(wynn_roll_shower_b * (wynn_roll_shower_b + 19.19) * 7.0)
++variable.float.wynn_roll_busy_a = frac(0.0 * 0.1031 + wynn_meteor_day * 0.0973 + 3.5013)
++variable.float.wynn_roll_busy_b = frac(wynn_roll_busy_a * (wynn_roll_busy_a + 33.33))
++variable.float.wynn_roll_busy = frac(wynn_roll_busy_b * (wynn_roll_busy_b + 19.19) * 7.0)
++uniform.vec3.wynn_meteor_rolls_a = vec3(wynn_roll_s0, wynn_roll_s1, wynn_roll_s2)
++uniform.vec3.wynn_meteor_rolls_b = vec3(wynn_roll_s3, wynn_roll_s4, wynn_roll_s5)
++uniform.vec3.wynn_meteor_rolls_c = vec3(wynn_roll_b0, wynn_roll_b1, wynn_roll_f)
++uniform.vec2.wynn_meteor_night = vec2(wynn_roll_shower, wynn_roll_busy)
++# Wynn-Photon: the world time itself, for the clock dial of WYNN_METEOR_TEST 6
++uniform.float.wynn_meteor_world_seconds = worldTime / 20.0
++
+ # Detect whether world age has drastically changed since the last frame
+ variable.float.world_age_delta = abs(world_age - smooth(world_age, 0.1, 0.1))
+ uniform.bool.world_age_changed = world_age_delta > 1.0
+@@ -596,7 +660,11 @@
  uniform.float.biome_pale_garden = 0.0
  #endif
  

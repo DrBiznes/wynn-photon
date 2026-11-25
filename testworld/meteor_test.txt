@@ -8,13 +8,18 @@
 
 world gallery
 
-spot sheet      200.5 -60 200.5     0 -38  fov=70
+spot sheet      200.5 -60 200.5     0 -38  fov=70 times=midnight sets=t1,t3,t4,t5,t3_nogalaxy,t5_nogalaxy,t3_clouds
 # The heads of the yellow and the giant red fireball at t3, for the bow shock
-spot shock      200.5 -60 200.5   -27 -43  fov=30 sets=t3,t3_nogalaxy
+spot shock      200.5 -60 200.5   -27 -43  fov=30 times=midnight sets=t3,t3_nogalaxy
 # The same in clouds
-spot clouds     200.5 -60 200.5     0 -38  fov=70 sets=t3_clouds
+spot clouds     200.5 -60 200.5     0 -38  fov=70 times=midnight sets=t3_clouds
+# The meteor clock as a dial (WYNN_METEOR_TEST=6), a minute after the time was set and with the daylight cycle
+# running: the white hand (the meteors' clock) and the red one (the world's time) should point the same way and the
+# ring should be green. With time standing still the red hand stops and the white one runs on alone
+spot clock      200.5 -60 200.5     0 -40  fov=70 times=midnight_flow sets=clock settle=60000
 
 time midnight 18000
+time midnight_flow 18000 flow=on
 
 set t1            WYNN_METEOR_TEST=1 CLOUDS_CUMULUS=false CLOUDS_CUMULUS_CONGESTUS=false CLOUDS_ALTOCUMULUS=false CLOUDS_CIRRUS=false CLOUDS_NOCTILUCENT=false
 set t3            WYNN_METEOR_TEST=3 CLOUDS_CUMULUS=false CLOUDS_CUMULUS_CONGESTUS=false CLOUDS_ALTOCUMULUS=false CLOUDS_CIRRUS=false CLOUDS_NOCTILUCENT=false
@@ -23,3 +28,4 @@ set t5            WYNN_METEOR_TEST=5 CLOUDS_CUMULUS=false CLOUDS_CUMULUS_CONGEST
 set t3_nogalaxy   WYNN_METEOR_TEST=3 GALAXY=false CLOUDS_CUMULUS=false CLOUDS_CUMULUS_CONGESTUS=false CLOUDS_ALTOCUMULUS=false CLOUDS_CIRRUS=false CLOUDS_NOCTILUCENT=false
 set t5_nogalaxy   WYNN_METEOR_TEST=5 GALAXY=false CLOUDS_CUMULUS=false CLOUDS_CUMULUS_CONGESTUS=false CLOUDS_ALTOCUMULUS=false CLOUDS_CIRRUS=false CLOUDS_NOCTILUCENT=false
 set t3_clouds     WYNN_METEOR_TEST=3
+set clock         WYNN_METEOR_TEST=6 CLOUDS_CUMULUS=false CLOUDS_CUMULUS_CONGESTUS=false CLOUDS_ALTOCUMULUS=false CLOUDS_CIRRUS=false CLOUDS_NOCTILUCENT=false

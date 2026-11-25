@@ -1,0 +1,82 @@
+--- a/shaders/program/gbuffers_skytextured.vsh
++++ b/shaders/program/gbuffers_skytextured.vsh
+@@ -46,6 +46,20 @@
+ 
+ #include "/include/lighting/colors/light_color.glsl"
+ 
++// Wynn-Photon: meteors (include/sky/meteors.glsl). wynn_meteor_quad is 1 on the sun's quad when it is stretched over
++// the screen to draw them, and wynn_meteor_dir is then the world-space direction of the fragment
++#if defined WYNN_METEORS && defined WYNN_METEOR_SKY
++flat out float wynn_meteor_quad;
++out vec3 wynn_meteor_dir;
++
++uniform int renderStage;
++uniform vec3 view_sun_dir;
++uniform mat4 gbufferModelViewInverse;
++uniform mat4 gbufferProjectionInverse;
++
++#include "/include/sky/meteors.glsl"
++#endif
++
+ void main() {
+     sun_color = get_sun_exposure() * get_sun_tint();
+     moon_color = get_moon_exposure() * get_moon_tint();
+@@ -63,6 +77,47 @@
+ 
+     vec4 clip_pos = project(gl_ProjectionMatrix, view_pos);
+ 
++#if defined WYNN_METEORS && defined WYNN_METEOR_SKY
++    wynn_meteor_quad = 0.0;
++    wynn_meteor_dir = vec3(0.0, 1.0, 0.0);
++    // A quad that would draw nothing is not drawn at all, so that the meteor code in the fragment shader runs on no
++    // pixel while no meteor falls: the shader sun and moon are drawn by the sky shader, not here
++    bool wynn_hide_quad = false;
++
++    if (renderStage != MC_RENDER_STAGE_CUSTOM_SKY) {
++        bool is_sun = dot(view_pos, view_sun_dir) > 0.0;
++#ifndef VANILLA_SUN
++        wynn_hide_quad = is_sun;
++#endif
++#ifndef VANILLA_MOON
++        wynn_hide_quad = wynn_hide_quad || !is_sun;
++#endif
++
++        if (is_sun && wynn_meteors_falling()) {
++            wynn_hide_quad = false;
++
++            // The sun's quad. Which of its corners this is, in a frame around the sun that is turned like the
++            // screen, so that the quad keeps its winding
++            vec3 right = normalize(cross(
++                view_sun_dir,
++                abs(view_sun_dir.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0)
++            ));
++            vec3 up = cross(right, view_sun_dir);
++            vec3 offset = view_pos - view_sun_dir * dot(view_pos, view_sun_dir);
++            vec2 corner = vec2(
++                dot(offset, right) > 0.0 ? 1.0 : -1.0,
++                dot(offset, up) > 0.0 ? 1.0 : -1.0
++            );
++
++            // That corner of the screen, and the direction it looks in
++            vec4 far = gbufferProjectionInverse * vec4(corner, 1.0, 1.0);
++            wynn_meteor_dir = mat3(gbufferModelViewInverse) * (far.xyz / far.w);
++            wynn_meteor_quad = 1.0;
++            clip_pos = vec4(corner, 0.0, 1.0);
++        }
++    }
++#endif
++
+ #if defined TAA && defined TAAU
+     clip_pos.xy = clip_pos.xy * taau_render_scale
+         + clip_pos.w * (taau_render_scale - 1.0);
+@@ -72,4 +127,10 @@
+ #endif
+ 
+     gl_Position = clip_pos;
++
++#if defined WYNN_METEORS && defined WYNN_METEOR_SKY
++    if (wynn_hide_quad) {
++        gl_Position = vec4(-10.0, -10.0, -10.0, 1.0);
++    }
++#endif
+ }
