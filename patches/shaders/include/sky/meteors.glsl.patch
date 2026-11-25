@@ -1,6 +1,6 @@
 --- /dev/null
 +++ b/shaders/include/sky/meteors.glsl
-@@ -1,0 +1,733 @@
+@@ -1,0 +1,747 @@
 +#if !defined INCLUDE_SKY_METEORS
 +#define INCLUDE_SKY_METEORS
 +
@@ -31,10 +31,12 @@
 +uniform vec4 wynn_meteor_clock;
 +
 +// The dice, rolled once a frame in shaders.properties rather than here for every pixel. A slot holds a meteor if
-+// its roll is under the chance. a and b: the six shooting star lanes, c: the two bright meteor lanes and the
-+// fireball, wynn_meteor_night: the night's rolls for a meteor shower and for how busy it is
-+uniform vec3 wynn_meteor_rolls_a;
-+uniform vec3 wynn_meteor_rolls_b;
++// its roll is under the chance. a, b and s: the shooting star slots, newest first (the six that can be in flight
++// and the five before them), c: the two bright meteor lanes and the fireball, wynn_meteor_night: the night's rolls
++// for a meteor shower and for how busy it is
++uniform vec4 wynn_meteor_rolls_a;
++uniform vec4 wynn_meteor_rolls_b;
++uniform vec3 wynn_meteor_rolls_s;
 +uniform vec3 wynn_meteor_rolls_c;
 +uniform vec2 wynn_meteor_night;
 +
@@ -47,26 +49,29 @@
 +#endif
 +}
 +
-+// Shooting stars: this many lanes, each with one slot every wynn_meteor_period seconds
++// Shooting stars: slots wynn_meteor_period seconds long, a new one every wynn_meteor_period / wynn_meteor_lanes
++// seconds, so that this many overlap. Outside a meteor shower a slot stays empty if one of the slots it overlaps that
++// started before it holds a shooting star: they fall one at a time, never side by side
 +const int wynn_meteor_lanes = 6;
 +const float wynn_meteor_period = 2.6;
 +// Chance that a slot holds a shooting star. On a normal night about one falls every 25 seconds, somewhere in the sky
-+const float wynn_meteor_chance = 0.017 * WYNN_METEOR_RATE;
++const float wynn_meteor_chance = 0.019 * WYNN_METEOR_RATE;
 +// The same in a meteor shower: about one a second
-+const float wynn_meteor_shower_chance = 0.6; // TEMP DEBUG
++const float wynn_meteor_shower_chance = 0.4;
 +// One night in this many is a meteor shower
 +const float wynn_meteor_shower_rarity = 16.0;
 +
-+// Bright meteors: bigger shooting stars with a head, a wake and sparks. Two lanes, about one every two and a half
-+// minutes. Some flare up as they burn out and some break into pieces
++// Bright meteors: bigger shooting stars with a head, a wake and sparks. Two lanes, about one every ten minutes of
++// night, and one every two and a half minutes in a meteor shower. Some flare up as they burn out and some break into
++// pieces
 +const int wynn_bright_meteor_lanes = 2;
 +const float wynn_bright_meteor_period = 9.0;
-+const float wynn_bright_meteor_chance = 0.03 * WYNN_METEOR_RATE;
-+const float wynn_bright_meteor_shower_chance = 0.12;
++const float wynn_bright_meteor_chance = 0.0075 * WYNN_METEOR_RATE;
++const float wynn_bright_meteor_shower_chance = 0.03;
 +
-+// Fireballs: one slot every wynn_fireball_period seconds, rarely filled (about one every 20 minutes of night)
-+const float wynn_fireball_period = 9.0; // TEMP DEBUG
-+const float wynn_fireball_chance = 0.7; // TEMP DEBUG
++// Fireballs: one slot every wynn_fireball_period seconds, rarely filled (about one every hour of night)
++const float wynn_fireball_period = 24.0;
++const float wynn_fireball_chance = 0.0067 * WYNN_METEOR_RATE;
 +
 +// Linear Rec. 709 colour of a meteor. x picks it: white is the most common, then blue, purple, red and yellow
 +vec3 wynn_meteor_color(float x, bool fireball) {
@@ -473,19 +478,19 @@
 +            break;
 +        case -2:
 +            meteors += wynn_bright_meteor(
-+                ray_dir, start, zenith, progress, 1.6, 30.0 * degree,
++                ray_dir, start, zenith, progress, 2.7, 30.0 * degree,
 +                0.1 * degree, wynn_meteor_color(0.0, false), false, seed, time
 +            );
 +            break;
 +        case -1:
 +            meteors += wynn_bright_meteor(
-+                ray_dir, start, zenith, progress, 1.6, 30.0 * degree,
++                ray_dir, start, zenith, progress, 2.7, 30.0 * degree,
 +                0.16 * degree, purple, false, seed, time
 +            );
 +            break;
 +        case 0:
 +            meteors += wynn_bright_meteor(
-+                ray_dir, start, zenith, progress, 1.6, 30.0 * degree,
++                ray_dir, start, zenith, progress, 2.7, 30.0 * degree,
 +                0.16 * degree, blue, true, seed, time
 +            );
 +            break;
@@ -557,30 +562,39 @@
 +
 +    // Shooting stars
 +
-+    float shooting_star_rolls[6] = float[6](
-+        wynn_meteor_rolls_a.x, wynn_meteor_rolls_a.y, wynn_meteor_rolls_a.z,
-+        wynn_meteor_rolls_b.x, wynn_meteor_rolls_b.y, wynn_meteor_rolls_b.z
++    // Newest slot first
++    float shooting_star_rolls[11] = float[11](
++        wynn_meteor_rolls_a.x, wynn_meteor_rolls_a.y, wynn_meteor_rolls_a.z, wynn_meteor_rolls_a.w,
++        wynn_meteor_rolls_b.x, wynn_meteor_rolls_b.y, wynn_meteor_rolls_b.z, wynn_meteor_rolls_b.w,
++        wynn_meteor_rolls_s.x, wynn_meteor_rolls_s.y, wynn_meteor_rolls_s.z
 +    );
++    const float slot_step = wynn_meteor_period / float(wynn_meteor_lanes);
++    // As in shaders.properties
++    float newest_slot = floor(time * float(wynn_meteor_lanes) / wynn_meteor_period);
 +
-+    for (int lane = 0; lane < wynn_meteor_lanes; ++lane) {
-+        if (shooting_star_rolls[lane] >= chance) {
++    for (int age = 0; age < wynn_meteor_lanes; ++age) {
++        if (shooting_star_rolls[age] >= chance) {
++            continue;
++        }
++        // One at a time: an earlier slot that overlaps this one holds a shooting star
++        bool crowded = false;
++        for (int earlier = 1; earlier < wynn_meteor_lanes; ++earlier) {
++            crowded = crowded || shooting_star_rolls[age + earlier] < chance;
++        }
++        if (crowded && !shower) {
 +            continue;
 +        }
 +
-+        // The lanes' slots start at different times
-+        float lane_time
-+            = time / wynn_meteor_period + float(lane) / float(wynn_meteor_lanes);
-+        float slot = floor(lane_time);
-+        vec2 key = vec2(slot, 7.31 * float(lane) + seed);
++        float slot = newest_slot - float(age);
++        vec2 key = vec2(slot, seed);
 +
 +        vec4 hash_0 = hash4(key);
 +        vec4 hash_1 = hash4(key + vec2(0.0, 3.7));
 +
 +        // When it falls within its slot, and for how long
-+        float duration = mix(0.35, 0.9, hash_1.w);
++        float duration = mix(0.6, 1.4, hash_1.w);
 +        float delay = hash_0.w * (wynn_meteor_period - duration);
-+        float progress
-+            = (fract(lane_time) * wynn_meteor_period - delay) / duration;
++        float progress = (time - slot * slot_step - delay) / duration;
 +        if (progress <= 0.0 || progress >= 1.0) {
 +            continue;
 +        }
@@ -621,7 +635,7 @@
 +        vec4 hash_0 = hash4(key);
 +        vec4 hash_1 = hash4(key + vec2(0.0, 3.7));
 +
-+        float duration = mix(1.2, 2.2, hash_1.w);
++        float duration = mix(2.0, 3.4, hash_1.w);
 +        float delay = hash_0.w * (wynn_bright_meteor_period - duration);
 +        float progress
 +            = (fract(lane_time) * wynn_bright_meteor_period - delay) / duration;
@@ -670,7 +684,7 @@
 +
 +            // Meteors come in every size, but the giants are rare. The bigger, the slower
 +            float size = cube(hash_2.x);
-+            float duration = mix(3.0, 5.0, hash_1.w) + 3.0 * size;
++            float duration = mix(5.0, 7.0, hash_1.w) + 3.0 * size;
 +            float delay = hash_0.w * (wynn_fireball_period - duration);
 +            float progress
 +                = (fract(lane_time) * wynn_fireball_period - delay) / duration;
