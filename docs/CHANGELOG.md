@@ -5,7 +5,7 @@ Every version so far patches Photon v1.4.
 ## 0.10.2
 
 **Added**
-- Meteors in the night sky: shooting stars, bright meteors, rare fireballs and the odd night-long meteor shower. Everyone in a world sees the same ones, and they cost nothing while none is falling. "Meteors", "Meteor Rate", "Meteor Showers" and "Fireballs" on the Wynn-Photon page set them.
+- Meteors in the night sky: shooting stars, bright meteors, rare fireballs and the odd night-long meteor shower. Everyone in a world sees the same ones. "Meteors", "Meteor Rate", "Meteor Showers" and "Fireballs" on the Wynn-Photon page set them.
 
 **Changed**
 - Clouds default to 8× scale instead of 9×.
