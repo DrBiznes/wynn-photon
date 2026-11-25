@@ -1,0 +1,172 @@
+--- /dev/null
++++ b/shaders/program/wynn_scene_distance.fsh
+@@ -1,0 +1,169 @@
++/*
++--------------------------------------------------------------------------------
++
++  Wynn-Photon: program/wynn_scene_distance.fsh
++  The distance to the scene, anti-aliased over time, for WynnVista
++
++  Not part of Photon. Nothing Photon draws reads or depends on this pass.
++
++  WynnVista draws its world effects (the void under the Sky Islands, the Mount
++  Wynn smoke plume and others) over the finished image, and cuts them off at
++  the terrain using the depth buffer. With TAA every frame's depth is shifted
++  by a part of a pixel, while the image is the blend of many frames. Along the
++  edge of a block a pixel is therefore terrain in one frame's depth and sky in
++  the next, and an effect cut by that depth was there one frame and gone the
++  next, over an image that stood still.
++
++  This pass does to the scene's distance what c4_taa_exposure does to its
++  colour: it carries last frame's value to where the pixel was, keeps it within
++  what the pixels around hold now, and blends this frame's in. Along an edge
++  the result lies between the distance of the block and the distance of what is
++  behind it, by how much of the pixel each covers. From that WynnVista works
++  out the block's share of the pixel and draws that much of the effect in front
++  of it, the same in every frame.
++
++  colortex20.r: log2(1 + blocks to the scene) / 16, sky and anything beyond
++  65535 blocks 1. The hand counts with the distance its depth gives under the
++  world's projection, as WynnVista reads it.
++
++  WynnVista uses this buffer whenever the pack has one with this format, so
++  keep its meaning. No other program may write colortex20.
++
++const int colortex20Format = R16;
++const bool colortex20Clear = false;
++
++--------------------------------------------------------------------------------
++*/
++
++#include "/include/global.glsl"
++
++layout(location = 0) out float scene_distance;
++
++/* RENDERTARGETS: 20 */
++
++in vec2 uv;
++
++// ------------
++//   Uniforms
++// ------------
++
++uniform sampler2D colortex20; // Scene distance history
++
++uniform sampler2D depthtex0;
++
++uniform mat4 gbufferModelView;
++uniform mat4 gbufferModelViewInverse;
++uniform mat4 gbufferProjection;
++uniform mat4 gbufferProjectionInverse;
++
++uniform mat4 gbufferPreviousModelView;
++uniform mat4 gbufferPreviousProjection;
++
++uniform vec3 cameraPosition;
++uniform vec3 previousCameraPosition;
++
++uniform float near;
++uniform float far;
++
++uniform vec2 view_res;
++uniform vec2 view_pixel_size;
++uniform vec2 taa_offset;
++
++#define TEMPORAL_REPROJECTION
++
++#include "/include/misc/lod_mod_support.glsl"
++#include "/include/utility/space_conversion.glsl"
++
++// Share of a frame in the result. Small, so that a pixel half covered by a
++// block settles on a half instead of following which frames hit the block.
++// History that no longer fits the pixel is dealt with by the clamp below, not
++// by this.
++const float blend_weight = 0.05;
++
++const float distance_range = 16.0; // log2 of the furthest distance kept, 65536 blocks
++
++struct Sample {
++    vec3 screen_pos; // as c4_taa_exposure's get_closest_fragment returns it
++    bool is_lod;
++    float value; // encoded distance
++};
++
++Sample read_scene(ivec2 texel) {
++    Sample s;
++    float depth = texelFetch(depthtex0, texel, 0).x;
++
++#ifdef LOD_MOD_ACTIVE
++    float depth_lod = texelFetch(lod_depth_tex, texel, 0).x;
++    s.is_lod = is_lod_terrain(depth, depth_lod);
++    depth = s.is_lod ? depth_lod : depth;
++#else
++    s.is_lod = false;
++#endif
++
++    s.screen_pos = vec3(
++        (vec2(texel) + 0.5) * view_pixel_size * rcp(taau_render_scale),
++        depth
++    );
++
++    if (depth >= 1.0) {
++        s.value = 1.0; // sky
++    } else {
++        float blocks
++            = length(screen_to_view_space(s.screen_pos, false, s.is_lod));
++        s.value = log2(1.0 + min(blocks, 65535.0)) * rcp(distance_range);
++    }
++
++    return s;
++}
++
++void main() {
++    ivec2 texel = ivec2(gl_FragCoord.xy * taau_render_scale);
++    ivec2 last_texel = ivec2(view_res * taau_render_scale) - 1;
++
++    Sample here = read_scene(texel);
++
++#ifdef TAA
++    // The nearest and furthest of the pixel and the eight around it
++    Sample closest = here;
++    float value_min = here.value;
++    float value_max = here.value;
++
++    for (int i = 0; i < 9; ++i) {
++        if (i == 4) continue;
++
++        ivec2 offset = ivec2(i % 3, i / 3) - 1;
++        Sample s = read_scene(clamp(texel + offset, ivec2(0), last_texel));
++
++        value_max = max(value_max, s.value);
++        if (s.value < value_min) {
++            value_min = s.value;
++            closest = s;
++        }
++    }
++
++    // Where the pixel was last frame, going by the nearest of the nine, as
++    // c4_taa_exposure does: an edge then moves with the block it is the edge of
++    vec3 closest_scene = view_to_scene_space(
++        screen_to_view_space(closest.screen_pos, false, closest.is_lod)
++    );
++    bool hand = closest.screen_pos.z < hand_depth && !closest.is_lod;
++    vec2 velocity = closest.screen_pos.xy
++        - reproject_scene_space(closest_scene, hand, closest.is_lod).xy;
++    vec2 previous_uv = uv - velocity;
++
++    if (clamp01(previous_uv) == previous_uv) {
++        float history = texture(colortex20, previous_uv).x;
++
++        // What is carried over stays within what the pixels around hold now,
++        // so that nothing of a block that has moved away is left behind
++        history = clamp(history, value_min, value_max);
++
++        scene_distance = mix(history, here.value, blend_weight);
++    } else {
++        scene_distance = here.value;
++    }
++#else
++    // Without TAA the depth is not shifted
++    scene_distance = here.value;
++#endif
++}

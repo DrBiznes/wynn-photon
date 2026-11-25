@@ -9,16 +9,20 @@
  
  screen.world        = [weather] <empty> WAVING_PLANTS WAVING_LEAVES EDGE_HIGHLIGHT EDGE_HIGHLIGHT_SCALE SLANTED_RAIN RAIN_OPACITY MOON_PHASE_AFFECTS_BRIGHTNESS SEA_LEVEL DESERT_SANDSTORM END_GLOW
  screen.lighting     = [shadows] [ao] [light_sources] <empty> <empty> <empty> COLORED_LIGHTS [colored_lights] HANDHELD_LIGHTING HANDHELD_LIGHTING_INTENSITY AO_IN_SUNLIGHT SH_SKYLIGHT CLOUD_SHADOWS CLOUD_SHADOWS_INTENSITY SSS_SHEEN SSS_INTENSITY SHADING_STRENGTH
-@@ -17,6 +17,8 @@
+@@ -17,6 +17,12 @@
  screen.misc         = [box] [distance_view] <empty> [developer] WHITE_WORLD FANCY_NETHER_PORTAL CUSTOM_SKY CUSTOM_SKY_BRIGHTNESS ENCHANTMENT_GLINT_BRIGHTNESS TONEMAP_COMPARISON tonemap_left tonemap_right DITHERED_TRANSLUCENCY_FALLBACK
  screen.mods         = [distant_horizons] [photonics]
  screen.box          = BOX_MODE BOX_LINE_WIDTH BOX_COLOR_R BOX_COLOR_G BOX_COLOR_B BOX_EMISSION
 +# Wynn-Photon: settings page for the Wynncraft block changes
-+screen.wynn_photon  = WYNN_PHOTON_INFO <empty> WYNN_EMERALD_GLOW WYNN_EMERALD_GLOW_I WYNN_CHEST_GLOW WYNN_CHEST_GLOW_I WYNN_CANDLE_LIGHT_I WYNN_MAGMA_GLOW_I WYNN_ENCHANTING_GLOW_I WYNN_VANILLA_LIGHT_I WYNN_PHOTONICS_SKY_FILL_I WYNN_MIN_LIGHT_I WYNN_PLAYER_LIGHT_I WYNN_SUN WYNN_SUN_CUBE WYNN_SUN_SIZE WYNN_MOON WYNN_MOON_SIZE WYNN_MOON_BASE <empty> <empty> WYNN_METEORS WYNN_METEOR_RATE WYNN_METEOR_SHOWERS WYNN_FIREBALLS
++screen.wynn_photon  = WYNN_PHOTON_INFO <empty> WYNN_EMERALD_GLOW WYNN_EMERALD_GLOW_I WYNN_CHEST_GLOW WYNN_CHEST_GLOW_I WYNN_CANDLE_LIGHT_I WYNN_MAGMA_GLOW_I WYNN_ENCHANTING_GLOW_I WYNN_VANILLA_LIGHT_I WYNN_PHOTONICS_SKY_FILL_I WYNN_MIN_LIGHT_I WYNN_PLAYER_LIGHT_I WYNN_SUN WYNN_SUN_CUBE WYNN_SUN_SIZE WYNN_MOON WYNN_MOON_SIZE WYNN_MOON_BASE WYNN_VISTA_EDGES <empty> <empty> WYNN_METEORS WYNN_METEOR_RATE WYNN_METEOR_SHOWERS WYNN_FIREBALLS
++# Wynn-Photon: the scene distance pass for WynnVista (program/wynn_scene_distance.fsh), in every dimension
++program.world0/composite90.enabled  = WYNN_VISTA_EDGES
++program.world-1/composite90.enabled = WYNN_VISTA_EDGES
++program.world1/composite90.enabled  = WYNN_VISTA_EDGES
  
  # World submenus
  screen.weather          = RANDOM_WEATHER_VARIATION BIOME_WEATHER_VARIATION WEATHER_TEMPERATURE_BIAS WEATHER_HUMIDITY_BIAS WEATHER_WIND_BIAS WEATHER_TEMPERATURE_VARIATION_SPEED WEATHER_HUMIDITY_VARIATION_SPEED WEATHER_WIND_VARIATION_SPEED
-@@ -121,7 +123,7 @@
+@@ -121,7 +127,7 @@
  screen.distance_view.columns     = 1
  
  # Sliders
@@ -27,7 +31,7 @@
  
  iris.features.optional = CUSTOM_IMAGES ENTITY_TRANSLUCENT
  
-@@ -545,6 +547,68 @@
+@@ -545,6 +551,68 @@
  # Detect whether gamerule doDaylightCycle is enabled
  uniform.bool.daylight_cycle_enabled = worldTime > smooth(worldTime, 0.1, 0.1)
  
@@ -96,7 +100,7 @@
  # Detect whether world age has drastically changed since the last frame
  variable.float.world_age_delta = abs(world_age - smooth(world_age, 0.1, 0.1))
  uniform.bool.world_age_changed = world_age_delta > 1.0
-@@ -596,7 +660,11 @@
+@@ -596,7 +664,11 @@
  uniform.float.biome_pale_garden = 0.0
  #endif
  
