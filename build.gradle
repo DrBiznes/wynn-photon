@@ -360,6 +360,7 @@ loom {
 				property 'wynnphoton.lightTest', file(providers.gradleProperty('cases').getOrElse(test.cases)).absolutePath
 				property 'wynnphoton.lightTest.out', layout.buildDirectory.dir(test.out).get().asFile.absolutePath
 				property 'wynnphoton.lightTest.only', providers.gradleProperty('only').getOrElse('')
+				property 'wynnphoton.lightTest.frames', providers.gradleProperty('frames').getOrElse('0')
 			}
 		}
 	}

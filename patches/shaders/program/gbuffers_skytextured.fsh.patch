@@ -1,0 +1,29 @@
+--- a/shaders/program/gbuffers_skytextured.fsh
++++ b/shaders/program/gbuffers_skytextured.fsh
+@@ -42,10 +42,26 @@
+ #include "/include/sky/atmosphere.glsl"
+ #include "/include/utility/color.glsl"
+ 
++// Wynn-Photon: meteors (see gbuffers_skytextured.vsh)
++#if defined WYNN_METEORS && defined WYNN_METEOR_SKY
++flat in float wynn_meteor_quad;
++in vec3 wynn_meteor_dir;
++
++#include "/include/sky/meteors.glsl"
++#endif
++
+ const float vanilla_sun_luminance = 10.0;
+ const float moon_luminance = 10.0;
+ 
+ void main() {
++#if defined WYNN_METEORS && defined WYNN_METEOR_SKY
++    // Wynn-Photon: the sun's quad, stretched over the screen: the meteors
++    if (wynn_meteor_quad > 0.5) {
++        frag_color = draw_meteors(normalize(wynn_meteor_dir));
++        return;
++    }
++#endif
++
+     vec2 new_uv = uv;
+     vec2 offset;
+ 

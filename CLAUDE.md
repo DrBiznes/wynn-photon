@@ -90,7 +90,10 @@ world, which `installMapWorld` builds from a copy of the user's Wynncraft Voxy c
   for the third exception below. A second exception, for
   WynnVista: `d2_clouds_upscaling.fsh` keeps a cloud distance for WynnVista's world effects in `colortex12.a`, and
   `colortex12` is RGBA16F for it. Nothing Photon reads is changed. WynnVista uses that channel whenever the buffer
-  has one, so keep its meaning: blocks to the cloud, 0 for none and on terrain. A third exception: our own sun and moon
+  has one, so keep its meaning: blocks to the cloud, 0 for none and on terrain. Also for WynnVista, and outside
+  Photon's own files altogether: the pass `program/wynn_scene_distance.fsh` (`composite90` in each dimension), which
+  keeps the distance to the scene, anti-aliased over time, in `colortex20` (see "The scene distance for WynnVista"
+  in `docs/DEVELOPMENT.md`), switched by `WYNN_VISTA_EDGES`. Nothing else may write `colortex20`. A third exception: our own sun and moon
   (`draw_wynn_sun` and `draw_wynn_moon` in `include/sky/sky.glsl`), which `draw_sky` draws in place of Photon's round
   ones. They change the pictures only, not the light, and `VANILLA_SUN` and `VANILLA_MOON` replace them. The sun
   (`WYNN_SUN`) is Photon's sun with the vanilla sun's shape: a square, or with `WYNN_SUN_CUBE` a cube seen from one
@@ -101,7 +104,21 @@ world, which `installMapWorld` builds from a copy of the user's Wynncraft Voxy c
   tuned from screenshots, because Photon's tone mapping burns anything much brighter to white and the faces and rims
   are lost; for the same reason the cube's corner sends out a fifth of the light of Photon's disk, or its bloom
   hides the cube. A first version in Wynncraft's pixel-art style (gold rays, texels covering the sky) clashed
-  with Photon's look.
+  with Photon's look. A fourth exception: meteors
+  (`include/sky/meteors.glsl`, `WYNN_METEORS`). They must cost nothing while none is falling, so the sky shader knows
+  nothing of them: `gbuffers_skytextured` draws them, the program of the vanilla sun and moon, whose output `draw_sky`
+  adds to the sky anyway, behind the clouds. While a meteor is in flight its vertex shader stretches the sun's quad
+  (under the horizon at night) over the screen; otherwise it hides every quad that would draw nothing, so no pixel runs
+  the meteor code. Don't call `draw_meteors` from the sky or reflection shaders again: even behind a test that is
+  nearly always false it cost 3% of a frame of night sky (measure with `-Pframes`, see `docs/DEVELOPMENT.md`). WynnIris
+  draws no skybox in Gavel. Meteors fall at random, so test them with
+  `gradlew skyTest -Pcases=testworld/meteor_test.txt`: the hidden option `WYNN_METEOR_TEST` draws one of every kind
+  side by side, frozen in flight. Which meteors fall depends only on the world day and the time of day, so that
+  players in one world see the same ones: don't seed them with anything local (the real date, `frameTimeCounter`).
+  Their clock, `wynn_meteor_clock` in `shaders.properties`, is `frameTimeCounter` plus a slowly eased offset to the
+  world time, so it is shared but never stutters. Whether a time slot holds a meteor is rolled there too, once a frame
+  (`wynn_meteor_rolls_*`); the slot periods and lane offsets in `shaders.properties` must match those in
+  `meteors.glsl`.
 - Every light change updates both the colored-light volume (`block.properties` + `light_colors.glsl`) and Photonics
   (`ph_lights.json`). Photonics' built-in defaults list `repeater`, `comparator`, `redstone_torch` and
   `enchanting_table` by name. To remove one of those lights, also add the block to the `"disabled"` override in

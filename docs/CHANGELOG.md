@@ -12,6 +12,17 @@ Every version so far patches Photon v1.4.
 - The spell table is a data file, `wynn_photon/spells.txt`: adding a spell needs no Java. Spells have their own item IDs, 10128-10159, one per look (glow rule and light colour, in `include/misc/wynn_spells.glsl`).
 - The spell debug build (a `wynn-photon-spell-debug` file in the config folder) logs every cast Wynntils sees, captures the display entities that follow, and writes each capture as a replayable datapack function, in `wynn-photon-spells/` in the game folder. It also uses the table's candidates, parts found in the server pack but not yet seen cast.
 
+## 0.10.2
+
+**Added**
+- Meteors in the night sky: shooting stars, bright meteors, rare fireballs and the odd night-long meteor shower. Everyone in a world sees the same ones, and they cost nothing while none is falling. "Meteors", "Meteor Rate", "Meteor Showers" and "Fireballs" on the Wynn-Photon page set them.
+
+**Changed**
+- Clouds default to 8× scale instead of 9×.
+
+**Fixed**
+- WynnVista: world effects no longer shimmer along block edges. Needs WynnVista 2.2.5. "WynnVista Effect Edges" on the Wynn-Photon page turns it off.
+
 ## 0.10.1
 
 **Added**

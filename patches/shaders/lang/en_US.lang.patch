@@ -19,7 +19,7 @@
  option.SNOW_OPACITY                    = Snow Opacity
  option.SNOW_OPACITY.comment            = Adjust the opacity of snow particles
  option.EDGE_HIGHLIGHT                  = Edge Highlight
-@@ -819,4 +822,44 @@
+@@ -819,4 +822,54 @@
  option.PHOTONICS_RESTIR_COMBINED_GI       = Include Skylight GI
  option.PHOTONICS_RESTIR_COMBINED_GI.comment = Whether Gi should be ran through ReSTIR's denoiser instead of its usual path. \nResults in much sharper Gi, at the cost of performance.
  
@@ -48,6 +48,14 @@
 +option.WYNN_PHOTONICS_SKY_FILL_I.comment = Only with Photonics. Photonics replaces Photon's sky light with its traced bounce light, which is very dim in shade, forests and under overhangs. This adds Photon's own sky light back where the traced light is weaker. 1.00 makes shade as bright as without Photonics. 0 turns it off
 +option.WYNN_MIN_LIGHT_I                 = Minimum Light
 +option.WYNN_MIN_LIGHT_I.comment         = The least light any surface gets, so nights, dense cities and caves never go fully black. It fades away where other light is brighter, so daylight and lit rooms don't change. Higher values show more detail in the dark but look flatter. 0 turns it off
++option.WYNN_METEORS                      = Meteors
++option.WYNN_METEORS.comment              = Shooting stars cross the night sky, as meteors have fallen on Gavel for two thousand years. Most are white, some blue, a few purple, and red and yellow ones are very rare. Every few minutes a bigger one falls, which flares up or breaks into pieces. They cost nothing while none is falling
++option.WYNN_METEOR_RATE                  = Meteor Rate
++option.WYNN_METEOR_RATE.comment          = How often shooting stars and fireballs fall. At 1.00 a shooting star falls about every 25 seconds on average, somewhere in the sky. Some nights are quiet and some are busy
++option.WYNN_METEOR_SHOWERS               = Meteor Showers
++option.WYNN_METEOR_SHOWERS.comment       = On a rare night the sky fills with shooting stars all night long, all falling away from one point. Needs Meteors
++option.WYNN_FIREBALLS                    = Fireballs
++option.WYNN_FIREBALLS.comment            = Now and then a large, slow meteor crosses the sky behind its bow shock, trailing sparks and a long glowing wake. A few are giants, and sometimes a purple and a blue one fall side by side. Needs Meteors
 +option.WYNN_PLAYER_LIGHT_I               = Player Light
 +option.WYNN_PLAYER_LIGHT_I.comment       = The player lights their surroundings as if always holding a torch, like the light radius in Diablo. 1.00 is as bright as a torch; higher is brighter and reaches further. A torch or lantern you really hold counts towards it. It casts no shadows. 0 turns it off
 +option.WYNN_SPELL_LIGHT_I                = Spell Lights (Experimental)
@@ -64,3 +72,5 @@
 +option.WYNN_MOON_SIZE.comment            = Half the width of the cubic moon in degrees
 +option.WYNN_MOON_BASE                    = Moon Base
 +option.WYNN_MOON_BASE.comment            = A small easter egg on the cubic moon, for those who look closely: the Humyn colony from Wynncraft's moon quest
++option.WYNN_VISTA_EDGES                   = WynnVista Effect Edges
++option.WYNN_VISTA_EDGES.comment           = Keeps the WynnVista mod's world effects, such as the void under the Sky Islands, from shimmering along the edges of the blocks in front of them. It costs a little video memory and one light pass a frame. Without WynnVista it does nothing, and you can turn it off
